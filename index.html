@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="theme-color" content="#46aef0">
+  <title>たけ少年のなつやすみ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@500;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="app">
+    <canvas id="game"></canvas>
+
+    <!-- タッチ操作を受け取る透明なレイヤー(ボタンの絵は #controls) -->
+    <div id="touch" hidden></div>
+    <div id="controls" hidden aria-hidden="true">
+      <div class="pad">
+        <div class="vbtn" id="vb-left"><svg viewBox="0 0 40 40"><path d="M26 8 L12 20 L26 32 Z"/></svg></div>
+        <div class="vbtn" id="vb-right"><svg viewBox="0 0 40 40"><path d="M14 8 L28 20 L14 32 Z"/></svg></div>
+      </div>
+      <div class="vbtn jump" id="vb-jump"><span>ジャンプ</span></div>
+    </div>
+
+    <div id="hud" hidden>
+      <div class="hud-left">
+        <span id="hud-stage" class="chip"></span>
+        <span class="chip melon-chip"><svg class="melon-icon" viewBox="0 0 24 16"><path d="M1 2 A11 11 0 0 0 23 2 Z" fill="#2f8a3a"/><path d="M3 2 A9 9 0 0 0 21 2 Z" fill="#e8f5c8"/><path d="M4 2 A8 8 0 0 0 20 2 Z" fill="#ff4f5e"/><circle cx="9" cy="5" r="1" fill="#222"/><circle cx="15" cy="5" r="1" fill="#222"/><circle cx="12" cy="8" r="1" fill="#222"/></svg><span id="hud-melon">0/0</span></span>
+      </div>
+      <div class="hud-right">
+        <button class="icon-btn" id="btn-mute" aria-label="音のオン・オフ"></button>
+        <button class="icon-btn" id="btn-pause" aria-label="一時停止"><svg viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg></button>
+      </div>
+    </div>
+
+    <div id="banner" hidden>
+      <div class="banner-num" id="banner-num"></div>
+      <div class="banner-name" id="banner-name"></div>
+      <div class="banner-hint" id="banner-hint"></div>
+    </div>
+
+    <!-- タイトル -->
+    <section class="screen" id="scr-title">
+      <div class="title-box">
+        <div class="title-sub">なつやすみ ぼうけん アクション</div>
+        <h1 class="title-logo">たけ少年の<br><span>なつやすみ</span></h1>
+        <div class="menu">
+          <button class="btn primary" id="btn-continue" hidden></button>
+          <button class="btn" id="btn-new">はじめから</button>
+          <button class="btn" id="btn-select">ステージをえらぶ</button>
+          <button class="btn small" id="btn-howto">あそびかた</button>
+        </div>
+      </div>
+      <button class="icon-btn corner" id="btn-mute-title" aria-label="音のオン・オフ"></button>
+    </section>
+
+    <!-- ステージ選択 -->
+    <section class="screen" id="scr-select" hidden>
+      <div class="panel wide">
+        <h2>ステージをえらぶ</h2>
+        <div class="stage-grid" id="stage-grid"></div>
+        <div class="row">
+          <button class="btn small" id="btn-select-back">もどる</button>
+          <button class="btn small ghost" id="btn-reset">記録をけす</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 遊び方 -->
+    <section class="screen" id="scr-howto" hidden>
+      <div class="panel wide">
+        <h2>あそびかた</h2>
+        <div class="howto">
+          <div><b>◀ ▶</b> 左下のボタンで歩く</div>
+          <div><b>ジャンプ</b> 右下のボタン。<br>長く押すと高く、短く押すと低く跳ぶよ</div>
+          <div><b>ころもち・けだま</b> 上から踏むとたおせる。横からさわるとミス</div>
+          <div><b>スイカのかけら</b> あつめなくてもクリアできるよ</div>
+          <div><b>風鈴</b> チェックポイント。ミスしてもここからやり直せる</div>
+          <div><b>旗</b> ここまで来たらステージクリア!</div>
+        </div>
+        <p class="keys">キーボード: ← → (A D) で移動 / スペース・↑・Z でジャンプ / Esc・P で一時停止</p>
+        <button class="btn small" id="btn-howto-back">とじる</button>
+      </div>
+    </section>
+
+    <!-- 一時停止 -->
+    <section class="screen dim" id="scr-pause" hidden>
+      <div class="panel">
+        <h2>ひと休み</h2>
+        <div class="menu">
+          <button class="btn primary" id="btn-resume">つづける</button>
+          <button class="btn" id="btn-retry">さいしょからやりなおす</button>
+          <button class="btn" id="btn-pause-select">ステージをえらぶ</button>
+          <button class="btn small" id="btn-pause-title">タイトルへ</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- クリア -->
+    <section class="screen dim" id="scr-clear" hidden>
+      <div class="panel">
+        <h2 class="clear-title">ステージクリア!</h2>
+        <p class="clear-melon" id="clear-melon"></p>
+        <div class="menu">
+          <button class="btn primary" id="btn-next">つぎのステージへ</button>
+          <button class="btn small" id="btn-clear-select">ステージをえらぶ</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- エンディング -->
+    <section class="screen" id="scr-ending" hidden>
+      <div class="ending-text" id="ending-text">
+        <p class="e1">夏の夜空に、大きな花火。</p>
+        <p class="e2">たけ少年の なつやすみは、<br>まだまだ つづく。</p>
+        <p class="e3" id="ending-melon"></p>
+        <p class="e4">おしまい<br><small>あそんでくれて ありがとう!</small></p>
+        <button class="btn small e5" id="btn-ending-title">タイトルへ</button>
+      </div>
+    </section>
+
+    <!-- 縦持ち案内 -->
+    <section class="screen" id="scr-rotate" hidden>
+      <div class="rotate-box">
+        <svg viewBox="0 0 120 120" class="rotate-icon"><rect x="40" y="18" width="40" height="70" rx="8"/><path d="M28 96 A44 44 0 0 0 98 70" fill="none"/><path d="M92 66 L99 72 L104 63" fill="none"/></svg>
+        <p>スマホを<b>よこむき</b>にして<br>あそんでね</p>
+      </div>
+    </section>
+  </div>
+
+  <script src="js/engine.js"></script>
+  <script src="js/stages.js"></script>
+  <script src="js/render.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/input.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
