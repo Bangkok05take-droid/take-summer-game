@@ -10,12 +10,11 @@
 
   // ===== 操作感の調整はここ =====
   const PHYS = {
-    runSpeed: 200,        // 最高速度 (px/秒)
-    groundAccel: 1800,    // 地上の加速
-    turnAccel: 3000,      // 逆方向に切り返すときの加速 (大きいほどキビキビ)
-    groundFriction: 2600, // 手を離したときの減速 (大きいほど滑らない)
-    airAccel: 1300,
-    airFriction: 500,
+    runSpeed: 170,        // ふつうの走る速さ (px/秒)。何も押さなくても自動で右へ走る
+    dashSpeed: 255,       // ダッシュ中の最高速度 (ふつうの 1.5 倍)
+    runAccel: 900,        // 走り出しの加速
+    dashAccel: 420,       // ダッシュの加速 (小さいほどなめらか)
+    dashDecel: 420,       // ダッシュをやめたときに元の速さへ戻る減速
     jumpSpeed: 650,       // ジャンプの初速 (大きいほど高く跳ぶ)
     jumpCut: 250,         // ボタンを離したときに残る上昇速度 (小さいほど小ジャンプが低い)
     gravityUp: 1900,
@@ -25,7 +24,12 @@
     jumpBuffer: 0.13,     // 着地前のジャンプ入力を覚えておく時間 (秒)
     stompBounce: 420,     // 敵を踏んだときの跳ね返り
     stompBounceHeld: 640, // 踏んだときジャンプを押していた場合
-    respawnInvuln: 1.0,
+    startHold: 0.5,       // スタート・復帰直後に立ち止まる時間 (秒)
+    respawnSafe: 1.0,     // 復帰直後にダメージを受けない時間 (秒)
+    guardTime: 2.0,       // 大人→少年に戻った直後にダメージを受けない時間 (秒)
+    killsToAdult: 3,      // 大人に変身するまでに踏む敵の数
+    melonsToStar: 5,      // 無敵になるまでに集めるスイカの数
+    starTime: 8,          // 無敵の時間 (秒)
   };
 
   const PLAYER_W = 20;
@@ -182,7 +186,14 @@
     return {
       x: spawn.x, y: spawn.y, w: PLAYER_W, h: PLAYER_H, vx: 0, vy: 0,
       onGround: false, mover: null, coyote: 0, buffer: 0, jumping: false, jumpHeld: false,
-      face: 1, dead: false, invuln: 0, checkpoint: -1, won: false,
+      face: 1, dead: false, won: false, checkpoint: -1,
+      hold: PHYS.startHold,   // スタート直後は少しだけ立ち止まる(心の準備)
+      form: 'boy',            // 'boy' | 'adult'
+      kills: 0,               // 大人までのカウント(少年のときだけ貯まる)
+      melons: 0,              // 無敵までのカウント
+      starT: 0,               // 無敵の残り時間
+      hurtT: 0,               // ダメージを受けない残り時間(大人→少年に戻った直後など)
+      noPowers: false,        // true なら変身・無敵なし(自動チェック用)
     };
   }
 
@@ -197,12 +208,12 @@
     if (dx > 0) {
       const tx = Math.floor((p.x + p.w) / TILE);
       for (let ty = top; ty <= bot; ty++) {
-        if (isSolid(level, tx, ty)) { p.x = tx * TILE - p.w; p.vx = 0; break; }
+        if (isSolid(level, tx, ty)) { p.x = tx * TILE - p.w; p.vx = Math.min(p.vx, PHYS.runSpeed * 0.5); break; }
       }
     } else if (dx < 0) {
       const tx = Math.floor(p.x / TILE);
       for (let ty = top; ty <= bot; ty++) {
-        if (isSolid(level, tx, ty)) { p.x = (tx + 1) * TILE; p.vx = 0; break; }
+        if (isSolid(level, tx, ty)) { p.x = (tx + 1) * TILE; break; }
       }
     }
   }
@@ -235,13 +246,34 @@
     return false;
   }
 
+  // 敵・トゲなどに当たったとき。戻り値 true ならミス
+  function takeDamage(p, events, cause) {
+    if (p.starT > 0 || p.hurtT > 0) return false;
+    if (p.form === 'adult') {
+      p.form = 'boy';
+      p.kills = 0;
+      p.hurtT = PHYS.guardTime;
+      events.push({ type: 'powerdown', cause });
+      return false;
+    }
+    kill(p, events, cause);
+    return true;
+  }
+
   /*
-   * プレイヤーを dt 秒進める。
-   * input: { left, right, jump } (押されているかどうか)
+   * プレイヤーを dt 秒進める。自動で右に走ります。
+   * input: { dash, jump } (押されているかどうか)
    * events: 起きたことを文字列/オブジェクトで push する配列
    */
   function stepPlayer(p, input, world, dt, events) {
-    if (p.dead || p.won) return;
+    if (p.dead) return;
+    if (p.won) {
+      // ゴール後は、空中にいたら地面に降りるだけ
+      p.vx = 0;
+      p.vy = Math.min(PHYS.maxFall, p.vy + PHYS.gravityDown * dt);
+      p.onGround = moveY(p, world.level, p.vy * dt);
+      return;
+    }
     const level = world.level;
     const P = PHYS;
     p.prevBottom = p.y + p.h;
@@ -249,21 +281,25 @@
     // ジャンプ入力 (押した瞬間を記憶しておく = 先行入力)
     if (input.jump && !p.jumpHeld) p.buffer = P.jumpBuffer;
     p.jumpHeld = !!input.jump;
-    if (p.invuln > 0) p.invuln -= dt;
-
-    // 横移動
-    const move = (input.right ? 1 : 0) - (input.left ? 1 : 0);
-    if (move !== 0) {
-      p.face = move;
-      const target = move * P.runSpeed;
-      let acc = p.onGround ? P.groundAccel : P.airAccel;
-      if (p.vx !== 0 && Math.sign(p.vx) !== move) acc = p.onGround ? P.turnAccel : P.airAccel * 1.4;
-      if (p.vx < target) p.vx = Math.min(target, p.vx + acc * dt);
-      else if (p.vx > target) p.vx = Math.max(target, p.vx - acc * dt);
-    } else {
-      const fr = (p.onGround ? P.groundFriction : P.airFriction) * dt;
-      if (Math.abs(p.vx) <= fr) p.vx = 0; else p.vx -= Math.sign(p.vx) * fr;
+    if (p.hurtT > 0) p.hurtT = Math.max(0, p.hurtT - dt);
+    if (p.starT > 0) {
+      p.starT -= dt;
+      if (p.starT <= 0) { p.starT = 0; events.push('starEnd'); }
     }
+
+    // 自動で右へ走る。ダッシュ中は最高 1.5 倍までなめらかに加速
+    p.face = 1;
+    if (p.hold > 0) {
+      p.hold -= dt;
+      p.vx = 0;
+      p.buffer = 0;
+    } else {
+      const target = input.dash ? P.dashSpeed : P.runSpeed;
+      if (p.vx < P.runSpeed) p.vx = Math.min(target, p.vx + P.runAccel * dt);
+      else if (p.vx < target) p.vx = Math.min(target, p.vx + P.dashAccel * dt);
+      else if (p.vx > target) p.vx = Math.max(target, p.vx - P.dashDecel * dt);
+    }
+    p.dashing = !!input.dash && p.hold <= 0;
 
     // 動く足場に乗っている分の移動
     let carryX = 0, carryY = 0;
@@ -291,7 +327,6 @@
     const startBottom = p.y + p.h;
     let landed = moveY(p, level, p.vy * dt);
     let newMover = null;
-    // 動く足場 (上からだけ乗れる)
     if (!landed && p.vy >= 0) {
       for (const m of world.movers) {
         const bottom = p.y + p.h;
@@ -309,17 +344,18 @@
     // 当たり判定は見た目より少し小さめ (やさしめ)
     const hx = p.x + 3, hy = p.y + 5, hw = p.w - 6, hh = p.h - 7;
 
-    // 落下
+    // 落下(穴・水)は、大人でも無敵でもミス
     if (p.y > level.h * TILE + 40) { kill(p, events, 'fall'); return; }
 
-    // 危険タイル
     const tx0 = Math.floor(hx / TILE), tx1 = Math.floor((hx + hw) / TILE);
     const ty0 = Math.floor(hy / TILE), ty1 = Math.floor((hy + hh) / TILE);
     for (let ty = ty0; ty <= ty1; ty++) {
       for (let tx = tx0; tx <= tx1; tx++) {
         const c = tileAt(level, tx, ty);
-        if (c === '^' && overlap(hx, hy, hw, hh, tx * TILE + 7, ty * TILE + 13, 18, 19)) { kill(p, events, 'spike'); return; }
         if (c === '~' && overlap(hx, hy, hw, hh, tx * TILE, ty * TILE + 12, TILE, 20)) { kill(p, events, 'water'); return; }
+        if (c === '^' && overlap(hx, hy, hw, hh, tx * TILE + 7, ty * TILE + 13, 18, 19)) {
+          if (takeDamage(p, events, 'spike')) return;
+        }
       }
     }
 
@@ -327,25 +363,41 @@
     for (const e of world.enemies) {
       if (!e.alive) continue;
       if (!overlap(p.x + 1, p.y + 2, p.w - 2, p.h - 2, e.x + 2, e.y + 3, e.w - 4, e.h - 4)) continue;
-      // 上から踏んだ: 落下中で、前フレームの足元が敵の中ほどより上
-      if (p.vy > 0 && p.prevBottom <= e.y + e.h * 0.6) {
+      const stomp = p.vy > 0 && p.prevBottom <= e.y + e.h * 0.6;
+      if (p.starT > 0) {
+        // 無敵中はどこからぶつかっても倒せる(大人へのカウントには入らない)
+        if (!world.immortalEnemies) { e.alive = false; e.deadT = 0; }
+        if (stomp) { p.vy = -(p.jumpHeld ? P.stompBounceHeld : P.stompBounce); p.jumping = p.jumpHeld; }
+        events.push({ type: 'stomp', enemy: e, star: true });
+        continue;
+      }
+      if (stomp) {
         p.vy = -(p.jumpHeld ? P.stompBounceHeld : P.stompBounce);
         p.jumping = p.jumpHeld;
         p.y = Math.min(p.y, e.y - p.h + 2);
         if (!world.immortalEnemies) { e.alive = false; e.deadT = 0; }
         events.push({ type: 'stomp', enemy: e });
-      } else if (p.invuln <= 0) {
-        kill(p, events, 'enemy');
+        if (p.form === 'boy' && !p.noPowers) {
+          p.kills++;
+          if (p.kills >= P.killsToAdult) {
+            p.form = 'adult';
+            p.kills = 0;
+            events.push('transform');
+          }
+        }
+      } else if (takeDamage(p, events, 'enemy')) {
         return;
       }
     }
 
-    // ヨーヨー (お祭りの障害物)
+    // ヨーヨー(上下に動く障害物)
     for (const y of world.yoyos) {
       const cx = Math.max(hx, Math.min(y.bx, hx + hw));
       const cy = Math.max(hy, Math.min(y.by, hy + hh));
       const r = y.r - 2;
-      if ((cx - y.bx) ** 2 + (cy - y.by) ** 2 < r * r && p.invuln <= 0) { kill(p, events, 'yoyo'); return; }
+      if ((cx - y.bx) ** 2 + (cy - y.by) ** 2 < r * r) {
+        if (takeDamage(p, events, 'yoyo')) return;
+      }
     }
 
     // スイカ
@@ -354,20 +406,31 @@
       level.melons.forEach((m, i) => {
         if (!world.melonGot[i] && Math.abs(m.x - pcx) < 22 && Math.abs(m.y - pcy) < 26) {
           world.melonGot[i] = true;
+          let star = false;
+          // 無敵中に取ったものはスコアだけ(カウントも延長もしない)
+          if (p.starT <= 0 && !p.noPowers) {
+            p.melons++;
+            if (p.melons >= P.melonsToStar) {
+              p.melons = 0;
+              p.starT = P.starTime;
+              star = true;
+            }
+          }
           events.push({ type: 'melon', index: i });
+          if (star) events.push('star');
         }
       });
     }
 
     // チェックポイント
     level.checkpoints.forEach((c, i) => {
-      if (i > p.checkpoint && pcx >= c.x && pcx <= c.x + TILE * 2 && p.y + p.h > c.y - TILE * 4) {
+      if (i > p.checkpoint && pcx >= c.x && pcx <= c.x + TILE * 3 && p.y + p.h > c.y - TILE * 4) {
         p.checkpoint = i;
         events.push({ type: 'checkpoint', index: i });
       }
     });
 
-    // ゴール
+    // ゴール(サイちゃん)
     if (p.x + p.w >= level.goal.x - 6) {
       p.won = true;
       p.vx = 0;
@@ -381,7 +444,7 @@
   }
 
   const Engine = {
-    TILE, VIEW_ROWS, PHYS, PLAYER_W, PLAYER_H, SOLID, ONEWAY, HAZARD,
+    TILE, VIEW_ROWS, PHYS, PLAYER_W, PLAYER_H, SOLID, ONEWAY, HAZARD, takeDamage,
     parseStage, tileAt, isSolid, createWorld, stepWorld, createPlayer, stepPlayer,
   };
   root.Engine = Engine;

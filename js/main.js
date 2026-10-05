@@ -50,7 +50,7 @@
   const isTouch = ('ontouchstart' in window) || navigator.maxTouchPoints > 0 || /[?&]touch/.test(location.search);
 
   function showScreen(name) {
-    ['title', 'select', 'howto', 'pause', 'clear', 'ending'].forEach((n) => { $('scr-' + n).hidden = n !== name; });
+    ['title', 'story', 'select', 'howto', 'pause', 'clear', 'ending'].forEach((n) => { $('scr-' + n).hidden = n !== name; });
   }
 
   function setScreen(name) {
@@ -135,34 +135,38 @@
     const level = Engine.parseStage(STAGES[index], index);
     game = {
       index, level, world: null, player: null, cp: -1,
-      cam: { x: 0, y: 0, look: 0 }, particles: [], time: 0,
-      deathT: 0, deathAnim: null, winT: 0, melons: 0, melonGot: level.melons.map(() => false),
-      walk: 0, fw: level.theme === 'hilltop' ? Render.makeFireworks() : null,
+      cam: { x: 0, y: 0 }, particles: [], hearts: [], time: 0,
+      deathT: 0, deathAnim: null, winT: 0, melonGot: level.melons.map(() => false),
+      walk: 0, fw: level.theme === 'finale' ? Render.makeFireworks() : null, flash: 0,
     };
     game.cp = cp != null && cp < level.checkpoints.length ? cp : -1;
-    spawn();
-    game.cam.x = clampCamX(game.player.x - vw * 0.3);
+    spawn(false);
+    game.cam.x = clampCamX(game.player.x - vw * 0.28);
     $('hud-stage').textContent = `${index + 1}. ${level.name}`;
-    updateMelonHud();
+    hideToast();
     showBanner(index, level);
     save.resume = { stage: index, cp: game.cp };
     writeSave();
     setScreen('play');
   }
 
-  function spawn() {
+  // ミス後・ステージ開始時: 少年・カウント0・無敵なしで始める
+  function spawn(afterMiss) {
     const level = game.level;
     game.world = Engine.createWorld(level);
     game.world.melonGot = game.melonGot;
     const sp = game.cp >= 0 ? level.checkpoints[game.cp].spawn : level.spawn;
+    // 復帰地点より先のスイカは元に戻す(その先だけで無敵をねらえるように)
+    level.melons.forEach((m, i) => { if (m.x > sp.x) game.melonGot[i] = false; });
     const p = Engine.createPlayer(sp);
     p.checkpoint = game.cp;
-    p.invuln = game.deathAnim ? Engine.PHYS.respawnInvuln : 0;
+    if (afterMiss) p.hurtT = Engine.PHYS.respawnSafe;
     p.jumpHeld = Input.state().jump; // 押しっぱなしで勝手に跳ばないように
     game.player = p;
     game.deathT = 0;
     game.deathAnim = null;
     game.winT = 0;
+    updateHud();
   }
 
   let bannerTimer = null;
@@ -170,19 +174,47 @@
     const b = $('banner');
     $('banner-num').textContent = `ステージ ${index + 1}`;
     $('banner-name').textContent = level.name;
-    $('banner-hint').textContent = (!isTouch && index === 0) ? '← → で歩いて、スペースでジャンプ。長く押すと高く跳べるよ' : (level.def.hint || '');
+    $('banner-hint').textContent = (!isTouch && index === 0) ? '自動で走るよ。スペースでジャンプ、Shiftでダッシュ' : (level.def.hint || '');
     b.hidden = false;
     b.classList.remove('out');
     clearTimeout(bannerTimer);
     bannerTimer = setTimeout(() => {
       b.classList.add('out');
       bannerTimer = setTimeout(() => { b.hidden = true; }, 700);
-    }, 2600);
+    }, 2400);
   }
   function hideBanner() { clearTimeout(bannerTimer); $('banner').hidden = true; }
 
-  function updateMelonHud() {
-    $('hud-melon').textContent = `${game.melons}/${game.level.melons.length}`;
+  // 画面中央に短く出す文字(変身・無敵・再会)
+  let toastTimer = null;
+  function showToast(text, cls, ms) {
+    const el = $('toast');
+    el.textContent = text;
+    el.className = cls || '';
+    el.hidden = false;
+    void el.offsetWidth;
+    el.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(hideToast, ms || 1300);
+  }
+  function hideToast() { clearTimeout(toastTimer); $('toast').hidden = true; }
+
+  function melonScore() { return game.melonGot.filter(Boolean).length; }
+
+  let hudCache = '';
+  function updateHud() {
+    if (!game) return;
+    const p = game.player, P = Engine.PHYS;
+    const power = p.form === 'adult' ? 'ガード1回' : `大人まで あと${P.killsToAdult - p.kills}体`;
+    const star = p.starT > 0 ? `無敵 ${Math.ceil(p.starT)}秒` : `無敵まで あと${P.melonsToStar - p.melons}個`;
+    const key = power + '|' + star + '|' + melonScore();
+    if (key === hudCache) return;
+    hudCache = key;
+    $('hud-power-text').textContent = power;
+    document.querySelector('#hud-power .ic').textContent = p.form === 'adult' ? '🛡' : '👦';
+    $('hud-power').classList.toggle('adult', p.form === 'adult');
+    $('hud-star-text').textContent = star;
+    $('hud-star').classList.toggle('active', p.starT > 0);
   }
 
   function clampCamX(x) {
@@ -200,20 +232,42 @@
       });
     }
   }
+  function addHearts(x, y, n) {
+    for (let i = 0; i < n; i++) {
+      game.hearts.push({ x: x + (Math.random() - 0.5) * 40, y: y - Math.random() * 10, vx: (Math.random() - 0.5) * 40, vy: -40 - Math.random() * 50, life: 1.6, max: 1.6, s: 5 + Math.random() * 4 });
+    }
+  }
 
   function handleEvent(ev) {
     const p = game.player;
     const type = typeof ev === 'string' ? ev : ev.type;
+    const cx = p.x + p.w / 2, cy = p.y + p.h / 2;
     switch (type) {
-      case 'jump': Sound.play('jump'); addParticles(p.x + p.w / 2, p.y + p.h, 4, 'dust', '#ffffff'); break;
-      case 'land': addParticles(p.x + p.w / 2, p.y + p.h, 3, 'dust', '#ffffff'); break;
-      case 'stomp': Sound.play('stomp'); addParticles(ev.enemy.x + ev.enemy.w / 2, ev.enemy.y, 8, 'star', '#ffe066'); break;
+      case 'jump': Sound.play('jump'); addParticles(cx, p.y + p.h, 4, 'dust', '#ffffff'); break;
+      case 'land': addParticles(cx, p.y + p.h, 3, 'dust', '#ffffff'); break;
+      case 'stomp': Sound.play(ev.star ? 'starhit' : 'stomp'); addParticles(ev.enemy.x + ev.enemy.w / 2, ev.enemy.y, 8, 'star', '#ffe066'); break;
+      case 'transform':
+        Sound.play('transform');
+        addParticles(cx, cy - 10, 18, 'star', '#ffb347');
+        game.flash = 0.25;
+        showToast('大人のたけに変身!', 'adult');
+        break;
+      case 'powerdown':
+        Sound.play('powerdown');
+        addParticles(cx, cy - 10, 10, 'star', '#ffffff');
+        showToast('ガード! 少年にもどった', 'guard', 1000);
+        break;
+      case 'star':
+        Sound.play('star');
+        addParticles(cx, cy, 20, 'star', '#fff27a');
+        game.flash = 0.25;
+        showToast('無敵! 8秒', 'star');
+        break;
+      case 'starEnd': Sound.play('starend'); break;
       case 'melon': {
         Sound.play('melon');
         const m = game.level.melons[ev.index];
         addParticles(m.x, m.y, 10, 'star', '#ff7a8a');
-        game.melons++;
-        updateMelonHud();
         break;
       }
       case 'checkpoint': {
@@ -227,17 +281,23 @@
       }
       case 'die':
         Sound.play('miss');
-        game.deathAnim = { x: p.x + p.w / 2, y: p.y + p.h, vy: ev.cause === 'fall' ? 0 : -420, fall: ev.cause === 'fall' };
+        hideToast();
+        game.deathAnim = { x: cx, y: p.y + p.h, vy: ev.cause === 'fall' || ev.cause === 'water' ? 0 : -420, fall: ev.cause === 'fall' || ev.cause === 'water' };
         break;
-      case 'goal': Sound.play('clear'); onGoal(); break;
+      case 'goal': onGoal(); break;
     }
+    updateHud();
   }
 
   function onGoal() {
     const i = game.index;
+    Sound.play('reunion');
+    const g = game.level.goal;
+    addHearts(g.x, g.y - 50, 12);
+    showToast('サイちゃん、みつけた!', 'reunion', 2200);
     save.cleared[i] = true;
     save.unlocked = Math.min(STAGES.length, Math.max(save.unlocked, i + 2));
-    save.best[i] = Math.max(save.best[i] || 0, game.melons);
+    save.best[i] = Math.max(save.best[i] || 0, melonScore());
     save.resume = i + 1 < STAGES.length ? { stage: i + 1, cp: -1 } : null;
     writeSave();
     hideBanner();
@@ -255,45 +315,59 @@
     const p = game.player;
     Engine.stepWorld(game.world, dt);
     if (game.fw) Render.updateFireworks(game.fw, dt, vw, vh, 1.8);
+    if (game.flash > 0) game.flash -= dt;
 
     if (p.dead) {
       game.deathT += dt;
       const d = game.deathAnim;
       if (d && !d.fall && game.deathT > 0.25) { d.vy += 1400 * dt; d.y += d.vy * dt; }
-      if (game.deathT > (d && d.fall ? 0.7 : 1.1)) spawn();
+      if (game.deathT > (d && d.fall ? 0.6 : 0.95)) spawn(true);
     } else if (p.won) {
       game.winT += dt;
-      if (game.winT > 1.7) {
+      Engine.stepPlayer(p, { dash: false, jump: false }, game.world, dt, []);
+      if (game.winT < 1.8 && Math.random() < dt * 6) addHearts(game.level.goal.x, game.level.goal.y - 50, 1);
+      if (game.winT > 2.4) {
         if (game.index === STAGES.length - 1) startEnding();
         else showClear();
         return;
       }
     } else {
       const events = [];
-      Engine.stepPlayer(p, Input.state(), game.world, dt, events);
+      const inp = Input.state();
+      Engine.stepPlayer(p, inp, game.world, dt, events);
       for (const ev of events) handleEvent(ev);
-      if (Math.abs(p.vx) > 10 && p.onGround) game.walk += Math.abs(p.vx) * dt * 0.075;
+      if (p.onGround && p.vx > 10) game.walk += p.vx * dt * 0.075;
+      if (p.dashing && p.onGround && Math.random() < dt * 30) {
+        game.particles.push({ x: p.x, y: p.y + p.h - 4 - Math.random() * 20, vx: -120, vy: 0, life: 0.25, max: 0.25, kind: 'line', col: 'rgba(255,255,255,0.8)' });
+      }
+      if (p.starT > 0) updateHud();
     }
 
     for (let i = game.particles.length - 1; i >= 0; i--) {
       const q = game.particles[i];
-      q.x += q.vx * dt; q.y += q.vy * dt; q.vy += (q.kind === 'dust' ? 0 : 300) * dt;
+      q.x += q.vx * dt; q.y += q.vy * dt; q.vy += (q.kind === 'star' ? 300 : 0) * dt;
       q.life -= dt;
       if (q.life <= 0) game.particles.splice(i, 1);
     }
+    for (let i = game.hearts.length - 1; i >= 0; i--) {
+      const h = game.hearts[i];
+      h.x += h.vx * dt + Math.sin(game.time * 4 + i) * 0.3; h.y += h.vy * dt; h.life -= dt;
+      if (h.life <= 0) game.hearts.splice(i, 1);
+    }
 
-    // カメラ: 向いている方向の先が見えるように
+    // カメラ: 主人公を左寄りに置いて、進む先を広く見せる
     if (!p.dead) {
-      const look = p.face * vw * 0.12;
-      game.cam.look += (look - game.cam.look) * Math.min(1, dt * 2.2);
-      const target = clampCamX(p.x + p.w / 2 - vw * 0.42 + game.cam.look);
-      game.cam.x += (target - game.cam.x) * Math.min(1, dt * 7);
+      const target = clampCamX(p.x + p.w / 2 - vw * 0.28);
+      game.cam.x += (target - game.cam.x) * Math.min(1, dt * 8);
     }
   }
 
   function showClear() {
     const total = game.level.melons.length;
-    $('clear-melon').textContent = `スイカのかけら ${game.melons} / ${total}` + (game.melons === total && total > 0 ? '  ぜんぶ!' : '');
+    const got = melonScore();
+    const next = STAGES[game.index + 1];
+    $('clear-melon').textContent = `スイカのかけら ${got} / ${total}` + (got === total && total > 0 ? '  ぜんぶ!' : '');
+    $('clear-next').textContent = next ? `つぎは「${next.name}」へ!` : '';
     setScreen('clear');
   }
 
@@ -304,9 +378,9 @@
     let got = 0, total = 0;
     STAGES.forEach((_, i) => { got += save.best[i] || 0; total += countMelons(i); });
     $('ending-melon').textContent = `あつめたスイカのかけら ${got} / ${total}`;
-    // アニメーションを最初から再生
     const box = $('ending-text');
     box.querySelectorAll('p, button').forEach((el) => { el.style.animation = 'none'; void el.offsetWidth; el.style.animation = ''; });
+    hideToast();
     setScreen('ending');
     Sound.play('ending');
   }
@@ -318,7 +392,7 @@
       Render.drawEndingScene(ctx, vw, vh, endingTime, endingFw);
       return;
     }
-    if (screen === 'title' || screen === 'select' || screen === 'howto' || !game) {
+    if (screen === 'title' || screen === 'select' || screen === 'howto' || screen === 'story' || !game) {
       drawTitleScene();
       return;
     }
@@ -341,53 +415,52 @@
       Render.drawEnemy(ctx, e, time);
     }
     // 主人公
-    const anim = { t: time, walk: g.walk, blink: (time % 3.3) < 0.12, state: 'idle' };
+    const anim = { t: time, walk: g.walk, blink: (time % 3.3) < 0.12, state: 'idle', adult: p.form === 'adult' };
     let px = p.x + p.w / 2, py = p.y + p.h;
     if (p.dead) {
       anim.state = 'dead';
       if (g.deathAnim && !g.deathAnim.fall) { px = g.deathAnim.x; py = g.deathAnim.y; }
     } else if (p.won) anim.state = 'win';
     else if (!p.onGround) anim.state = p.vy < 0 ? 'jump' : 'fall';
-    else if (Math.abs(p.vx) > 15) anim.state = 'walk';
-    const blinkHide = p.invuln > 0 && Math.floor(time * 16) % 2 === 0;
-    if (!(p.dead && g.deathAnim && g.deathAnim.fall) && !blinkHide) Render.drawPlayer(ctx, px, py, p.face, anim);
+    if (p.won && p.onGround) anim.state = 'win';
+    else if (p.vx > 15) anim.state = 'walk';
+    if (p.starT > 0 && !p.dead) Render.drawStarAura(ctx, px, py, time, p.starT);
+    const blinkHide = p.hurtT > 0 && !p.dead && Math.floor(time * 14) % 2 === 0;
+    if (!(p.dead && g.deathAnim && g.deathAnim.fall) && !blinkHide) Render.drawPlayer(ctx, px, py, 1, anim);
+    if (p.won) Render.drawSai(ctx, lvl.goal.x + 22, lvl.goal.y, -1, { state: 'happy', t: time });
     // パーティクル
     for (const q of g.particles) {
       ctx.globalAlpha = Math.max(0, q.life / q.max);
       ctx.fillStyle = q.col;
       if (q.kind === 'dust') Render.circle(ctx, q.x, q.y, 3 + (1 - q.life / q.max) * 3);
-      else drawStar(q.x, q.y, 4);
+      else if (q.kind === 'line') ctx.fillRect(q.x - 14, q.y, 14, 2);
+      else Render.drawStarShape(ctx, q.x, q.y, 4);
+    }
+    for (const h of g.hearts) {
+      ctx.globalAlpha = Math.max(0, Math.min(1, h.life / 0.6));
+      ctx.fillStyle = '#ff6a9a';
+      Render.drawHeart(ctx, h.x, h.y, h.s);
     }
     ctx.globalAlpha = 1;
     ctx.restore();
+    if (g.flash > 0) { ctx.fillStyle = `rgba(255,255,255,${g.flash * 1.6})`; ctx.fillRect(0, 0, vw, vh); }
   }
 
-  function drawStar(x, y, r) {
-    ctx.beginPath();
-    for (let i = 0; i < 10; i++) {
-      const a = (i / 10) * Math.PI * 2 - Math.PI / 2;
-      const rr = i % 2 ? r * 0.45 : r;
-      ctx.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr);
-    }
-    ctx.closePath(); ctx.fill();
-  }
-
-  let titleLevel = null;
   function drawTitleScene() {
-    if (!titleLevel) titleLevel = Engine.parseStage(STAGES[0], 0);
-    const camX = (titleTime * 18) % 900;
-    Render.drawBackground(ctx, 'home', camX, 0, vw, vh, titleTime);
+    const camX = (titleTime * 30) % 1400;
+    Render.drawBackground(ctx, 'asakusa', camX, 0, vw, vh, titleTime);
     ctx.save();
     ctx.translate(-camX, 0);
-    // 地面だけ描く(タイトル用)
     for (let tx = Math.floor(camX / T); tx <= (camX + vw) / T + 1; tx++) {
-      ctx.fillStyle = '#c58a55'; ctx.fillRect(tx * T, 11 * T, T + 0.5, 3 * T);
-      ctx.fillStyle = '#74c64b'; ctx.fillRect(tx * T, 11 * T, T + 0.5, 8);
-      ctx.fillStyle = '#a3e36f'; ctx.fillRect(tx * T, 11 * T, T + 0.5, 3);
+      ctx.fillStyle = '#a89f92'; ctx.fillRect(tx * T, 11 * T, T + 0.5, 3 * T);
+      ctx.fillStyle = '#c9c1b3'; ctx.fillRect(tx * T, 11 * T, T + 0.5, 8);
+      ctx.fillStyle = '#e6dfd2'; ctx.fillRect(tx * T, 11 * T, T + 0.5, 3);
     }
     ctx.restore();
-    Render.drawPlayer(ctx, vw * 0.16, 11 * T, 1, { state: 'walk', t: titleTime, walk: titleTime * 9, blink: (titleTime % 3) < 0.12 });
-    Render.drawMelon(ctx, vw * 0.16 + 70, 11 * T - 40, titleTime);
+    Render.drawPlayer(ctx, vw * 0.14, 11 * T, 1, { state: 'walk', t: titleTime, walk: titleTime * 11, blink: (titleTime % 3) < 0.12 });
+    Render.drawSai(ctx, vw * 0.86, 11 * T, -1, { state: 'wait', t: titleTime });
+    ctx.fillStyle = '#ff6a9a';
+    Render.drawHeart(ctx, vw * 0.86, 11 * T - 70 + Math.sin(titleTime * 3) * 3, 7);
   }
 
   // ===== メインループ =====
@@ -432,7 +505,8 @@
     $(id).addEventListener('click', (e) => { e.preventDefault(); firstTouch(); fn(); });
   }
   bind('btn-continue', () => { Sound.play('select'); const r = save.resume; startStage(r.stage, r.cp); });
-  bind('btn-new', () => { Sound.play('select'); startStage(0, -1); });
+  bind('btn-new', () => { Sound.play('select'); setScreen('story'); });
+  bind('btn-story-start', () => { Sound.play('select'); startStage(0, -1); });
   bind('btn-select', () => { Sound.play('select'); setScreen('select'); });
   bind('btn-howto', () => { Sound.play('select'); setScreen('howto'); });
   bind('btn-howto-back', () => { Sound.play('select'); setScreen('title'); });
@@ -451,8 +525,8 @@
   bind('btn-mute-title', toggleMute);
   bind('btn-resume', () => { Sound.play('select'); resume(); });
   bind('btn-retry', () => { Sound.play('select'); startStage(game.index, -1); });
-  bind('btn-pause-select', () => { Sound.play('select'); hideBanner(); setScreen('select'); });
-  bind('btn-pause-title', () => { Sound.play('select'); hideBanner(); setScreen('title'); });
+  bind('btn-pause-select', () => { Sound.play('select'); hideBanner(); hideToast(); setScreen('select'); });
+  bind('btn-pause-title', () => { Sound.play('select'); hideBanner(); hideToast(); setScreen('title'); });
   bind('btn-next', () => { Sound.play('select'); startStage(game.index + 1, -1); });
   bind('btn-clear-select', () => { Sound.play('select'); setScreen('select'); });
   bind('btn-ending-title', () => { Sound.play('select'); setScreen('title'); });
@@ -474,7 +548,7 @@
   document.addEventListener('dblclick', (e) => e.preventDefault());
   document.addEventListener('contextmenu', (e) => { if (screen === 'play') e.preventDefault(); });
 
-  Input.init($('touch'), { left: $('vb-left'), right: $('vb-right'), jump: $('vb-jump') });
+  Input.init($('touch'), { dash: $('vb-dash'), jump: $('vb-jump') });
   window.addEventListener('resize', resize);
   window.addEventListener('orientationchange', () => setTimeout(resize, 200));
   resize();

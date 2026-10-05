@@ -6,9 +6,15 @@
  *   node tools/check-stages.js 7          # 7面だけ
  *   node tools/check-stages.js --save     # 見つけた操作手順を tools/solutions.json に保存
  *
- * 0.1秒ごとに「左/右/なし × ジャンプ押す/離す」の6通りを試す幅優先探索です。
- * 同じ時刻の状態を同時に進めるので、動く足場や敵の位置も正しく再現されます。
- * 敵は「踏める・横から当たるとミス」で扱います(探索中は倒れずに残る = 厳しめの判定)。
+ * 0.1秒ごとに「ダッシュ押す/離す × ジャンプ押す/離す」の4通りを試す幅優先探索です。
+ * 同じ時刻の状態を同時に進めるので、敵やボールの位置も正しく再現されます。
+ * 厳しめの判定にするため、探索では「変身・無敵なし」「敵は倒れずに残る」で確認します。
+ *
+ * 確認すること
+ *   1. スタートと各チェックポイントからゴールに着ける
+ *   2. 敵やボールの動きのタイミングをずらしても着ける(= 立ち止まって待つ必要がない)
+ *   3. 1〜5面はダッシュを使わなくても着ける
+ *   4. ダッシュなしで着けない面は「ダッシュ必須」と表示
  */
 'use strict';
 const fs = require('fs');
@@ -21,7 +27,9 @@ const SUB = 12; // 1アクション = 0.1秒
 const MAX_LAYER = 3000;
 const MAX_TIME = 240; // 秒
 const ACTIONS = [];
-for (const h of [-1, 0, 1]) for (const j of [false, true]) ACTIONS.push({ left: h < 0, right: h > 0, jump: j });
+for (const d of [false, true]) for (const j of [false, true]) ACTIONS.push({ dash: d, jump: j });
+const PHASES = [0, 0.65, 1.3, 1.95]; // 敵・ボールのタイミングのずらし方(秒)。ボールの周期2.6秒を4分割
+const NO_DASH_REQUIRED = 5; // この面までは、ダッシュなしでもクリアできること
 
 function clonePlayer(p) {
   const c = Object.assign({}, p);
@@ -31,18 +39,22 @@ function clonePlayer(p) {
 function keyOf(p, world) {
   const mi = p.mover ? world.movers.indexOf(p.mover) : -1;
   return [
-    Math.round(p.x / 5), Math.round(p.y / 5), Math.round(p.vx / 60), Math.round(p.vy / 90),
-    p.onGround ? 1 : 0, p.jumpHeld ? 1 : 0, p.jumping ? 1 : 0, mi, p.checkpoint,
+    Math.round(p.x / 5), Math.round(p.y / 5), Math.round(p.vx / 30), Math.round(p.vy / 90),
+    p.onGround ? 1 : 0, p.jumpHeld ? 1 : 0, p.jumping ? 1 : 0, mi, p.checkpoint, p.hold > 0 ? 1 : 0,
   ].join(',');
 }
 
-function solve(index, fromCheckpoint) {
+function solve(index, fromCheckpoint, opts) {
+  opts = opts || {};
+  const acts = opts.noDash ? [0, 1] : [0, 1, 2, 3];
   const level = Engine.parseStage(STAGES[index], index);
   const world = Engine.createWorld(level);
   world.immortalEnemies = true;
+  for (let t = 0; t < (opts.phase || 0); t += DT) Engine.stepWorld(world, DT);
   const spawn = fromCheckpoint >= 0 ? level.checkpoints[fromCheckpoint].spawn : level.spawn;
   const start = Engine.createPlayer(spawn);
   start.checkpoint = fromCheckpoint;
+  start.noPowers = true;
   let layer = [{ p: start, hist: null }];
   let steps = 0;
   const events = [];
@@ -50,7 +62,7 @@ function solve(index, fromCheckpoint) {
     // 子状態を作る
     const children = [];
     for (const node of layer) {
-      for (let a = 0; a < ACTIONS.length; a++) {
+      for (const a of acts) {
         children.push({ p: clonePlayer(node.p), a, parent: node });
       }
     }
@@ -113,38 +125,79 @@ function staticChecks(index) {
   return { level, errors };
 }
 
-function main() {
-  const args = process.argv.slice(2);
-  const save = args.includes('--save');
-  const only = args.filter((a) => /^\d+$/.test(a)).map((a) => parseInt(a, 10) - 1);
-  const targets = only.length ? only : STAGES.map((_, i) => i);
-  const solutions = {};
-  let fail = 0;
-  for (const i of targets) {
-    const { level, errors } = staticChecks(i);
-    const t0 = Date.now();
-    const r = solve(i, -1);
-    const cps = level.checkpoints.map((_, ci) => solve(i, ci));
-    const ms = Date.now() - t0;
-    const head = `${String(i + 1).padStart(2)}面 ${level.name.padEnd(8, '　')} 幅${level.w}マス スイカ${level.melons.length} CP${level.checkpoints.length}`;
-    if (r.ok && cps.every((c) => c.ok) && !errors.length) {
-      console.log(`OK  ${head}  最短クリア ${r.time.toFixed(1)}秒` +
-        (cps.length ? ` / CPから ${cps.map((c) => c.time.toFixed(1) + '秒').join(', ')}` : '') + `  (${ms}ms)`);
-      solutions[i + 1] = r.actions;
-    } else {
-      fail++;
-      console.log(`NG  ${head}`);
-      if (!r.ok) console.log(`    スタートから到達できず: 最も進んだ位置 x=${r.bestX.toFixed(1)}マス`);
-      cps.forEach((c, ci) => { if (!c.ok) console.log(`    チェックポイント${ci + 1}から到達できず: x=${c.bestX.toFixed(1)}`); });
-      errors.forEach((e) => console.log('    ' + e));
+// 1つのステージをすべて確認する(ワーカーの中で実行)
+function checkStage(i, quick) {
+  const { level, errors } = staticChecks(i);
+  const t0 = Date.now();
+  const starts = [-1].concat(level.checkpoints.map((_, ci) => ci));
+  const label = (s) => (s < 0 ? 'スタート' : `CP${s + 1}`);
+  const problems = [];
+  const times = [];
+  let main = null;
+  for (const s of starts) {
+    for (const ph of quick ? [0] : PHASES) {
+      const r = solve(i, s, { phase: ph });
+      if (!r.ok) problems.push(`${label(s)}から到達できず(タイミング+${ph}秒): x=${r.bestX.toFixed(1)}マス`);
+      else if (ph === 0) { times.push(r.time); if (s < 0) main = r; }
     }
   }
-  if (save) {
-    const out = path.join(__dirname, 'solutions.json');
-    fs.writeFileSync(out, JSON.stringify(solutions));
-    console.log('saved', out);
+  const nd = solve(i, -1, { noDash: true });
+  if (i < NO_DASH_REQUIRED) {
+    if (!nd.ok) problems.push(`ダッシュなしで到達できず: x=${nd.bestX.toFixed(1)}マス`);
+    for (const s of starts.slice(1)) {
+      const r = solve(i, s, { noDash: true });
+      if (!r.ok) problems.push(`${label(s)}からダッシュなしで到達できず`);
+    }
   }
-  process.exit(fail ? 1 : 0);
+  const ms = Date.now() - t0;
+  const head = `${String(i + 1).padStart(2)}面 ${level.name.padEnd(10, '　')} 幅${level.w}マス スイカ${level.melons.length} 敵${level.enemies.length} CP${level.checkpoints.length}`;
+  const all = problems.concat(errors);
+  if (!all.length) {
+    return { ok: true, actions: main.actions, time: times[0], text: `OK  ${head}  最短 ${times[0].toFixed(1)}秒` +
+      (times.length > 1 ? ` / CPから ${times.slice(1).map((t) => t.toFixed(1) + '秒').join(', ')}` : '') +
+      `  ${nd.ok ? 'ダッシュなしでもOK' : 'ダッシュ必須'}  (${(ms / 1000).toFixed(0)}秒)` };
+  }
+  return { ok: false, text: `NG  ${head}\n` + all.map((e) => '    ' + e).join('\n') };
 }
 
-main();
+function main() {
+  const { Worker } = require('worker_threads');
+  const os = require('os');
+  const args = process.argv.slice(2);
+  const save = args.includes('--save');
+  const quick = args.includes('--quick');
+  const only = args.filter((a) => /^\d+$/.test(a)).map((a) => parseInt(a, 10) - 1);
+  const targets = only.length ? only : STAGES.map((_, i) => i);
+  const solPath = path.join(__dirname, 'solutions.json');
+  const solutions = save && fs.existsSync(solPath) ? JSON.parse(fs.readFileSync(solPath)) : {};
+  const results = {};
+  let next = 0, running = 0;
+  const pool = Math.max(1, Math.min(os.cpus().length, targets.length));
+  console.log(`${targets.length}面を確認中…(${quick ? 'かんたん' : 'タイミング4通り'}、${pool}並列)`);
+  return new Promise((resolve) => {
+    const launch = () => {
+      if (next >= targets.length) { if (!running) resolve(); return; }
+      const i = targets[next++];
+      running++;
+      const w = new Worker(__filename, { workerData: { i, quick } });
+      w.on('message', (r) => { results[i] = r; console.log(r.text); });
+      w.on('error', (e) => { results[i] = { ok: false, text: `NG  ${i + 1}面: ${e.message}` }; console.log(results[i].text); });
+      w.on('exit', () => { running--; launch(); });
+    };
+    for (let k = 0; k < pool; k++) launch();
+  }).then(() => {
+    let fail = 0, total = 0;
+    for (const i of targets) {
+      const r = results[i];
+      if (!r || !r.ok) fail++;
+      else { solutions[i + 1] = r.actions; total += r.time; }
+    }
+    if (!only.length && !fail) console.log(`全10面の最短クリア合計: ${(total / 60).toFixed(1)}分 (ミスなし・最短ルートの場合)`);
+    if (save) { fs.writeFileSync(solPath, JSON.stringify(solutions)); console.log('saved', solPath); }
+    process.exit(fail ? 1 : 0);
+  });
+}
+
+const wt = require('worker_threads');
+if (wt.isMainThread) main();
+else wt.parentPort.postMessage(checkStage(wt.workerData.i, wt.workerData.quick));

@@ -27,12 +27,6 @@ html, body {
 
 /* ===== タッチボタン ===== */
 #controls { position: absolute; inset: 0; z-index: 6; pointer-events: none; }
-.pad {
-  position: absolute;
-  left: calc(var(--safe-l) + 18px);
-  bottom: calc(var(--safe-b) + 16px);
-  display: flex; gap: 12px;
-}
 .vbtn {
   width: clamp(62px, 19vh, 92px); height: clamp(62px, 19vh, 92px);
   border-radius: 24px;
@@ -43,15 +37,17 @@ html, body {
   transition: transform 0.05s, background 0.05s;
 }
 .vbtn svg { width: 55%; height: 55%; fill: rgba(255, 255, 255, 0.95); filter: drop-shadow(0 1px 1px rgba(0,0,0,0.35)); }
-.vbtn.jump {
+.vbtn.dash, .vbtn.jump {
   position: absolute;
-  right: calc(var(--safe-r) + 22px);
-  bottom: calc(var(--safe-b) + 18px);
-  width: clamp(84px, 26vh, 122px); height: clamp(84px, 26vh, 122px);
+  bottom: calc(var(--safe-b) + 16px);
+  width: clamp(88px, 27vh, 124px); height: clamp(88px, 27vh, 124px);
   border-radius: 50%;
-  background: rgba(255, 140, 110, 0.3);
+  flex-direction: column; gap: 0;
 }
-.vbtn.jump span { color: #fff; font-weight: 800; font-size: clamp(13px, 4.2vh, 18px); text-shadow: 0 1px 2px rgba(0,0,0,0.4); }
+.vbtn.dash { left: calc(var(--safe-l) + 20px); background: rgba(120, 180, 255, 0.3); }
+.vbtn.jump { right: calc(var(--safe-r) + 20px); background: rgba(255, 140, 110, 0.3); }
+.vbtn.dash svg, .vbtn.jump svg { width: 40%; height: 40%; }
+.vbtn span { color: #fff; font-weight: 800; font-size: clamp(12px, 3.8vh, 16px); text-shadow: 0 1px 2px rgba(0,0,0,0.45); }
 .vbtn.on { background: rgba(255, 228, 120, 0.65); transform: scale(0.93); box-shadow: none; }
 
 /* ===== HUD ===== */
@@ -68,6 +64,33 @@ html, body {
   display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
 }
 .melon-icon { width: 22px; height: 15px; }
+.chip .ic { font-size: 14px; line-height: 1; }
+#hud-power.adult { background: rgba(255, 200, 120, 0.95); }
+#hud-star.active { background: linear-gradient(90deg, #fff27a, #ffb8e0, #a8e8ff); animation: twinkle 0.6s infinite alternate; }
+@keyframes twinkle { to { filter: brightness(1.15); } }
+
+/* ===== 変身・無敵・再会の文字 ===== */
+#toast {
+  position: absolute; z-index: 9; left: 50%; top: 30%; transform: translate(-50%, -50%) scale(0.6);
+  pointer-events: none; white-space: nowrap; opacity: 0;
+  font-weight: 800; font-size: clamp(22px, 8vh, 38px); color: #fff;
+  text-shadow: 0 3px 0 rgba(74,52,40,0.55), 0 0 14px rgba(255,255,255,0.6);
+  transition: transform 0.25s cubic-bezier(.2,1.6,.4,1), opacity 0.2s;
+}
+#toast.show { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+#toast.adult { color: #ffd27a; }
+#toast.star { color: #fff27a; }
+#toast.guard { color: #bfe8ff; font-size: clamp(18px, 6vh, 28px); }
+#toast.reunion { color: #ff8ab8; font-size: clamp(26px, 10vh, 46px); top: 26%; }
+
+.story { font-size: 17px; font-weight: 800; line-height: 1.6; margin: 0 0 10px; }
+.story b { color: #e0603f; }
+.story-keys { display: flex; gap: 8px; justify-content: center; margin-bottom: 12px; flex-wrap: wrap; }
+.story-keys div { background: #fff; border: 2px solid rgba(74,52,40,0.2); border-radius: 12px; padding: 6px 10px; font-size: 13px; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.story-keys .k { font-weight: 800; color: #4a3428; }
+.story-keys .k.dash { color: #2f7ad8; }
+.story-keys .k.jump { color: #e0603f; }
+.clear-next { font-size: 15px; margin: -6px 0 12px; font-weight: 800; color: #2f7ad8; }
 .icon-btn {
   width: 46px; height: 46px; border-radius: 50%; border: none; padding: 0;
   background: rgba(255, 249, 236, 0.88); box-shadow: 0 2px 0 rgba(0,0,0,0.15);
@@ -104,10 +127,11 @@ html, body {
 .title-sub { color: #fff; font-weight: 800; letter-spacing: 0.15em; font-size: 14px; text-shadow: 0 2px 0 rgba(74,52,40,0.45); }
 .title-logo {
   margin: 4px 0 14px; color: #fff; font-weight: 800; line-height: 1.05;
-  font-size: clamp(30px, 10vh, 54px);
+  font-size: clamp(26px, 8.5vh, 46px);
   text-shadow: 0 3px 0 #e0603f, 0 6px 0 rgba(74,52,40,0.3);
 }
-.title-logo span { font-size: 1.3em; color: #fff7c2; }
+.title-logo span { color: #ffd2e4; }
+.title-logo em { font-style: normal; font-size: 1.35em; color: #fff7c2; }
 
 .menu { display: flex; flex-direction: column; gap: 8px; align-items: center; }
 .btn {
@@ -176,4 +200,6 @@ html, body {
   .howto div { padding: 5px 10px; }
   .stage-card { min-height: 56px; }
   .icon-btn { width: 42px; height: 42px; }
+  .chip { font-size: 12px; padding: 3px 10px; }
+  .story { font-size: 15px; }
 }

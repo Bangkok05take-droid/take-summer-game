@@ -72,6 +72,16 @@
       tone('square', 1046, 1046, 0.35, 0.08, 0.4); tone('triangle', 1318, 1318, 0.5, 0.25, 0.42);
     },
     land() { noise(0.05, 0.12, 800); },
+    transform() { [392, 523, 659, 784, 1046].forEach((f, i) => tone('square', f, f * 1.01, 0.1, 0.12, i * 0.06)); tone('triangle', 1046, 1568, 0.3, 0.25, 0.3); },
+    powerdown() { tone('square', 880, 330, 0.25, 0.12); tone('triangle', 660, 220, 0.3, 0.2, 0.05); },
+    star() { [1046, 1318, 1568, 2093, 1568, 2093].forEach((f, i) => tone('triangle', f, f, 0.08, 0.22, i * 0.05)); },
+    starend() { tone('sine', 1046, 523, 0.25, 0.15); },
+    starhit() { tone('square', 1200, 1800, 0.08, 0.1); tone('triangle', 600, 200, 0.15, 0.25); },
+    reunion() {
+      const notes = [784, 988, 1175, 1568, 1318, 1568];
+      notes.forEach((f, i) => tone('triangle', f, f, i === notes.length - 1 ? 0.5 : 0.14, 0.28, i * 0.11));
+      tone('sine', 2093, 2093, 0.6, 0.08, 0.6);
+    },
     pause() { tone('sine', 660, 440, 0.1, 0.15); },
     select() { tone('sine', 880, 1100, 0.07, 0.15); },
     boom() { noise(0.8, 0.35, 500); tone('sine', 90, 50, 0.5, 0.25); },
