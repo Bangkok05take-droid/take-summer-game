@@ -15,6 +15,14 @@ npx http-server -p 8123 .
 
 GitHub Pages などの静的ホスティングにそのまま置いても動きます。`index.html` をブラウザで直接開いても遊べます。
 
+## 公開URL(GitHub Pages)
+
+https://bangkok05take-droid.github.io/take-summer-game/
+
+GitHub Pages は無料プランでは Public リポジトリのみ公開できます。
+設定: リポジトリの Settings → Pages → Source「Deploy from a branch」→ ブランチ `claude/takenin-summer-game-em1re8`、フォルダ `/(root)` → Save。
+(`.nojekyll` は Pages の自動変換を止めて、ファイルをそのまま配信するためのものです)
+
 ## 遊び方
 
 - スマホは横向きで遊びます。左下の ◀ ▶ で移動、右下の「ジャンプ」で跳びます(長く押すと高く跳びます)。
