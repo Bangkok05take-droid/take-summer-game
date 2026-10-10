@@ -48,9 +48,11 @@
       games: 0, totalGames: 0, big: 0, reg: 0,
       in: 0, out: 0,
       lastPay: 0, bonusGot: 0, bonusType: null, bonusPlayed: 0,
+      jugrenChances: 0, jugrenHits: 0, revivals: 0,
       roles: {}, reachMe: {}, history: []
     };
     var self = this;
+    this.jugren = new NCS.JugRen();
     this.wallet = new NCS.Wallet(function (ev, data) { self.emit(ev, data); });
     // 表示用の互換プロパティ（実体は wallet）
     Object.defineProperty(this.stats, 'credit', { get: function () { return self.wallet.credit; }, enumerable: true });
@@ -101,10 +103,21 @@
     st.lastPay = 0;
 
     if (this.inBonus) {
-      // ボーナスゲーム: 抽選なし。第3段階でジャグ連の先行抽選をここに追加する
+      // ボーナスゲーム: 抽選なし（ジャグ連1G目はBIG開始時に先行抽選済み）
       this.flag = { bonus: null, small: 'GRAPE', mode: 'NORMAL', bonusGame: st.bonusType };
+      var pre = this.jugren.pre;
+      if (st.bonusType === 'BIG' && pre && pre.silentPekaAt === st.bonusPlayed + 1) this.flag.silentPeka = true;
     } else {
-      this.flag = this.lottery.lever(this.carry);
+      var jr = this.carry ? null : this.jugren.lever();
+      this.flag = this.lottery.lever(this.carry, jr);
+      if (jr) {
+        this.flag.jugren = jr.game;                 // チャンス何ゲーム目か（復活の4G目は 4）
+        if (jr.hiddenBonus) this.flag.hiddenBonus = jr.hiddenBonus; // 復活待ち（停止制御には渡さない）
+        if (jr.revival) { this.flag.revival = jr.revival; st.revivals++; }
+        if (jr.game === 1 && !jr.revival) st.jugrenChances++;
+        if ((jr.bonus && !jr.revival) || (jr.hiddenBonus && this.jugren.hidden && jr.game === this.jugren.hidden.at)) st.jugrenHits++;
+        if (jr.bonus) this.carryFromJugren = true;
+      }
       if (this.flag.bonus) this.carry = this.flag.bonus;
       st.games++;
       st.totalGames++;
@@ -114,8 +127,12 @@
     this.stoppedCount = 0;
     this.animDone = 0;
     this.phase = 'SPINNING';
+    // 演出（フリーズ・遅れ）は lever イベント中に startDelay を設定してリール始動を遅らせられる
+    this.startDelay = 0;
     this.emit('lever', { flag: this.flag, game: st.games });
-    this.reels.start();
+    var self = this;
+    if (this.startDelay > 0) setTimeout(function () { self.reels.start(); }, this.startDelay);
+    else this.reels.start();
     this.emit('state', {});
     return true;
   };
@@ -172,6 +189,9 @@
 
   Game.prototype.startBonus = function (type) {
     var st = this.stats;
+    if (type === 'BIG') this.jugren.onBigStart(NCS.CONFIG.BONUS_GAMES.BIG); // チャンス1G目を先行抽選
+    st.bonusFromJugren = !!this.carryFromJugren;
+    this.carryFromJugren = false;
     if (type === 'BIG') st.big++; else st.reg++;
     this.carry = null;
     this.inBonus = true;
@@ -185,12 +205,13 @@
   // ボーナス消化完了: COUNT（前回ボーナスからのゲーム数）をここで0に戻す
   Game.prototype.endBonus = function () {
     var st = this.stats;
-    var rec = { type: st.bonusType, games: st.bonusStartGames, got: st.bonusGot };
+    var rec = { type: st.bonusType, games: st.bonusStartGames, got: st.bonusGot, jugren: !!st.bonusFromJugren };
     st.history.unshift(rec);
     if (st.history.length > 20) st.history.pop();
     st.games = 0;
     this.inBonus = false;
     this.replayNext = false;
+    this.jugren.onBonusEnd(st.bonusType);
     this.emit('bonusEnd', rec);
     this.emit('state', {});
   };

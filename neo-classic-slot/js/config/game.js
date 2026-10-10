@@ -11,6 +11,21 @@
     BOX_SIZE: 1000,          // ドル箱1箱の枚数
     LEGEND_BOXES: 10,        // 万枚（10箱）達成演出
     BOX_FLASH_MS: 1600,      // ドル箱完成演出の長さ（テンポ重視で短め）
+
+    // ジャグ連チャンス（BIG終了後のみ・最大3G）。累計 1-(0.8×0.75×2/3) = 60%
+    JUGREN: { rates: [0.20, 0.25, 1 / 3], bigShare: 2 / 3 },
+
+    // プレミア演出（すべてBIG確定）。内部抽選とは別に、BIG成立ゲームのレバーONで演出抽選する
+    PREMIUM: {
+      revivalRate: 0.30,     // ジャグ連中BIG当選のうち復活フリーズになる割合
+      silentPekaRate: 0.40,  // 先行抽選で1G目BIG当選時、BIG消化中に無音先ペカする割合
+      // 各演出の発生率（BIG成立ゲーム）: 通常時 / ジャグ連チャンス中
+      normal: { freeze: 0.03, delay: 0.08, stop2: 0.05, vibe: 0.06 },
+      chance: { freeze: 0.10, delay: 0.20, stop2: 0.15, vibe: 0.15 },
+      freezeMs: 2800,        // レバーONフリーズ
+      delayMs: 450,          // 遅れ（リール始動の遅れ）
+      revivalMs: 3800        // 復活フリーズ
+    },
     PAYOUT_ACCUMULATE_IN_BONUS: true, // ボーナス消化中は PAYOUT 表示を加算表示にする
     BONUS_GAMES: { BIG: 30, REG: 30 },   // ボーナスのゲーム数
     BONUS_PAY: { BIG: 15, REG: 5 },      // ボーナス中1ゲームの払い出し（仮）

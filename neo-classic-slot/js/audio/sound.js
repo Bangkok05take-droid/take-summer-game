@@ -13,6 +13,9 @@
     bet: 'assets/sounds/bet.mp3',
     box: 'assets/sounds/box_complete.mp3',
     legend: 'assets/sounds/legendary.mp3',
+    premium_freeze: 'assets/sounds/premium_freeze.mp3',
+    premium_revival: 'assets/sounds/premium_revival.mp3',
+    premium_stop2: 'assets/sounds/premium_stop2.mp3',
     stop: 'assets/sounds/stop.mp3',
     pay: 'assets/sounds/pay.mp3',
     lamp: 'assets/sounds/lamp.mp3',
@@ -167,6 +170,25 @@
     if (!this.ready()) return;
     var notes = [523, 659, 784, 1047, 784, 1047];
     for (var i = 0; i < notes.length; i++) this.tone('jingle', 'square', notes[i], null, 0.14, 0.12, i * 0.12);
+  };
+
+  // プレミア演出音: freeze / revival / stop2
+  Sound.prototype.premium = function (kind) {
+    if (!this.ready()) return;
+    if (this.playFile('premium_' + kind, 'jingle')) return;
+    var i;
+    if (kind === 'freeze') {
+      this.tone('jingle', 'sine', 60, 40, 1.2, 0.5);            // 低い唸り
+      for (i = 0; i < 6; i++) this.tone('jingle', 'square', 2093 + i * 150, null, 0.08, 0.06, 1.4 + i * 0.12);
+    } else if (kind === 'revival') {
+      this.tone('jingle', 'sawtooth', 110, 880, 1.5, 0.25);       // 上昇音
+      var notes = [784, 988, 1175, 1568, 1976];
+      for (i = 0; i < notes.length; i++) this.tone('jingle', 'square', notes[i], null, 0.2, 0.12, 1.6 + i * 0.12);
+      for (i = 0; i < 20; i++) this.noise('jingle', 0.05, 0.08, 7000, 1.6 + i * 0.04);
+    } else {
+      this.tone('jingle', 'triangle', 1568, 3136, 0.25, 0.2);
+      this.tone('jingle', 'square', 2349, null, 0.2, 0.1, 0.1);
+    }
   };
 
   // 無音ペカリ等: すべての音を止める

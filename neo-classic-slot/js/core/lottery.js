@@ -33,18 +33,24 @@
   /*
    * carriedBonus: 持ち越し中のボーナス（無ければ null）
    */
-  Lottery.prototype.lever = function (carriedBonus) {
+  /*
+   * carriedBonus: 持ち越し中のボーナス
+   * jr: ジャグ連チャンス中の抽選結果（js/core/jugren.js）。チャンス中のボーナスは jr.bonus だけで決まり、
+   *     通常抽選は小役のみ（CARRY テーブル）で行う
+   */
+  Lottery.prototype.lever = function (carriedBonus, jr) {
     var flag = { bonus: carriedBonus || null, small: null, mode: 'NORMAL', newBonus: false };
-    var role, forcedMode = null;
+    var role, forcedMode = null, smallOnly = !!carriedBonus || !!jr;
 
     if (this.forced) {
       role = this.forced.role;
       forcedMode = this.forced.mode || null;
       this.forced = null;
-      if (carriedBonus && NCS.ROLES[role] && NCS.ROLES[role].bonus) role = null; // 持ち越し中は重複成立させない
+      if (smallOnly && NCS.ROLES[role] && NCS.ROLES[role].bonus) role = null; // 持ち越し中・チャンス中は小役のみ
     } else {
-      role = this.draw(carriedBonus ? 'CARRY' : 'NORMAL');
+      role = this.draw(smallOnly ? 'CARRY' : 'NORMAL');
     }
+    if (jr && jr.bonus) { flag.bonus = jr.bonus; flag.newBonus = true; }
 
     if (role && NCS.ROLES[role].bonus) {
       flag.bonus = role;

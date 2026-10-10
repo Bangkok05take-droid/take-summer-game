@@ -30,7 +30,20 @@
     { label: 'ハズレ', role: null }
   ];
 
-  var FUTURE_ITEMS = ['遅れ', 'ジャグ連1G目当選', 'ジャグ連2G目当選', 'ジャグ連3G目当選', '復活フリーズ', 'ボーナス中無音ペカリ'];
+  // プレミア・ジャグ連の強制（第3段階）
+  //   premium: 次のBIG成立ゲームで発生させる演出 / jugren: ジャグ連の当選を予約（BIG後のチャンスで発生）
+  var PREMIUM_ITEMS = [
+    { label: 'レバーONフリーズ', premium: 'freeze', hint: '次ゲームBIG成立＋フリーズ' },
+    { label: '遅れ', premium: 'delay', hint: '次ゲームBIG成立＋リール始動遅れ' },
+    { label: '第2停止プレミア', premium: 'stop2', hint: '次ゲームBIG成立＋第2停止で特殊告知' },
+    { label: 'スマホ振動', premium: 'vibe', hint: '次ゲームBIG成立＋告知時に長い振動' },
+    { label: 'ジャグ連1G目当選', jugren: { at: 1, type: 'BIG' }, hint: '次のBIG開始時の先行抽選で1G目BIG（BIGを引いて消化）' },
+    { label: 'ジャグ連2G目当選', jugren: { at: 2, type: 'BIG' }, hint: 'BIG後チャンス2G目でBIG' },
+    { label: 'ジャグ連3G目当選', jugren: { at: 3, type: 'BIG' }, hint: 'BIG後チャンス3G目でBIG' },
+    { label: '復活フリーズ', jugren: { at: 2, type: 'BIG', revival: true }, hint: 'チャンス2G目で内部当選→4G目レバーONで復活' },
+    { label: 'ボーナス中無音ペカリ', jugren: { at: 1, type: 'BIG', silentPeka: true }, hint: '次のBIG消化中に無音先ペカ（1G目BIGの先告知）' },
+    { label: '内部ボーナスを即開始', startNow: true, hint: '持ち越し中のボーナスを揃えた扱いで開始（確認用）' }
+  ];
 
   function DebugPanel(game, effects) {
     this.game = game;
@@ -49,7 +62,7 @@
     r.innerHTML =
       '<div class="dbg-head"><b>DEBUG</b><button id="dbg-close">閉じる</button></div>' +
       '<div class="dbg-sec"><div class="dbg-title">次ゲーム強制 <span id="dbg-forced" class="dbg-forced"></span></div><div id="dbg-force" class="dbg-grid"></div>' +
-      '<div class="dbg-title">今後の段階で実装</div><div id="dbg-future" class="dbg-grid"></div></div>' +
+      '<div class="dbg-title">プレミア・ジャグ連（第3段階）</div><div id="dbg-future" class="dbg-grid"></div></div>' +
       '<div class="dbg-sec"><div class="dbg-title">内部状態</div><pre id="dbg-state"></pre></div>' +
       '<div class="dbg-sec"><div class="dbg-title">検証</div>' +
       '<div class="dbg-grid"><button id="dbg-lot">抽選確率 100万G</button><button id="dbg-ctl">停止制御 総当たり</button>' +
@@ -66,8 +79,10 @@
       grid.appendChild(b);
     });
     var fut = r.querySelector('#dbg-future');
-    FUTURE_ITEMS.forEach(function (t) {
-      var b = document.createElement('button'); b.textContent = t; b.disabled = true; fut.appendChild(b);
+    PREMIUM_ITEMS.forEach(function (it) {
+      var b = document.createElement('button'); b.textContent = it.label; if (it.hint) b.title = it.hint;
+      b.addEventListener('click', function () { self.forcePremium(it); });
+      fut.appendChild(b);
     });
     r.querySelector('#dbg-close').addEventListener('click', function () { self.toggle(false); });
     r.querySelector('#dbg-lot').addEventListener('click', function () { self.runLottery(); });
@@ -89,6 +104,20 @@
     if (!hide) this.root.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
+  DebugPanel.prototype.forcePremium = function (it) {
+    var g = this.game, msg = '→ ' + it.label + (it.hint ? ' … ' + it.hint : '');
+    if (it.premium) {
+      this.effects.premium.force = it.premium;
+      if (!g.carry) g.lottery.forced = { role: 'BIG' };
+    } else if (it.jugren) {
+      g.jugren.forced = Object.assign({}, it.jugren);
+    } else if (it.startNow) {
+      if (g.carry && g.phase === 'IDLE' && !g.inBonus) { var t = g.carry; g.carry = null; g.startBonus(t); g.emit('state', {}); }
+      else msg += '（持ち越し中のボーナスがありません）';
+    }
+    this.root.querySelector('#dbg-forced').textContent = msg;
+  };
+
   DebugPanel.prototype.force = function (it) {
     var role = it.role;
     if (role === 'RANDOM_BONUS') {
@@ -108,7 +137,10 @@
     this.root.querySelector('#dbg-forced').textContent = '';
     this.flagText = 'フラグ: ' + (f.bonus ? f.bonus + (f.newBonus ? '(新規成立)' : '(持ち越し)') : '-') +
       ' / 小役: ' + (f.small || 'ハズレ') + (f.mode && f.mode !== 'NORMAL' ? ' / 出目モード: ' + f.mode : '') +
-      ' / 有効' + (f.lines ? f.lines.length : 5) + 'ライン' + (f.bonusGame ? ' / ボーナスゲーム' : '');
+      ' / 有効' + (f.lines ? f.lines.length : 5) + 'ライン' + (f.bonusGame ? ' / ボーナスゲーム' : '') +
+      (f.jugren ? '\nジャグ連チャンス ' + f.jugren + 'G目' + (f.hiddenBonus ? '（内部' + f.hiddenBonus + '・復活待ち）' : '') + (f.revival ? '（復活！' + f.revival.at + 'G目当選）' : '') : '') +
+      (f.silentPeka ? '\n無音先ペカ' : '') +
+      (this.game.jugren.pre && this.game.inBonus ? '\n先行抽選(チャンス1G目): ' + (this.game.jugren.pre.type || 'ハズレ') + (this.game.jugren.pre.silentPekaAt ? '（' + this.game.jugren.pre.silentPekaAt + 'G目に無音先ペカ）' : '') + (this.game.jugren.pre.revival ? '（復活）' : '') : '');
     this.renderStops();
   };
 
