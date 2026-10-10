@@ -11,6 +11,8 @@
   var FILES = {
     lever: 'assets/sounds/lever.mp3',
     bet: 'assets/sounds/bet.mp3',
+    box: 'assets/sounds/box_complete.mp3',
+    legend: 'assets/sounds/legendary.mp3',
     stop: 'assets/sounds/stop.mp3',
     pay: 'assets/sounds/pay.mp3',
     lamp: 'assets/sounds/lamp.mp3',
@@ -142,6 +144,23 @@
     if (!this.ready()) return;
     if (this.playFile('lamp', 'jingle')) return;
     this.tone('jingle', 'sawtooth', 880, 1760, 0.12, 0.15);
+  };
+
+  // ドル箱完成: メダルがジャラッと落ちる音＋上昇チャイム
+  Sound.prototype.boxComplete = function () {
+    if (!this.ready()) return;
+    if (this.playFile('box', 'jingle')) return;
+    for (var i = 0; i < 18; i++) this.noise('jingle', 0.05, 0.12, 5000 + (i % 4) * 800, i * 0.025);
+    [784, 988, 1175, 1568].forEach(function (f, k) { this.tone('jingle', 'triangle', f, null, 0.22, 0.14, 0.15 + k * 0.08); }, this);
+  };
+
+  // 万枚達成ファンファーレ
+  Sound.prototype.legendary = function () {
+    if (!this.ready()) return;
+    if (this.playFile('legend', 'jingle')) return;
+    var notes = [523, 659, 784, 1047, 784, 1047, 1319, 1568];
+    for (var i = 0; i < notes.length; i++) this.tone('jingle', 'square', notes[i], null, 0.22, 0.11, i * 0.15);
+    for (var j = 0; j < 30; j++) this.noise('jingle', 0.05, 0.1, 6000, 1.2 + j * 0.03);
   };
 
   Sound.prototype.bonusJingle = function () {

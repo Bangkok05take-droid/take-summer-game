@@ -12,9 +12,12 @@
  *   bonusEnd {type, games, got}           ボーナス消化完了（COUNTリセット）
  *   state    {}                           表示更新用
  *
- * メダルの流れ（実機準拠）:
- *   持ちメダル(medals) → クレジット(credit, 最大50) → ベット
- *   払い出しはクレジットへ。50を超えた分は持ちメダルへ。
+ *   boxComplete {added, boxes, legendary} ドル箱完成（wallet から中継）
+ *   boxBreak    {boxes}                    ドル箱取り崩し（wallet から中継）
+ *
+ * メダルの流れ（js/core/wallet.js）:
+ *   払い出し → クレジット(0〜999)。1,000枚ごとにドル箱へ。
+ *   BET → クレジットから。不足時はドル箱から必要分を自動補充。
  * 表示用の値:
  *   stats.games     … 前回ボーナス消化完了からのゲーム数（筐体 COUNT）
  *   stats.lastPay   … 現在（直前）のゲームの払い出し枚数（筐体 PAYOUT）
@@ -43,32 +46,21 @@
     this.lastLeverAt = 0;
     this.stats = {
       games: 0, totalGames: 0, big: 0, reg: 0,
-      credit: 0, medals: NCS.CONFIG.START_MEDALS, invest: 0, in: 0, out: 0,
+      in: 0, out: 0,
       lastPay: 0, bonusGot: 0, bonusType: null, bonusPlayed: 0,
       roles: {}, reachMe: {}, history: []
     };
+    var self = this;
+    this.wallet = new NCS.Wallet(function (ev, data) { self.emit(ev, data); });
+    // 表示用の互換プロパティ（実体は wallet）
+    Object.defineProperty(this.stats, 'credit', { get: function () { return self.wallet.credit; }, enumerable: true });
+    Object.defineProperty(this.stats, 'invest', { get: function () { return self.wallet.invest; }, enumerable: true });
     this.inBonus = false;
     this.bet = 0;       // 現在BETされている枚数（レバーONで消費）
     this.lastBet = 0;   // 直前ゲームのBET（リプレイ用）
     this.gameBet = 0;   // 進行中ゲームのBET
   }
 
-  // 持ちメダルをクレジットへ投入（不足時は貸出）
-  Game.prototype.insertMedals = function () {
-    var st = this.stats, max = NCS.CONFIG.CREDIT_MAX;
-    if (st.medals < max - st.credit) { st.medals += NCS.CONFIG.LEND_MEDALS; st.invest += NCS.CONFIG.LEND_MEDALS; }
-    var n = max - st.credit;
-    st.medals -= n;
-    st.credit += n;
-  };
-
-  // 払い出しをクレジットへ。上限超過分は持ちメダルへ。
-  Game.prototype.addCredit = function (n) {
-    var st = this.stats, max = NCS.CONFIG.CREDIT_MAX;
-    var toCredit = Math.min(n, max - st.credit);
-    st.credit += toCredit;
-    st.medals += n - toCredit;
-  };
 
   Game.prototype.on = function (ev, fn) { (this.listeners[ev] = this.listeners[ev] || []).push(fn); };
   Game.prototype.emit = function (ev, data) { (this.listeners[ev] || []).forEach(function (fn) { fn(data); }); };
@@ -77,9 +69,7 @@
   Game.prototype.addBet = function () {
     if (this.phase !== 'IDLE' || this.replayNext || this.bet >= NCS.MAX_BET) return false;
     var st = this.stats;
-    if (st.credit < 1) this.insertMedals();
-    if (st.credit < 1) return false; // 所持枚数を超えてBETしない
-    st.credit -= 1;
+    if (!this.wallet.spend(1)) return false; // 所持枚数を超えてBETしない（不足時はドル箱から自動補充）
     st.in += 1;
     this.bet++;
     this.emit('bet', { bet: this.bet });
@@ -154,7 +144,7 @@
     var pay = NCS.payout(j.wins);
     var st = this.stats;
     if (this.flag.bonusGame) pay = { pay: NCS.CONFIG.BONUS_PAY[this.flag.bonusGame], replay: false };
-    this.addCredit(pay.pay);
+    this.wallet.add(pay.pay);
     st.out += pay.pay;
     st.lastPay = pay.pay;
     if (this.inBonus) st.bonusGot += pay.pay;

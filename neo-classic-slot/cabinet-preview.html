@@ -53,12 +53,14 @@
   <script src="js/core/lottery.js"></script>
   <script src="js/core/judge.js"></script>
   <script src="js/core/reelControl.js"></script>
+  <script src="js/core/wallet.js"></script>
   <script src="js/core/game.js"></script>
   <script src="js/core/autoPlay.js"></script>
   <script src="js/view/symbolArt.js"></script>
   <script src="js/view/reelView.js"></script>
   <script src="js/view/cabinet.js"></script>
   <script src="js/view/dataScreen.js"></script>
+  <script src="js/view/dollarBox.js"></script>
   <script src="js/audio/sound.js"></script>
   <script src="js/effects/effects.js"></script>
   <script>
@@ -90,6 +92,12 @@
     };
     var effects = new NCS.Effects(game, ui, sound);
     var auto = new NCS.AutoPlay(game, view);
+    // ドル箱: 完成演出・専用画面。筐体下部のカウンターをタップで開く
+    var dbx = new NCS.DollarBoxView(game, sound);
+    var boxEl = cab.el('boxCounter');
+    boxEl.insertAdjacentHTML('beforeend', '<div class="box-counter"><canvas width="172" height="144"></canvas><span>× 0 BOX</span></div>');
+    NCS.drawDollarBox(boxEl.querySelector('canvas').getContext('2d'), 14, 34, 130, 1);
+    cab.onTap('boxCounter', function () { dbx.openCollection(); });
     auto.on(function (e) {
       effects.autoRunning = e.running;
       cab.setState('autoPlay', e.enabled ? 'on' : 'off');
@@ -155,6 +163,7 @@
       cab.setState('lampWait', idle && Date.now() - game.lastLeverAt < NCS.CONFIG.GAME_WAIT_MS ? 'on' : 'off');
       cab.setState('lampInsert', idle && !game.replayNext && game.bet === 0 ? 'on' : 'off');
       cab.setDisplay('creditDisplay', s.credit);
+      boxEl.querySelector('.box-counter span').textContent = '× ' + game.wallet.boxes() + ' BOX';
       cab.setDisplay('countDisplay', game.inBonus ? s.bonusPlayed : s.games); // ボーナス中は消化ゲーム数
       cab.setDisplay('payoutDisplay', game.inBonus && NCS.CONFIG.PAYOUT_ACCUMULATE_IN_BONUS ? s.bonusGot : s.lastPay);
       cab.setVisible('bonusGotDisplay', showBonusGot);
@@ -163,7 +172,7 @@
         '縮小率 ' + cab.scale.toFixed(3) + ' / 画面 ' + window.innerWidth + '×' + window.innerHeight +
         '\nSTOPボタン表示 ' + Math.round(125 * cab.scale) + 'px（タッチ範囲 ' + Math.round(185 * cab.scale) + 'px）' +
         ' / LEVER ON ' + Math.round(330 * cab.scale) + 'px' +
-        '\nCREDIT ' + s.credit + ' / 持ちメダル ' + s.medals + ' / BIG ' + s.big + ' / REG ' + s.reg + ' / 総G ' + s.totalGames + '（MENUでデータ画面）' +
+        '\nCREDIT ' + s.credit + ' / ドル箱 ' + game.wallet.boxes() + '箱 / 総所持 ' + game.wallet.holdings() + ' / BIG ' + s.big + ' / REG ' + s.reg + ' / 総G ' + s.totalGames + '（MENUでデータ画面）' +
         (game.inBonus ? '\n★' + s.bonusType + ' 消化中 ' + s.bonusPlayed + '/' + NCS.CONFIG.BONUS_GAMES[s.bonusType] + 'G 獲得' + s.bonusGot + '枚' + (auto.running ? '（オート）' : '') : '') +
         (auto.enabled ? '\nAUTO PLAY: ON' : '');
       requestAnimationFrame(loop);
@@ -193,7 +202,7 @@
 
     document.getElementById('open-data').addEventListener('click', function () { data.open(); });
 
-    NCS.preview = { cab: cab, view: view, game: game, effects: effects, auto: auto };
+    NCS.preview = { cab: cab, view: view, game: game, effects: effects, auto: auto, dbx: dbx };
   })();
   </script>
 </body>

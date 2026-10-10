@@ -63,7 +63,7 @@
         states: { off: 'lamps/lucky_off.png', on: 'lamps/lucky_on.png' }, anim: 'glow' },
 
       // ---- ⑦ CREDIT / COUNT / PAYOUT ----
-      { id: 'creditDisplay', type: 'display', rect: [125, 1022, 137, 78], z: 30, label: 'CREDIT', digits: 2 },
+      { id: 'creditDisplay', type: 'display', rect: [125, 1022, 137, 78], z: 30, label: 'CREDIT', digits: 3 },
       { id: 'countDisplay',  type: 'display', rect: [795, 1022, 112, 78], z: 30, label: 'COUNT',  digits: 4 },
       { id: 'payoutDisplay', type: 'display', rect: [933, 1022, 108, 78], z: 30, label: 'PAYOUT', digits: 3 },
       // ボーナス合計獲得枚数（ボーナス中〜終了後の次ゲームまで、上部パネル中央に表示）
@@ -94,6 +94,10 @@
         states: { off: 'buttons/auto_off.png', on: 'buttons/auto_on.png', pressed: 'buttons/auto_pressed.png' } },
       { id: 'menu', type: 'image', rect: [750, 1600, 150, 100], z: 50, hit: 20, label: 'MENU',
         states: { off: 'buttons/menu_off.png', pressed: 'buttons/menu_pressed.png' } },
+
+      // ---- ドル箱カウンター（タップでドル箱専用画面）。筐体下部スピーカー部の左端 ----
+      { id: 'boxCounter', type: 'image', rect: [36, 1792, 300, 96], z: 50, hit: 16, label: 'BOX',
+        states: { normal: 'boxes/box_counter.png' } },
 
       // ---- ⑧ BIG / REG 演出表示（リール窓の上に重ねる演出レイヤー） ----
       { id: 'bonusEffect', type: 'effect', rect: [145, 545, 790, 420], z: 60, label: 'BIG/REG演出', passThrough: true,

@@ -26,6 +26,12 @@
     autoBtn.textContent = e.enabled ? 'AUTO ON' : 'AUTO';
   });
 
+  var dbx = new NCS.DollarBoxView(game, sound);
+  var boxBtn = document.getElementById('box-open');
+  boxBtn.addEventListener('click', function () { dbx.openCollection(); });
+  function syncBox() { boxBtn.textContent = 'BOX×' + game.wallet.boxes(); }
+  game.on('state', syncBox); syncBox();
+
   var data = new NCS.DataScreen(game);
   document.getElementById('data-open').addEventListener('click', function () { data.open(); });
 
@@ -37,5 +43,5 @@
     NCS.debug = panel;
   }
 
-  NCS.app = { game: game, view: view, ui: ui, effects: effects, sound: sound, auto: auto };
+  NCS.app = { game: game, view: view, ui: ui, effects: effects, sound: sound, auto: auto, dbx: dbx };
 })();

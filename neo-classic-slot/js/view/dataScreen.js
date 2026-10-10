@@ -12,12 +12,16 @@
     var el = document.createElement('div');
     el.className = 'data-screen';
     el.hidden = true;
-    el.innerHTML = '<div class="data-box"><div class="data-head"><b>DATA</b><button type="button">閉じる</button></div><div class="data-body"></div></div>';
+    el.innerHTML = '<div class="data-box"><div class="data-head"><b>DATA</b><button type="button">閉じる</button></div><div class="data-body"></div>' +
+      '<button type="button" class="data-reset">セーブデータを初期化</button></div>';
     document.body.appendChild(el);
     this.el = el;
     this.body = el.querySelector('.data-body');
     var self = this;
     el.querySelector('button').addEventListener('click', function () { self.close(); });
+    el.querySelector('.data-reset').addEventListener('click', function () {
+      if (window.confirm('クレジット・ドル箱・最高記録を初期化しますか？')) { game.wallet.reset(); game.emit('state', {}); }
+    });
     el.addEventListener('click', function (e) { if (e.target === el) self.close(); });
     game.on('state', function () { if (!el.hidden) self.render(); });
   }
@@ -36,7 +40,9 @@
       ['ボーナス合算', prob(s.big + s.reg, T)],
       ['直近ボーナス獲得枚数', s.history.length ? s.history[0].got + '枚' : '-'],
       ['クレジット', s.credit],
-      ['持ちメダル', s.medals],
+      ['ドル箱', this.game.wallet.boxes() + '箱（' + this.game.wallet.boxMedals + '枚）'],
+      ['総所持枚数', this.game.wallet.holdings()],
+      ['最高到達枚数', this.game.wallet.maxHoldings],
       ['差枚数', (diff > 0 ? '+' : '') + diff],
       ['投資（貸出）', s.invest]
     ];

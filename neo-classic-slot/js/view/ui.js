@@ -68,7 +68,7 @@
   UI.prototype.update = function () {
     var s = this.game.stats;
     this.el.medals.textContent = s.credit;
-    this.el.hold.textContent = s.medals;
+    this.el.hold.textContent = this.game.wallet.holdings();
     this.el.games.textContent = this.game.inBonus ? s.bonusPlayed : s.games;
     this.el.total.textContent = s.totalGames;
     this.el.big.textContent = s.big;
