@@ -1,6 +1,7 @@
 /*
  * 図柄定義
- * img: 画像素材のパス（未配置ならプレースホルダー描画）。Gemini素材はここを差し替える。
+ * img: 画像素材のパス（未配置ならプレースホルダー描画）。画像素材はここを差し替える。
+ * 図柄コード（'7','B' など）は配列・役で使う内部IDなので変更しないこと。
  */
 (function (g) {
   var NCS = (g.NCS = g.NCS || {});
@@ -13,6 +14,6 @@
     'L': { name: 'ベル',     short: 'BL', color: '#e8b400', img: 'assets/images/symbols/sym_bell.png' },
     'R': { name: 'リプレイ', short: 'RP', color: '#1a6fd0', img: 'assets/images/symbols/sym_replay.png' },
     'M': { name: '山',       short: '山', color: '#1f8a3a', img: 'assets/images/symbols/sym_mountain.png' },
-    'S': { name: 'スター',   short: '★', color: '#ff7a00', img: 'assets/images/symbols/sym_star.png' }
+    'S': { name: 'ピエロ',   short: 'PI', color: '#ff7a00', img: 'assets/images/symbols/sym_pierrot.png' }
   };
 })(typeof window !== 'undefined' ? window : globalThis);

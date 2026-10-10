@@ -43,7 +43,7 @@ function evaluate(bestSoFar) {
     pen += (100 - v.avg) * 1000;
   });
   if (pen > bestSoFar) return { pen: pen, detail: detail };
-  [null, 'BELL', 'STAR', 'CHERRY'].forEach(function (r) {
+  [null, 'BELL', 'PIERROT', 'CHERRY'].forEach(function (r) {
     var v = rootValue({ bonus: null, small: r }, 'NORMAL');
     if (v.min < 0) pen += 1e6;
     if (r === 'CHERRY') { detail.CHERRY = v.avg.toFixed(1); pen += Math.max(0, 45 - v.avg) * 50; }

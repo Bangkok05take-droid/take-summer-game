@@ -13,7 +13,7 @@
 
   function cases() {
     var list = [];
-    [null, 'GRAPE', 'CHERRY', 'BELL', 'STAR', 'REPLAY'].forEach(function (s) {
+    [null, 'GRAPE', 'CHERRY', 'BELL', 'PIERROT', 'REPLAY'].forEach(function (s) {
       list.push({ bonus: null, small: s, mode: 'NORMAL' });
     });
     ['BIG', 'REG'].forEach(function (b) {

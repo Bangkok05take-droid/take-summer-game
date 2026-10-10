@@ -13,7 +13,7 @@
     this.el = {
       lamp: $('lamp'), lever: $('lever'), msg: $('message'),
       stops: [].slice.call(document.querySelectorAll('.stop')),
-      medals: $('v-medals'), pay: $('v-pay'), games: $('v-games'),
+      medals: $('v-medals'), hold: $('v-hold'), pay: $('v-pay'), games: $('v-games'),
       big: $('v-big'), reg: $('v-reg'), diff: $('v-diff'), total: $('v-total'),
       bonusFlash: $('bonus-flash')
     };
@@ -62,7 +62,8 @@
 
   UI.prototype.update = function () {
     var s = this.game.stats;
-    this.el.medals.textContent = s.medals;
+    this.el.medals.textContent = s.credit;
+    this.el.hold.textContent = s.medals;
     this.el.games.textContent = s.games;
     this.el.total.textContent = s.totalGames;
     this.el.big.textContent = s.big;
@@ -79,7 +80,8 @@
 
   UI.prototype.showResult = function (e) {
     this.view.showWins(e.wins);
-    this.el.pay.textContent = e.pay;
+    var st = this.game.stats;
+    this.el.pay.textContent = this.game.inBonus && NCS.CONFIG.PAYOUT_ACCUMULATE_IN_BONUS ? st.bonusGot : e.pay;
     var parts = [];
     e.wins.forEach(function (w) {
       var r = NCS.ROLES[w.role];

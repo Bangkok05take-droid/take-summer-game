@@ -6,12 +6,16 @@
   <meta name="theme-color" content="#0b0b14">
   <title>NEO CLASSIC SLOT</title>
   <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/cabinet.css">
 </head>
 <body>
   <div id="app">
     <header class="top">
       <h1>NEO CLASSIC SLOT</h1>
-      <button id="debug-toggle" class="debug-toggle" hidden>DEBUG</button>
+      <span>
+        <button id="data-open" class="debug-toggle">DATA</button>
+        <button id="debug-toggle" class="debug-toggle" hidden>DEBUG</button>
+      </span>
     </header>
 
     <section class="cabinet">
@@ -23,13 +27,13 @@
       <div class="panel">
         <div id="lamp" class="lamp"><span>NEO!</span></div>
         <div class="info">
-          <div><label>MEDAL</label><b id="v-medals">0</b></div>
+          <div><label>CREDIT</label><b id="v-medals">0</b></div>
           <div><label>PAY</label><b id="v-pay">0</b></div>
           <div><label>GAME</label><b id="v-games">0</b></div>
           <div><label>BIG</label><b id="v-big">0</b></div>
           <div><label>REG</label><b id="v-reg">0</b></div>
           <div><label>差枚</label><b id="v-diff">0</b></div>
-          <div class="wide"><label>TOTAL</label><b id="v-total">0</b></div>
+          <div class="wide"><label>持ちメダル / TOTAL</label><b><span id="v-hold">0</span> / <span id="v-total">0</span></b></div>
         </div>
       </div>
       <div id="message" class="message"></div>
@@ -64,6 +68,7 @@
   <script src="js/view/symbolArt.js"></script>
   <script src="js/view/reelView.js"></script>
   <script src="js/view/ui.js"></script>
+  <script src="js/view/dataScreen.js"></script>
   <script src="js/audio/sound.js"></script>
   <script src="js/effects/effects.js"></script>
   <script src="js/debug/debugPanel.js"></script>

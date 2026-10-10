@@ -7,6 +7,8 @@
   NCS.CONFIG = {
     DEBUG_PANEL: true,       // 開発中のみ true。URL に ?debug=0 / ?debug=1 で上書き可
     START_MEDALS: 1000,      // 初期持ちメダル
+    CREDIT_MAX: 50,          // クレジット上限
+    PAYOUT_ACCUMULATE_IN_BONUS: true, // ボーナス消化中は PAYOUT 表示を加算表示にする
     LEND_MEDALS: 1000,       // メダル不足時の自動追加（投資として集計）
     GAME_WAIT_MS: 0,         // 1ゲームの最低時間（実機風なら 4100）
     REEL_RPM: 80,            // 定速回転数（80回転/分 = 約28コマ/秒）

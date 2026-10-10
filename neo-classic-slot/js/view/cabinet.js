@@ -11,6 +11,7 @@
  *   cab.el(id)                … パーツのDOM要素
  *   cab.setState(id, state)   … 画像状態の切替（例: setState('luckyLamp', 'on')）
  *   cab.setDisplay(id, value) … CREDIT/COUNT/PAYOUT の数字
+ *   cab.setVisible(id, on)    … パーツの表示／非表示
  *   cab.onTap(id, fn)         … タップ時の処理（pointerdown）
  *   cab.scale                 … 現在の縮小率
  *   cab.setGuide(opacity)     … 正式デザイン画像を重ねて位置合わせ確認（0で非表示）
@@ -55,6 +56,7 @@
       el.style.width = p.rect[2] + 'px';
       el.style.height = p.rect[3] + 'px';
       el.style.zIndex = p.z || 0;
+      if (p.hidden) el.hidden = true;
       if (p.type !== 'reels') {
         var ph = document.createElement('span');
         ph.className = 'cab-label';
@@ -134,6 +136,11 @@
     var max = Math.pow(10, n) - 1;
     var v = Math.max(0, Math.min(max, Math.floor(value)));
     pt.el.querySelector('.cab-digits').textContent = String(v);
+  };
+
+  Cabinet.prototype.setVisible = function (id, on) {
+    var el = this.el(id);
+    if (el) el.hidden = !on;
   };
 
   Cabinet.prototype.onTap = function (id, fn) {

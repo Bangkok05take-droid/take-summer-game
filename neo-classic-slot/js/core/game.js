@@ -7,8 +7,18 @@
  *   stop     {reel, nth, press, slide, pos, determined}  停止制御決定（描画前）
  *   stopped  {reel, nth, determined}      リール停止アニメ完了
  *   result   {wins, reachMe, pay, replay, bonusAligned} 全停止後
- *   bonus    {type}                       ボーナス図柄揃い
+ *   bonus    {type}                       ボーナス図柄揃い（＝ボーナス開始）
+ *   bonusEnd {type, games, got}           ボーナス消化完了（COUNTリセット）
  *   state    {}                           表示更新用
+ *
+ * メダルの流れ（実機準拠）:
+ *   持ちメダル(medals) → クレジット(credit, 最大50) → ベット
+ *   払い出しはクレジットへ。50を超えた分は持ちメダルへ。
+ * 表示用の値:
+ *   stats.games     … 前回ボーナス消化完了からのゲーム数（筐体 COUNT）
+ *   stats.lastPay   … 現在（直前）のゲームの払い出し枚数（筐体 PAYOUT）
+ *   stats.bonusGot  … 消化中／直近ボーナスの合計獲得枚数
+ *   stats.totalGames… 総ゲーム数（データ画面）
  */
 (function (g) {
   var NCS = (g.NCS = g.NCS || {});
@@ -28,10 +38,29 @@
     this.lastLeverAt = 0;
     this.stats = {
       games: 0, totalGames: 0, big: 0, reg: 0,
-      medals: NCS.CONFIG.START_MEDALS, invest: 0, in: 0, out: 0,
+      credit: 0, medals: NCS.CONFIG.START_MEDALS, invest: 0, in: 0, out: 0,
+      lastPay: 0, bonusGot: 0, bonusType: null,
       roles: {}, reachMe: {}, history: []
     };
+    this.inBonus = false;
   }
+
+  // 持ちメダルをクレジットへ投入（不足時は貸出）
+  Game.prototype.insertMedals = function () {
+    var st = this.stats, max = NCS.CONFIG.CREDIT_MAX;
+    if (st.medals < max - st.credit) { st.medals += NCS.CONFIG.LEND_MEDALS; st.invest += NCS.CONFIG.LEND_MEDALS; }
+    var n = max - st.credit;
+    st.medals -= n;
+    st.credit += n;
+  };
+
+  // 払い出しをクレジットへ。上限超過分は持ちメダルへ。
+  Game.prototype.addCredit = function (n) {
+    var st = this.stats, max = NCS.CONFIG.CREDIT_MAX;
+    var toCredit = Math.min(n, max - st.credit);
+    st.credit += toCredit;
+    st.medals += n - toCredit;
+  };
 
   Game.prototype.on = function (ev, fn) { (this.listeners[ev] = this.listeners[ev] || []).push(fn); };
   Game.prototype.emit = function (ev, data) { (this.listeners[ev] || []).forEach(function (fn) { fn(data); }); };
@@ -44,11 +73,12 @@
 
     var st = this.stats;
     if (!this.replayNext) {
-      if (st.medals < NCS.BET) { st.medals += NCS.CONFIG.LEND_MEDALS; st.invest += NCS.CONFIG.LEND_MEDALS; }
-      st.medals -= NCS.BET;
+      if (st.credit < NCS.BET) this.insertMedals();
+      st.credit -= NCS.BET;
       st.in += NCS.BET;
     }
     this.replayNext = false;
+    st.lastPay = 0;
 
     this.flag = this.lottery.lever(this.carry);
     if (this.flag.bonus) this.carry = this.flag.bonus;
@@ -87,8 +117,10 @@
     var j = NCS.judge(this.control.stops, this.control.order);
     var pay = NCS.payout(j.wins);
     var st = this.stats;
-    st.medals += pay.pay;
+    this.addCredit(pay.pay);
     st.out += pay.pay;
+    st.lastPay = pay.pay;
+    if (this.inBonus) st.bonusGot += pay.pay;
     this.replayNext = pay.replay;
 
     j.wins.forEach(function (w) { st.roles[w.role] = (st.roles[w.role] || 0) + 1; });
@@ -101,15 +133,33 @@
     this.emit('result', { wins: j.wins, reachMe: j.reachMe, pay: pay.pay, replay: pay.replay, bonusAligned: bonusAligned, flag: this.flag, stops: this.control.stops.slice(), order: this.control.order.slice() });
 
     if (bonusAligned) {
-      // 第2段階でボーナスゲーム（30G）に置き換える。現状は即終了扱い。
-      if (bonusAligned === 'BIG') st.big++; else st.reg++;
-      st.history.unshift({ type: bonusAligned, games: st.games });
-      if (st.history.length > 20) st.history.pop();
-      st.games = 0;
-      this.carry = null;
-      this.emit('bonus', { type: bonusAligned });
+      this.startBonus(bonusAligned);
+      // 第2段階で30Gのボーナスゲームに置き換える。現状は開始直後に消化完了扱い。
+      this.endBonus();
     }
     this.emit('state', {});
+  };
+
+  Game.prototype.startBonus = function (type) {
+    var st = this.stats;
+    if (type === 'BIG') st.big++; else st.reg++;
+    this.carry = null;
+    this.inBonus = true;
+    st.bonusType = type;
+    st.bonusGot = 0;
+    st.bonusStartGames = st.games; // 当選までのゲーム数（履歴用）
+    this.emit('bonus', { type: type });
+  };
+
+  // ボーナス消化完了: COUNT（前回ボーナスからのゲーム数）をここで0に戻す
+  Game.prototype.endBonus = function () {
+    var st = this.stats;
+    var rec = { type: st.bonusType, games: st.bonusStartGames, got: st.bonusGot };
+    st.history.unshift(rec);
+    if (st.history.length > 20) st.history.pop();
+    st.games = 0;
+    this.inBonus = false;
+    this.emit('bonusEnd', rec);
   };
 
   NCS.Game = Game;

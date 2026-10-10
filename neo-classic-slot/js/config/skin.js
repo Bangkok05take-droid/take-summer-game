@@ -13,6 +13,7 @@
  *   hit    : タッチ判定を見た目より広げる量（px・デザイン座標）。スマホでの押しやすさ用。
  *   anim   : 状態切替時などに付与するアニメーション名（css/cabinet.css）
  *   label  : 画像が無い時のプレースホルダー表示名
+ *   hidden : true なら初期状態で非表示（cab.setVisible で切替）
  *
  * 画像が未配置・読込失敗のパーツはプレースホルダー（半透明の枠＋名前）で表示される。
  */
@@ -64,7 +65,9 @@
       // ---- ⑦ CREDIT / COUNT / PAYOUT ----
       { id: 'creditDisplay', type: 'display', rect: [125, 1022, 137, 78], z: 30, label: 'CREDIT', digits: 2 },
       { id: 'countDisplay',  type: 'display', rect: [795, 1022, 112, 78], z: 30, label: 'COUNT',  digits: 4 },
-      { id: 'payoutDisplay', type: 'display', rect: [933, 1022, 108, 78], z: 30, label: 'PAYOUT', digits: 2 },
+      { id: 'payoutDisplay', type: 'display', rect: [933, 1022, 108, 78], z: 30, label: 'PAYOUT', digits: 3 },
+      // ボーナス合計獲得枚数（ボーナス中〜終了後の次ゲームまで、上部パネル中央に表示）
+      { id: 'bonusGotDisplay', type: 'display', rect: [395, 434, 290, 88], z: 35, label: 'BONUS獲得', digits: 3, hidden: true },
 
       // ---- ④ STOP ボタン ×3 ----
       { id: 'stop0', type: 'image', rect: [303, 1328, 125, 125], z: 50, hit: 30, label: 'STOP', reel: 0,

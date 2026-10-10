@@ -15,7 +15,7 @@
       { role: 'CHERRY', weight: 1820 },  // 1/36.0
       { role: 'GRAPE',  weight: 10923 }, // 1/6.0
       { role: 'BELL',   weight: 64 },    // 1/1024
-      { role: 'STAR',   weight: 64 },    // 1/1024
+      { role: 'PIERROT', weight: 64 },   // 1/1024
       { role: 'REPLAY', weight: 8978 }   // 1/7.3
     ],
     // ボーナス内部中（持ち越し中）: ボーナスは抽選しない
@@ -23,7 +23,7 @@
       { role: 'CHERRY', weight: 1820 },
       { role: 'GRAPE',  weight: 10923 },
       { role: 'BELL',   weight: 64 },
-      { role: 'STAR',   weight: 64 },
+      { role: 'PIERROT', weight: 64 },
       { role: 'REPLAY', weight: 8978 }
     ]
   };

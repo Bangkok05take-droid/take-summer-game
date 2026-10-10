@@ -22,7 +22,7 @@
     { label: 'ブドウ', role: 'GRAPE' },
     { label: 'チェリー', role: 'CHERRY', hint: '左BAR狙い' },
     { label: 'ベル', role: 'BELL' },
-    { label: 'スター', role: 'STAR' },
+    { label: 'ピエロ', role: 'PIERROT' },
     { label: 'リプレイ', role: 'REPLAY' },
     { label: 'ハズレ', role: null }
   ];

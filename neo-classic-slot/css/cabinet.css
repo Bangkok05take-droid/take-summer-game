@@ -86,3 +86,33 @@
 @keyframes cab-blink { 50% { filter: brightness(0.6); } }
 .anim-bonusIn { animation: cab-bonus-in 0.5s cubic-bezier(.2, 1.6, .4, 1) both; }
 @keyframes cab-bonus-in { from { transform: scale(0.2); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.cab-part[hidden] { display: none; }
+.cab-display[data-part="bonusGotDisplay"] { background: rgba(26, 3, 6, 0.9); border: 3px solid #f2c94c; }
+.cab-display[data-part="bonusGotDisplay"] .cab-digits { justify-content: center; padding: 0; color: #ffd84a; text-shadow: 0 0 10px rgba(255, 200, 40, 0.9); }
+.cab-display[data-part="bonusGotDisplay"] .cab-digits::after { content: '枚'; font-size: 40px; margin-left: 8px; }
+
+/* ---- データ画面（js/view/dataScreen.js） ---- */
+.data-screen {
+  position: fixed; inset: 0; z-index: 200;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex; align-items: center; justify-content: center;
+  padding: 16px;
+}
+.data-screen[hidden] { display: none; }
+.data-box {
+  width: 100%; max-width: 420px; max-height: 90vh; overflow-y: auto;
+  background: #120d1c; border: 2px solid #f2c94c; border-radius: 12px;
+  padding: 12px 14px; color: #f4f1ff; font: 14px system-ui, sans-serif;
+}
+.data-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.data-head b { color: #f2c94c; font-size: 18px; letter-spacing: 0.1em; }
+.data-head button { font-size: 14px; padding: 8px 14px; border-radius: 8px; background: #2a2a3a; color: #fff; border: 1px solid #555; }
+.data-table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.data-table th, .data-table td { padding: 5px 4px; border-bottom: 1px solid #2c2540; }
+.data-table th { text-align: left; color: #a49fc4; font-weight: normal; }
+.data-table td { text-align: right; color: #ffe27a; }
+.data-table.hist th { text-align: right; }
+.data-table td.big { color: #ff5a6a; font-weight: bold; }
+.data-table td.reg { color: #6aa8ff; font-weight: bold; }
+.data-sub { margin: 14px 0 4px; color: #f0a; font-weight: bold; }
+.data-none { color: #777; }

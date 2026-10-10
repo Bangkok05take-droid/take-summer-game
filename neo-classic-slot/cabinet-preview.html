@@ -33,10 +33,13 @@
     <button data-toggle="lampReplay:off,on">REPLAY</button>
     <button data-toggle="lampWait:off,on">WAIT</button>
     <button data-toggle="lampInsert:off,on">INSERT</button>
+    <button id="toggle-got">BONUS獲得枚数</button>
     <b>ゲーム（第1段階のロジックをそのまま接続）</b>
     <button data-force="BIG">次G BIG</button>
     <button data-force="REG">次G REG</button>
     <button data-force="CHERRY_MISS">次G チェリー外れ</button>
+    <button data-force="PIERROT">次G ピエロ</button>
+    <button id="open-data">データ画面</button>
     <div id="info"></div>
   </div>
 
@@ -54,6 +57,7 @@
   <script src="js/view/symbolArt.js"></script>
   <script src="js/view/reelView.js"></script>
   <script src="js/view/cabinet.js"></script>
+  <script src="js/view/dataScreen.js"></script>
   <script src="js/audio/sound.js"></script>
   <script src="js/effects/effects.js"></script>
   <script>
@@ -67,12 +71,13 @@
     var view = cab.createReelView();
     var sound = new NCS.Sound();
     var game = new NCS.Game({ reels: view });
-    var lastPay = 0;
+    var data = new NCS.DataScreen(game);
+    var showBonusGot = false; // ボーナス獲得枚数表示（終了後は次のレバーONまで残す）
 
     // Effects が呼ぶ表示インターフェースを筐体パーツへ割り当てるアダプタ
     var ui = {
       setLamp: function (on) { cab.setState('luckyLamp', on ? 'on' : 'off'); },
-      showResult: function (e) { view.showWins(e.wins); lastPay = e.pay; },
+      showResult: function (e) { view.showWins(e.wins); },
       flashBonus: function (type) {
         var k = type.toLowerCase();
         cab.setState('bonusEffect', k);
@@ -82,7 +87,8 @@
       }
     };
     var effects = new NCS.Effects(game, ui, sound);
-    game.on('lever', function () { lastPay = 0; });
+    game.on('lever', function () { if (!game.inBonus) showBonusGot = false; });
+    game.on('bonus', function () { showBonusGot = true; });
 
     function press(id, state, back, ms) {
       cab.setState(id, state);
@@ -105,7 +111,7 @@
     });
     cab.onTap('menu', function () {
       press('menu', 'pressed', function () { return 'off'; });
-      document.getElementById('tools').scrollIntoView({ behavior: 'smooth' });
+      data.open();
     });
     document.addEventListener('keydown', function (e) {
       var k = e.key.toLowerCase();
@@ -128,14 +134,16 @@
       cab.setState('lampReplay', game.replayNext ? 'on' : 'off');
       cab.setState('lampWait', idle && Date.now() - game.lastLeverAt < NCS.CONFIG.GAME_WAIT_MS ? 'on' : 'off');
       cab.setState('lampInsert', idle && !game.replayNext ? 'on' : 'off');
-      cab.setDisplay('creditDisplay', Math.min(50, s.medals)); // 第2段階でクレジット(最大50)管理に置換予定
+      cab.setDisplay('creditDisplay', s.credit);
       cab.setDisplay('countDisplay', s.games);
-      cab.setDisplay('payoutDisplay', lastPay);
+      cab.setDisplay('payoutDisplay', game.inBonus && NCS.CONFIG.PAYOUT_ACCUMULATE_IN_BONUS ? s.bonusGot : s.lastPay);
+      cab.setVisible('bonusGotDisplay', showBonusGot);
+      cab.setDisplay('bonusGotDisplay', s.bonusGot);
       document.getElementById('info').textContent =
         '縮小率 ' + cab.scale.toFixed(3) + ' / 画面 ' + window.innerWidth + '×' + window.innerHeight +
         '\nSTOPボタン表示 ' + Math.round(125 * cab.scale) + 'px（タッチ範囲 ' + Math.round(185 * cab.scale) + 'px）' +
         ' / LEVER ON ' + Math.round(330 * cab.scale) + 'px' +
-        '\nMEDAL ' + s.medals + ' / BIG ' + s.big + ' / REG ' + s.reg + ' / 総G ' + s.totalGames;
+        '\nCREDIT ' + s.credit + ' / 持ちメダル ' + s.medals + ' / BIG ' + s.big + ' / REG ' + s.reg + ' / 総G ' + s.totalGames + '（MENUでデータ画面）';
       requestAnimationFrame(loop);
     });
 
@@ -153,12 +161,15 @@
         if (id === 'bonusEffect') cab.el(id).querySelector('.cab-label').textContent = states[i] === 'big' ? 'BIG BONUS!' : 'REG BONUS!';
       });
     });
+    document.getElementById('toggle-got').addEventListener('click', function () { showBonusGot = !showBonusGot; });
     [].forEach.call(document.querySelectorAll('[data-force]'), function (b) {
       b.addEventListener('click', function () {
         var f = b.dataset.force;
         game.lottery.forced = f === 'CHERRY_MISS' ? { role: 'BIG', mode: 'CHERRY_MISS' } : { role: f };
       });
     });
+
+    document.getElementById('open-data').addEventListener('click', function () { data.open(); });
 
     NCS.preview = { cab: cab, view: view, game: game, effects: effects };
   })();

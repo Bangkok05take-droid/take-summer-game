@@ -17,6 +17,9 @@
   var ui = new NCS.UI(game, view, sound);
   var effects = new NCS.Effects(game, ui, sound);
 
+  var data = new NCS.DataScreen(game);
+  document.getElementById('data-open').addEventListener('click', function () { data.open(); });
+
   var dbgBtn = document.getElementById('debug-toggle');
   if (NCS.CONFIG.DEBUG_PANEL) {
     var panel = new NCS.DebugPanel(game, effects);

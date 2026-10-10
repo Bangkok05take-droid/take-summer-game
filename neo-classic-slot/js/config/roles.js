@@ -12,7 +12,7 @@
     GRAPE:  { name: 'ブドウ',         pattern: ['G', 'G', 'G'], pay: 8 },
     CHERRY: { name: 'チェリー',       pattern: ['C', 'C', null], pay: 2 },
     BELL:   { name: 'ベル',           pattern: ['L', 'L', 'L'], pay: 14 },
-    STAR:   { name: 'スター',         pattern: ['S', 'S', 'S'], pay: 10 },
+    PIERROT:{ name: 'ピエロ',         pattern: ['S', 'S', 'S'], pay: 10 },
     REPLAY: { name: 'リプレイ',       pattern: ['R', 'R', 'R'], pay: 0, replay: true }
   };
 
