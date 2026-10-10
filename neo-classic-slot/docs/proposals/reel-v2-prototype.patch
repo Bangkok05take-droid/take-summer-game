@@ -1,0 +1,311 @@
+diff -ruN a/js/config/probability.js b/js/config/probability.js
+--- a/js/config/probability.js	2026-10-10 18:14:35.545221875 +0000
++++ b/js/config/probability.js	2026-10-10 18:14:35.549548814 +0000
+@@ -15,7 +15,7 @@
+       { role: 'CHERRY', weight: 1820 },  // 1/36.0
+       { role: 'GRAPE',  weight: 10923 }, // 1/6.0
+       { role: 'BELL',   weight: 64 },    // 1/1024
+-      { role: 'PIERROT', weight: 64 },   // 1/1024
++      { role: 'YAMA'   , weight: 64 },   // 1/1024
+       { role: 'REPLAY', weight: 8978 }   // 1/7.3
+     ],
+     // ボーナス内部中（持ち越し中）: ボーナスは抽選しない
+@@ -23,7 +23,7 @@
+       { role: 'CHERRY', weight: 1820 },
+       { role: 'GRAPE',  weight: 10923 },
+       { role: 'BELL',   weight: 64 },
+-      { role: 'PIERROT', weight: 64 },
++      { role: 'YAMA'   , weight: 64 },
+       { role: 'REPLAY', weight: 8978 }
+     ]
+   };
+@@ -35,8 +35,14 @@
+    * 大山は BIG のみ（REG では停止禁止）。
+    */
+   NCS.REACHME_MODE_WEIGHTS = {
+-    BIG: { NORMAL: 50, CHERRY_MISS: 14, BAR_STEP: 6, YAMAGATA: 8, OYAMA: 10, KOYAMA: 3, BAR_LINE: 4, REVERSE_7: 5 },
+-    REG: { NORMAL: 50, CHERRY_MISS: 14, BAR_STEP: 6, YAMAGATA: 8, OYAMA: 0,  KOYAMA: 13, BAR_LINE: 4, REVERSE_7: 5 }
++    BIG: { NORMAL: 40, CHERRY_MISS_7: 14, YAMA_HASAMI: 10, V_SHAPE: 8, OYAMA: 7, TANI: 7, KOYAMA: 3, BAR_LINE: 4, REVERSE_7: 4 },
++    REG: { NORMAL: 40, CHERRY_MISS_7: 14, YAMA_HASAMI: 10, V_SHAPE: 8, OYAMA: 0, TANI: 0, KOYAMA: 14, BAR_LINE: 6, REVERSE_7: 5 }
++  };
++  NCS.MODE_TARGETS = {
++    CHERRY_MISS_7: { CHERRY_MISS_7: 1, CHERRY_MISS: 0.6 },
++    YAMA_HASAMI: { YAMA_HASAMI_MISS: 1 },
++    V_SHAPE: { V_SHAPE: 1 }, OYAMA: { OYAMA: 1 }, TANI: { TANI: 1 }, KOYAMA: { KOYAMA: 1 },
++    BAR_LINE: { BAR_LINE: 1 }, REVERSE_7: { REVERSE_7: 1 }
+   };
+ 
+   // ペカリ（GOGOランプ）タイミング: ボーナス成立ゲームでの先ペカ（レバーON告知）率
+diff -ruN a/js/config/reachme.js b/js/config/reachme.js
+--- a/js/config/reachme.js	2026-10-10 18:14:35.545296540 +0000
++++ b/js/config/reachme.js	2026-10-10 18:14:35.549670101 +0000
+@@ -1,73 +1,35 @@
+-/*
+- * リーチ目定義
+- *
+- * test(ctx) は全リール停止後の出目で評価する。
+- *   ctx.sym(reel, row) … 図柄（reel 0=左 1=中 2=右 / row 0=上 1=中 2=下）
+- *   ctx.order          … 停止順（例 [2,1,0] = 逆押し）
+- *   ctx.wins           … 入賞ライン一覧 [{role, line}]
+- * allow: このリーチ目の停止を許可するボーナス。ボーナス非成立時は常に停止禁止。
+- *
+- * 「第n停止で確定」は停止制御側で自動判定する：
+- *   未停止リールがどこに止まっても必ずリーチ目になる状態 = 確定（その停止でペカリ）。
+- */
+ (function (g) {
+   var NCS = (g.NCS = g.NCS || {});
+-
+-  function isBonusSym(s) { return s === '7' || s === 'B'; }
+-
++  function cherryWin(c) { for (var i = 0; i < c.wins.length; i++) if (c.wins[i].role === 'CHERRY') return true; return false; }
++  function leftHas(c, s) { return c.sym(0, 0) === s || c.sym(0, 1) === s || c.sym(0, 2) === s; }
++  var BONUS = ['BIG', 'REG'];
+   NCS.REACHME = {
+-    CHERRY_MISS: {
+-      name: 'チェリー外れ',
+-      desc: '左リールにチェリーが停止し、中リールに対応チェリーが無い（2確／順押し時）',
+-      allow: ['BIG', 'REG'],
++    // ---- チャンス目（確定ではない。指定の小役かボーナスでのみ停止） ----
++    LEFT_CHERRY: { kind: 'chance', name: '左チェリー出現', allow: BONUS, allowSmall: ['CHERRY'],
++      test: function (c) { return leftHas(c, 'C'); } },
++    LEFT_YAMA: { kind: 'chance', name: '左山出現', allow: BONUS, allowSmall: ['YAMA'],
++      test: function (c) { return leftHas(c, 'M'); } },
++    // ---- 確定リーチ目 ----
++    CHERRY_MISS: { name: 'チェリー外れ', allow: BONUS,
++      test: function (c) { return leftHas(c, 'C') && !cherryWin(c); } },
++    CHERRY_MISS_7: { name: 'チェリー外れ＋中段7', allow: BONUS,
++      test: function (c) { return leftHas(c, 'C') && !cherryWin(c) && c.sym(1, 1) === '7'; } },
++    YAMA_HASAMI_MISS: { name: '挟み打ち山否定', allow: BONUS,
++      test: function (c) { return c.order[0] === 0 && c.order[1] === 2 && c.sym(0, 2) === 'M' && c.sym(2, 0) !== 'M'; } },
++    V_SHAPE: { name: '山V字', allow: BONUS,
++      test: function (c) { return c.sym(0, 0) === 'M' && c.sym(1, 2) === 'M' && c.sym(2, 0) === 'M'; } },
++    OYAMA: { name: '大山（中山上段）', allow: ['BIG'],
++      test: function (c) { return c.sym(0, 2) === 'M' && c.sym(1, 0) === 'M' && c.sym(2, 2) === 'M'; } },
++    TANI: { name: '谷（中山下段）', allow: ['BIG'],
++      test: function (c) { return c.sym(0, 1) === 'M' && c.sym(1, 2) === 'M' && c.sym(2, 1) === 'M'; } },
++    KOYAMA: { name: '小山', allow: BONUS,
++      test: function (c) { return c.sym(0, 1) === 'M' && c.sym(1, 0) === 'M' && c.sym(2, 1) === 'M'; } },
++    BAR_LINE: { name: 'BAR一直線', allow: BONUS,
+       test: function (c) {
+-        var leftCherry = c.sym(0, 0) === 'C' || c.sym(0, 1) === 'C' || c.sym(0, 2) === 'C';
+-        if (!leftCherry) return false;
+-        for (var i = 0; i < c.wins.length; i++) if (c.wins[i].role === 'CHERRY') return false;
+-        return true;
+-      }
+-    },
+-    BAR_STEP: {
+-      name: 'BAR段違い',
+-      desc: '左中段BAR＋中上段BAR（右リール不問・2確）',
+-      allow: ['BIG', 'REG'],
+-      test: function (c) { return c.sym(0, 1) === 'B' && c.sym(1, 0) === 'B'; }
+-    },
+-    YAMAGATA: {
+-      name: '山型（ボーナス図柄）',
+-      desc: '左下段・中上段・右下段に 7/BAR が山型に停止',
+-      allow: ['BIG', 'REG'],
+-      test: function (c) { return isBonusSym(c.sym(0, 2)) && isBonusSym(c.sym(1, 0)) && isBonusSym(c.sym(2, 2)); }
+-    },
+-    OYAMA: {
+-      name: '大山',
+-      desc: '山図柄が 左下段・中上段・右下段 の大きな山型（BIG確定）',
+-      allow: ['BIG'],
+-      test: function (c) { return c.sym(0, 2) === 'M' && c.sym(1, 0) === 'M' && c.sym(2, 2) === 'M'; }
+-    },
+-    KOYAMA: {
+-      name: '小山',
+-      desc: '山図柄が 左中段・中上段・右中段 の小さな山型（ボーナス確定・REG期待度高）',
+-      allow: ['BIG', 'REG'],
+-      test: function (c) { return c.sym(0, 1) === 'M' && c.sym(1, 0) === 'M' && c.sym(2, 1) === 'M'; }
+-    },
+-    BAR_LINE: {
+-      name: 'BAR一直線',
+-      desc: 'BAR-BAR-BAR が有効ライン上に揃う（非入賞・確定目）',
+-      allow: ['BIG', 'REG'],
+-      test: function (c) {
+-        for (var i = 0; i < NCS.LINES.length; i++) {
+-          var r = NCS.LINES[i].rows;
+-          if (c.sym(0, r[0]) === 'B' && c.sym(1, r[1]) === 'B' && c.sym(2, r[2]) === 'B') return true;
+-        }
+-        return false;
+-      }
+-    },
+-    REVERSE_7: {
+-      name: '逆押し 右中段7',
+-      desc: '右リール第1停止で中段に赤7（逆押し・右第1停止専用／1確）',
+-      allow: ['BIG', 'REG'],
+-      test: function (c) { return c.order[0] === 2 && c.sym(2, 1) === '7'; }
+-    }
++        for (var i = 0; i < NCS.LINES.length; i++) { var r = NCS.LINES[i].rows;
++          if (c.sym(0, r[0]) === 'B' && c.sym(1, r[1]) === 'B' && c.sym(2, r[2]) === 'B') return true; }
++        return false; } },
++    REVERSE_7: { name: '逆押し右中段7', allow: BONUS,
++      test: function (c) { return c.order[0] === 2 && c.sym(2, 1) === '7'; } }
+   };
+ })(typeof window !== 'undefined' ? window : globalThis);
+diff -ruN a/js/config/reels.js b/js/config/reels.js
+--- a/js/config/reels.js	2026-10-10 18:14:35.545251007 +0000
++++ b/js/config/reels.js	2026-10-10 18:14:35.549600332 +0000
+@@ -17,9 +17,9 @@
+ 
+   //            0    1    2    3    4    5    6    7    8    9   10   11   12   13   14   15   16   17   18   19   20
+   NCS.STRIPS = [
+-    /* 左 */ ['G', 'R', '7', 'C', 'B', 'G', 'R', 'M', 'S', 'G', 'R', 'L', 'C', 'B', 'G', 'R', '7', 'M', 'G', 'R', 'L'],
+-    /* 中 */ ['G', 'R', 'C', '7', 'G', 'R', 'B', 'C', 'G', 'R', 'M', 'S', 'C', 'G', 'R', '7', 'L', 'C', 'G', 'R', 'B'],
+-    /* 右 */ ['G', '7', 'R', 'M', 'G', 'B', 'R', 'L', 'G', '7', 'R', 'S', 'G', 'M', 'R', 'B', 'G', 'L', 'R', 'L', '7']
++    /* 左 */ ['R', 'C', 'B', 'G', 'R', 'M', '7', 'G', 'R', 'C', 'B', 'G', 'R', 'M', 'R', 'G', '7', 'R', 'G', 'L', 'G'],
++    /* 中 */ ['R', 'G', 'L', 'C', 'G', 'R', 'M', '7', 'C', 'G', 'R', 'B', '7', 'C', 'G', 'R', 'M', 'G', 'C', 'B', 'R'],
++    /* 右 */ ['M', '7', 'R', 'M', 'G', '7', 'R', 'L', 'G', 'M', 'R', 'B', 'G', 'L', 'R', 'M', 'G', '7', 'R', 'B', 'G']
+   ];
+ 
+   // 有効ライン（3枚掛け5ライン）: 各要素は [左の行, 中の行, 右の行]
+diff -ruN a/js/config/roles.js b/js/config/roles.js
+--- a/js/config/roles.js	2026-10-10 18:14:35.545274347 +0000
++++ b/js/config/roles.js	2026-10-10 18:14:35.549635193 +0000
+@@ -12,7 +12,7 @@
+     GRAPE:  { name: 'ブドウ',         pattern: ['G', 'G', 'G'], pay: 8 },
+     CHERRY: { name: 'チェリー',       pattern: ['C', 'C', null], pay: 2 },
+     BELL:   { name: 'ベル',           pattern: ['L', 'L', 'L'], pay: 14 },
+-    PIERROT:{ name: 'ピエロ',         pattern: ['S', 'S', 'S'], pay: 10 },
++    YAMA:   { name: '山',             pattern: ['M', 'M', 'M'], pay: 10, lines: [0, 3, 4] }, // 中リール中段を通る3ライン
+     REPLAY: { name: 'リプレイ',       pattern: ['R', 'R', 'R'], pay: 0, replay: true }
+   };
+ 
+diff -ruN a/js/config/symbols.js b/js/config/symbols.js
+--- a/js/config/symbols.js	2026-10-10 18:14:35.545367514 +0000
++++ b/js/config/symbols.js	2026-10-10 18:14:35.549823405 +0000
+@@ -13,7 +13,6 @@
+     'G': { name: 'ブドウ',   short: 'GR', color: '#7a2fb8', img: 'assets/images/symbols/sym_grape.png' },
+     'L': { name: 'ベル',     short: 'BL', color: '#e8b400', img: 'assets/images/symbols/sym_bell.png' },
+     'R': { name: 'リプレイ', short: 'RP', color: '#1a6fd0', img: 'assets/images/symbols/sym_replay.png' },
+-    'M': { name: '山',       short: '山', color: '#1f8a3a', img: 'assets/images/symbols/sym_mountain.png' },
+-    'S': { name: 'ピエロ',   short: 'PI', color: '#ff7a00', img: 'assets/images/symbols/sym_pierrot.png' }
++    'M': { name: '山',       short: '山', color: '#1f8a3a', img: 'assets/images/symbols/sym_mountain.png' }
+   };
+ })(typeof window !== 'undefined' ? window : globalThis);
+diff -ruN a/js/core/judge.js b/js/core/judge.js
+--- a/js/core/judge.js	2026-10-10 18:14:35.545523751 +0000
++++ b/js/core/judge.js	2026-10-10 18:14:35.550066946 +0000
+@@ -24,7 +24,8 @@
+       var rows = NCS.LINES[li].rows;
+       var a = sym(0, rows[0]), b = sym(1, rows[1]), c = sym(2, rows[2]);
+       for (var k = 0; k < ids.length; k++) {
+-        var p = NCS.ROLES[ids[k]].pattern;
++        var role = NCS.ROLES[ids[k]], p = role.pattern;
++        if (role.lines && role.lines.indexOf(li) < 0) continue;
+         if ((p[0] === null || p[0] === a) && (p[1] === null || p[1] === b) && (p[2] === null || p[2] === c)) {
+           wins.push({ role: ids[k], line: li });
+         }
+@@ -43,7 +44,7 @@
+   // 最終出目の総合判定
+   NCS.judge = function (stops, order) {
+     var wins = NCS.evalWins(stops);
+-    return { wins: wins, reachMe: NCS.evalReachMe(stops, order, wins) };
++    return { wins: wins, reachMe: NCS.evalReachMe(stops, order, wins), leftBarBottom: NCS.symAt(0, stops[0], 2) === 'B' };
+   };
+ 
+   // 払い出し計算
+diff -ruN a/js/core/reelControl.js b/js/core/reelControl.js
+--- a/js/core/reelControl.js	2026-10-10 18:14:35.545476413 +0000
++++ b/js/core/reelControl.js	2026-10-10 18:14:35.549997127 +0000
+@@ -26,8 +26,8 @@
+   // ---- 最終出目の判定キャッシュ（フラグ非依存） ----
+   var judgeCache = new Map();
+   function judgeCached(stops, order) {
+-    // 停止順の依存は「第1停止リール」のみ（逆押しリーチ目）
+-    var key = ((order[0] * N + stops[0]) * N + stops[1]) * N + stops[2];
++    // 停止順は第1・第2停止リールまで区別する（逆押し・挟み打ちリーチ目）
++    var key = (((order[0] * 3 + order[1]) * N + stops[0]) * N + stops[1]) * N + stops[2];
+     var j = judgeCache.get(key);
+     if (!j) { j = NCS.judge(stops, order); judgeCache.set(key, j); }
+     return j;
+@@ -38,7 +38,7 @@
+     return false;
+   }
+ 
+-  var SCORE = { small: 100, bonus: 50, modeReach: 30, offModeReach: -5 };
++  var SCORE = { small: 100, bonus: 50, modeReach: 80, offModeReach: -5, midLine: 3, barBottom: 1 };
+ 
+   function terminalScore(flag, mode, j, sc) {
+     var i;
+@@ -47,13 +47,26 @@
+       if (r !== flag.bonus && r !== flag.small) return FORBID;
+     }
+     for (i = 0; i < j.reachMe.length; i++) {
+-      if (!flag.bonus || NCS.REACHME[j.reachMe[i]].allow.indexOf(flag.bonus) < 0) return FORBID;
++      var rm = NCS.REACHME[j.reachMe[i]];
++      var ok = (flag.bonus && rm.allow.indexOf(flag.bonus) >= 0) || (flag.small && rm.allowSmall && rm.allowSmall.indexOf(flag.small) >= 0);
++      if (!ok) return FORBID;
+     }
+     var s = 0;
+     if (flag.small && hasWin(j, flag.small)) s += sc.small;
+     if (flag.bonus && hasWin(j, flag.bonus)) s += sc.bonus;
+     // 出目モードのリーチ目は積極的に、それ以外のリーチ目は可能なら避ける（NORMAL はハズレ目寄り）
+-    for (i = 0; i < j.reachMe.length; i++) s += j.reachMe[i] === mode ? sc.modeReach : sc.offModeReach;
++    // MODE_TARGETS[mode] = { リーチ目ID: 重み(0〜1) }。最も重いものを採用
++    var targets = (NCS.MODE_TARGETS && NCS.MODE_TARGETS[mode]) || {};
++    var hit = 0;
++    for (i = 0; i < j.reachMe.length; i++) {
++      var w = targets[j.reachMe[i]];
++      if (w) hit = Math.max(hit, w);
++      else if (NCS.REACHME[j.reachMe[i]].kind !== 'chance') s += sc.offModeReach;
++    }
++    s += hit * sc.modeReach;
++    // 見た目の基本形: 小役は中段ライン優先 / 左BARは下段停止優先
++    if (flag.small) for (i = 0; i < j.wins.length; i++) if (j.wins[i].role === flag.small && j.wins[i].line === 0) { s += sc.midLine || 0; break; }
++    if (j.leftBarBottom) s += sc.barBottom || 0;
+     return s;
+   }
+ 
+@@ -80,8 +93,11 @@
+   // 状態の評価値 {min, avg}
+   Solver.prototype.value = function (stops, order) {
+     if (order.length === 3) {
+-      var s = terminalScore(this.flag, this.mode, judgeCached(stops, order), this.score);
+-      return { min: s, avg: s };
++      var j = judgeCached(stops, order);
++      var soft = terminalScore(this.flag, this.mode, j, this.score);
++      // min（最悪ケース）は「停止禁止」と「成立小役が揃うか」だけで評価。見た目の好みは avg のみに効かせる
++      var hard = soft === FORBID ? FORBID : (this.flag.small && hasWin(j, this.flag.small) ? 100 : 0);
++      return { min: hard, avg: soft };
+     }
+     var key = stateKey(stops, order);
+     var v = this.memo.get(key);
+@@ -156,7 +172,7 @@
+     for (var pi = 0; pi < perms.length; pi++) {
+       var full = order.concat(perms[pi]);
+       var ok = (function rec(i) {
+-        if (i === rest.length) return judgeCached(st, full).reachMe.length > 0;
++        if (i === rest.length) return judgeCached(st, full).reachMe.some(function (id) { return NCS.REACHME[id].kind !== 'chance'; });
+         for (var x = 0; x < N; x++) { st[rest[i]] = x; if (!rec(i + 1)) return false; }
+         return true;
+       })(0);
+diff -ruN a/js/core/verifier.js b/js/core/verifier.js
+--- a/js/core/verifier.js	2026-10-10 18:14:35.545418471 +0000
++++ b/js/core/verifier.js	2026-10-10 18:14:35.549911201 +0000
+@@ -13,13 +13,13 @@
+ 
+   function cases() {
+     var list = [];
+-    [null, 'GRAPE', 'CHERRY', 'BELL', 'PIERROT', 'REPLAY'].forEach(function (s) {
++    [null, 'GRAPE', 'CHERRY', 'BELL', 'YAMA', 'REPLAY'].forEach(function (s) {
+       list.push({ bonus: null, small: s, mode: 'NORMAL' });
+     });
+     ['BIG', 'REG'].forEach(function (b) {
+       var w = NCS.REACHME_MODE_WEIGHTS[b];
+       Object.keys(w).forEach(function (m) { if (w[m] > 0) list.push({ bonus: b, small: null, mode: m }); });
+-      ['GRAPE', 'CHERRY', 'REPLAY'].forEach(function (s) { list.push({ bonus: b, small: s, mode: 'NORMAL' }); });
++      ['GRAPE', 'CHERRY', 'REPLAY', 'YAMA'].forEach(function (s) { list.push({ bonus: b, small: s, mode: 'NORMAL' }); });
+     });
+     return list;
+   }
+@@ -58,7 +58,9 @@
+         j.wins.forEach(function (w) { if (w.role !== flag.bonus && w.role !== flag.small) bad = true; });
+         j.reachMe.forEach(function (r) {
+           st.reach[r] = (st.reach[r] || 0) + 1;
+-          if (!flag.bonus || NCS.REACHME[r].allow.indexOf(flag.bonus) < 0) bad = true;
++          var rm = NCS.REACHME[r];
++          var ok = (flag.bonus && rm.allow.indexOf(flag.bonus) >= 0) || (flag.small && rm.allowSmall && rm.allowSmall.indexOf(flag.small) >= 0);
++          if (!ok) bad = true;
+         });
+         if (bad) {
+           st.forbidden++;
