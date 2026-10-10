@@ -45,7 +45,10 @@
     if (!o.fixedHeight) this.canvas.style.height = (this.canvas.height / dpr) + 'px';
   };
 
-  ReelView.prototype.maxSpeed = function () { return NCS.CONFIG.REEL_RPM / 60 * NCS.REEL_SIZE; }; // コマ/秒
+  ReelView.prototype.maxSpeed = function () { return NCS.CONFIG.REEL_RPM / 60 * NCS.REEL_SIZE * (this.speedScale || 1); }; // コマ/秒
+
+  // オート消化時の高速化（回転速度・加速時間の倍率）
+  ReelView.prototype.setSpeedScale = function (k) { this.speedScale = k; };
 
   // ---- Game から呼ばれるインターフェース ----
   ReelView.prototype.start = function () {
@@ -79,7 +82,7 @@
   ReelView.prototype.tick = function (t) {
     var dt = this.last ? Math.min(0.05, (t - this.last) / 1000) : 0;
     this.last = t;
-    var vmax = this.maxSpeed(), accel = NCS.CONFIG.ACCEL_MS;
+    var vmax = this.maxSpeed(), accel = NCS.CONFIG.ACCEL_MS / (this.speedScale || 1);
     for (var i = 0; i < 3; i++) {
       var r = this.reels[i];
       if (r.phase === 'ACCEL' || r.phase === 'SPIN') {

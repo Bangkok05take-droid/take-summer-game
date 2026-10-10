@@ -8,6 +8,7 @@
  *   stopped  {reel, nth, determined}      リール停止アニメ完了
  *   result   {wins, reachMe, pay, replay, bonusAligned} 全停止後
  *   bonus    {type}                       ボーナス図柄揃い（＝ボーナス開始）
+ *   bonusGame{type, played, left, pay}     ボーナス中1ゲーム終了
  *   bonusEnd {type, games, got}           ボーナス消化完了（COUNTリセット）
  *   state    {}                           表示更新用
  *
@@ -18,7 +19,11 @@
  *   stats.games     … 前回ボーナス消化完了からのゲーム数（筐体 COUNT）
  *   stats.lastPay   … 現在（直前）のゲームの払い出し枚数（筐体 PAYOUT）
  *   stats.bonusGot  … 消化中／直近ボーナスの合計獲得枚数
- *   stats.totalGames… 総ゲーム数（データ画面）
+ *   stats.totalGames… 総ゲーム数（通常ゲームのみ。データ画面）
+ *   stats.bonusPlayed… 消化中ボーナスの消化ゲーム数
+ *
+ * ボーナス中（inBonus）は内部抽選を行わず、ブドウ揃いで BONUS_PAY 枚の固定払い出し（仮仕様）。
+ * BONUS_GAMES ゲーム消化で終了。
  */
 (function (g) {
   var NCS = (g.NCS = g.NCS || {});
@@ -39,7 +44,7 @@
     this.stats = {
       games: 0, totalGames: 0, big: 0, reg: 0,
       credit: 0, medals: NCS.CONFIG.START_MEDALS, invest: 0, in: 0, out: 0,
-      lastPay: 0, bonusGot: 0, bonusType: null,
+      lastPay: 0, bonusGot: 0, bonusType: null, bonusPlayed: 0,
       roles: {}, reachMe: {}, history: []
     };
     this.inBonus = false;
@@ -80,14 +85,19 @@
     this.replayNext = false;
     st.lastPay = 0;
 
-    this.flag = this.lottery.lever(this.carry);
-    if (this.flag.bonus) this.carry = this.flag.bonus;
+    if (this.inBonus) {
+      // ボーナスゲーム: 抽選なし。第3段階でジャグ連の先行抽選をここに追加する
+      this.flag = { bonus: null, small: 'GRAPE', mode: 'NORMAL', bonusGame: st.bonusType };
+    } else {
+      this.flag = this.lottery.lever(this.carry);
+      if (this.flag.bonus) this.carry = this.flag.bonus;
+      st.games++;
+      st.totalGames++;
+    }
     this.control.reset(this.flag);
     this.stoppedCount = 0;
     this.animDone = 0;
     this.phase = 'SPINNING';
-    st.games++;
-    st.totalGames++;
     this.emit('lever', { flag: this.flag, game: st.games });
     this.reels.start();
     this.emit('state', {});
@@ -117,6 +127,7 @@
     var j = NCS.judge(this.control.stops, this.control.order);
     var pay = NCS.payout(j.wins);
     var st = this.stats;
+    if (this.flag.bonusGame) pay = { pay: NCS.CONFIG.BONUS_PAY[this.flag.bonusGame], replay: false };
     this.addCredit(pay.pay);
     st.out += pay.pay;
     st.lastPay = pay.pay;
@@ -132,10 +143,13 @@
     this.phase = 'IDLE';
     this.emit('result', { wins: j.wins, reachMe: j.reachMe, pay: pay.pay, replay: pay.replay, bonusAligned: bonusAligned, flag: this.flag, stops: this.control.stops.slice(), order: this.control.order.slice() });
 
-    if (bonusAligned) {
+    if (this.flag.bonusGame) {
+      st.bonusPlayed++;
+      var left = NCS.CONFIG.BONUS_GAMES[st.bonusType] - st.bonusPlayed;
+      this.emit('bonusGame', { type: st.bonusType, played: st.bonusPlayed, left: left, pay: pay.pay });
+      if (left <= 0) this.endBonus();
+    } else if (bonusAligned) {
       this.startBonus(bonusAligned);
-      // 第2段階で30Gのボーナスゲームに置き換える。現状は開始直後に消化完了扱い。
-      this.endBonus();
     }
     this.emit('state', {});
   };
@@ -147,6 +161,7 @@
     this.inBonus = true;
     st.bonusType = type;
     st.bonusGot = 0;
+    st.bonusPlayed = 0;
     st.bonusStartGames = st.games; // 当選までのゲーム数（履歴用）
     this.emit('bonus', { type: type });
   };
@@ -159,7 +174,9 @@
     if (st.history.length > 20) st.history.pop();
     st.games = 0;
     this.inBonus = false;
+    this.replayNext = false;
     this.emit('bonusEnd', rec);
+    this.emit('state', {});
   };
 
   NCS.Game = Game;

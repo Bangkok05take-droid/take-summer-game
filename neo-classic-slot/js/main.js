@@ -17,6 +17,15 @@
   var ui = new NCS.UI(game, view, sound);
   var effects = new NCS.Effects(game, ui, sound);
 
+  var auto = new NCS.AutoPlay(game, view);
+  var autoBtn = document.getElementById('auto-toggle');
+  autoBtn.addEventListener('click', function () { sound.unlock(); auto.toggle(); });
+  auto.on(function (e) {
+    effects.autoRunning = e.running;
+    autoBtn.classList.toggle('on', e.enabled);
+    autoBtn.textContent = e.enabled ? 'AUTO ON' : 'AUTO';
+  });
+
   var data = new NCS.DataScreen(game);
   document.getElementById('data-open').addEventListener('click', function () { data.open(); });
 
@@ -28,5 +37,5 @@
     NCS.debug = panel;
   }
 
-  NCS.app = { game: game, view: view, ui: ui, effects: effects, sound: sound };
+  NCS.app = { game: game, view: view, ui: ui, effects: effects, sound: sound, auto: auto };
 })();

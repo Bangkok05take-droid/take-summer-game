@@ -54,6 +54,7 @@
   <script src="js/core/judge.js"></script>
   <script src="js/core/reelControl.js"></script>
   <script src="js/core/game.js"></script>
+  <script src="js/core/autoPlay.js"></script>
   <script src="js/view/symbolArt.js"></script>
   <script src="js/view/reelView.js"></script>
   <script src="js/view/cabinet.js"></script>
@@ -82,11 +83,17 @@
         var k = type.toLowerCase();
         cab.setState('bonusEffect', k);
         cab.el('bonusEffect').querySelector('.cab-label').textContent = type === 'BIG' ? 'BIG BONUS!' : 'REG BONUS!';
-        cab.setState('bonusPanel', k);
-        setTimeout(function () { cab.setState('bonusEffect', 'none'); cab.setState('bonusPanel', 'off'); }, 2000);
-      }
+        cab.setState('bonusPanel', k); // ボーナス消化中は点灯したまま
+        setTimeout(function () { cab.setState('bonusEffect', 'none'); }, 2000);
+      },
+      bonusEnd: function () { cab.setState('bonusPanel', 'off'); }
     };
     var effects = new NCS.Effects(game, ui, sound);
+    var auto = new NCS.AutoPlay(game, view);
+    auto.on(function (e) {
+      effects.autoRunning = e.running;
+      cab.setState('autoPlay', e.enabled ? 'on' : 'off');
+    });
     game.on('lever', function () { if (!game.inBonus) showBonusGot = false; });
     game.on('bonus', function () { showBonusGot = true; });
 
@@ -107,7 +114,8 @@
       });
     });
     cab.onTap('autoPlay', function () {
-      cab.setState('autoPlay', cab.getState('autoPlay') === 'on' ? 'off' : 'on'); // オート消化は第2段階
+      sound.unlock();
+      auto.toggle(); // ボーナス中のみ動作。途中でOFFにすると残りは手動
     });
     cab.onTap('menu', function () {
       press('menu', 'pressed', function () { return 'off'; });
@@ -121,7 +129,7 @@
 
     // 毎フレーム: ボタン・ランプ・数字表示をゲーム状態に同期
     requestAnimationFrame(function loop() {
-      var idle = game.phase === 'IDLE', s = game.stats;
+      var idle = game.phase === 'IDLE' && !auto.running, s = game.stats;
       if (cab.getState('leverOn') !== 'pressed' || !idle) cab.setState('leverOn', idle ? 'on' : 'off');
       [0, 1, 2].forEach(function (i) {
         if (cab.getState('stop' + i) === 'pressed') return;
@@ -135,7 +143,7 @@
       cab.setState('lampWait', idle && Date.now() - game.lastLeverAt < NCS.CONFIG.GAME_WAIT_MS ? 'on' : 'off');
       cab.setState('lampInsert', idle && !game.replayNext ? 'on' : 'off');
       cab.setDisplay('creditDisplay', s.credit);
-      cab.setDisplay('countDisplay', s.games);
+      cab.setDisplay('countDisplay', game.inBonus ? s.bonusPlayed : s.games); // ボーナス中は消化ゲーム数
       cab.setDisplay('payoutDisplay', game.inBonus && NCS.CONFIG.PAYOUT_ACCUMULATE_IN_BONUS ? s.bonusGot : s.lastPay);
       cab.setVisible('bonusGotDisplay', showBonusGot);
       cab.setDisplay('bonusGotDisplay', s.bonusGot);
@@ -143,7 +151,9 @@
         '縮小率 ' + cab.scale.toFixed(3) + ' / 画面 ' + window.innerWidth + '×' + window.innerHeight +
         '\nSTOPボタン表示 ' + Math.round(125 * cab.scale) + 'px（タッチ範囲 ' + Math.round(185 * cab.scale) + 'px）' +
         ' / LEVER ON ' + Math.round(330 * cab.scale) + 'px' +
-        '\nCREDIT ' + s.credit + ' / 持ちメダル ' + s.medals + ' / BIG ' + s.big + ' / REG ' + s.reg + ' / 総G ' + s.totalGames + '（MENUでデータ画面）';
+        '\nCREDIT ' + s.credit + ' / 持ちメダル ' + s.medals + ' / BIG ' + s.big + ' / REG ' + s.reg + ' / 総G ' + s.totalGames + '（MENUでデータ画面）' +
+        (game.inBonus ? '\n★' + s.bonusType + ' 消化中 ' + s.bonusPlayed + '/' + NCS.CONFIG.BONUS_GAMES[s.bonusType] + 'G 獲得' + s.bonusGot + '枚' + (auto.running ? '（オート）' : '') : '') +
+        (auto.enabled ? '\nAUTO PLAY: ON' : '');
       requestAnimationFrame(loop);
     });
 
@@ -171,7 +181,7 @@
 
     document.getElementById('open-data').addEventListener('click', function () { data.open(); });
 
-    NCS.preview = { cab: cab, view: view, game: game, effects: effects };
+    NCS.preview = { cab: cab, view: view, game: game, effects: effects, auto: auto };
   })();
   </script>
 </body>

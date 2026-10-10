@@ -26,6 +26,8 @@
     game.on('stopped', function (e) { self.onStopped(e); });
     game.on('result', function (e) { self.onResult(e); });
     game.on('bonus', function (e) { self.onBonus(e); });
+    game.on('bonusEnd', function (e) { if (self.ui.bonusEnd) self.ui.bonusEnd(e); });
+    game.on('bonusGame', function (e) { if (self.ui.bonusGame) self.ui.bonusGame(e); });
   }
 
   Effects.prototype.light = function (timing) {
@@ -39,7 +41,7 @@
   };
 
   Effects.prototype.onLever = function (e) {
-    this.sound.lever();
+    if (!this.autoRunning) this.sound.lever();
     var f = e.flag;
     if (f.bonus && !this.lampOn) {
       this.pending = true;
@@ -50,14 +52,14 @@
   };
 
   Effects.prototype.onStopped = function (e) {
-    this.sound.reelStop();
+    if (!this.autoRunning || e.nth === 3) this.sound.reelStop();
     if (this.pending && e.determined) this.light('STOP' + e.nth);
   };
 
   Effects.prototype.onResult = function (e) {
     if (this.pending) this.light('AFTER');
     this.ui.showResult(e);
-    if (e.pay) this.sound.payout(e.pay);
+    if (e.pay) this.sound.payout(e.pay, this.autoRunning);
   };
 
   Effects.prototype.onBonus = function (e) {

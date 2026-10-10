@@ -189,3 +189,4 @@ html, body {
   font-size: 11px; line-height: 1.45;
   max-height: 40vh; overflow-y: auto;
 }
+.debug-toggle.on { background: #c01060; border-color: #ff7ab0; }

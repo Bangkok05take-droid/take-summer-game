@@ -67,6 +67,9 @@
   };
 
   // 短い合成音
+  // ch はチャンネル名、または出力先の AudioNode
+  Sound.prototype.dest = function (ch) { return typeof ch === 'string' ? this.channels[ch] : ch; };
+
   Sound.prototype.tone = function (ch, type, f0, f1, dur, vol, delay) {
     var t = this.ctx.currentTime + (delay || 0);
     var o = this.ctx.createOscillator(), gn = this.ctx.createGain();
@@ -75,7 +78,7 @@
     if (f1) o.frequency.exponentialRampToValueAtTime(f1, t + dur);
     gn.gain.setValueAtTime(vol, t);
     gn.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-    o.connect(gn); gn.connect(this.channels[ch]);
+    o.connect(gn); gn.connect(this.dest(ch));
     o.start(t); o.stop(t + dur + 0.02);
   };
 
@@ -86,7 +89,7 @@
     for (var i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / len);
     var s = this.ctx.createBufferSource(), f = this.ctx.createBiquadFilter(), gn = this.ctx.createGain();
     s.buffer = buf; f.type = 'highpass'; f.frequency.value = hp || 3000; gn.gain.value = vol;
-    s.connect(f); f.connect(gn); gn.connect(this.channels[ch]);
+    s.connect(f); f.connect(gn); gn.connect(this.dest(ch));
     s.start(t);
   };
 
@@ -104,19 +107,27 @@
     this.noise('se', 0.03, 0.4, 2500);
   };
 
-  // 払い出し: 電子音＋金属音を枚数分（重なり防止のため前回分は打ち切り）
-  Sound.prototype.payout = function (n) {
+  // 払い出し: 電子音＋金属音を枚数分。新しい払い出しが始まったら前回分は素早くフェードアウト（重なり防止）
+  // fast: オート消化用に間隔を詰める
+  Sound.prototype.payout = function (n, fast) {
     if (!this.ready() || n <= 0) return;
     if (this.playFile('pay', 'pay')) return;
-    var self = this, i = 0, interval = 0.055;
-    var t0 = this.ctx.currentTime;
-    for (i = 0; i < Math.min(n, 15); i++) {
-      var d = i * interval;
-      self.tone('pay', 'square', 1760 + (i % 2) * 220, null, 0.045, 0.12, d);
-      self.tone('pay', 'triangle', 3520, 2900, 0.06, 0.08, d);
-      self.noise('pay', 0.04, 0.12, 6000, d);
+    var now = this.ctx.currentTime;
+    if (this.payBus) {
+      this.payBus.gain.setTargetAtTime(0, now, 0.02);
+      var old = this.payBus;
+      setTimeout(function () { old.disconnect(); }, 300);
     }
-    return t0;
+    var bus = this.ctx.createGain();
+    bus.connect(this.channels.pay);
+    this.payBus = bus;
+    var interval = fast ? 0.03 : 0.055;
+    for (var i = 0; i < Math.min(n, 15); i++) {
+      var d = i * interval;
+      this.tone(bus, 'square', 1760 + (i % 2) * 220, null, 0.045, 0.12, d);
+      this.tone(bus, 'triangle', 3520, 2900, 0.06, 0.08, d);
+      this.noise(bus, 0.04, 0.12, 6000, d);
+    }
   };
 
   Sound.prototype.lamp = function () {

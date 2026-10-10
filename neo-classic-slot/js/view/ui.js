@@ -64,12 +64,20 @@
     var s = this.game.stats;
     this.el.medals.textContent = s.credit;
     this.el.hold.textContent = s.medals;
-    this.el.games.textContent = s.games;
+    this.el.games.textContent = this.game.inBonus ? s.bonusPlayed : s.games;
     this.el.total.textContent = s.totalGames;
     this.el.big.textContent = s.big;
     this.el.reg.textContent = s.reg;
     var diff = s.out - s.in;
     this.el.diff.textContent = (diff > 0 ? '+' : '') + diff;
+  };
+
+  UI.prototype.bonusGame = function (e) {
+    this.message(e.type + ' ' + e.played + '/' + (e.played + e.left) + 'G  獲得 ' + this.game.stats.bonusGot + '枚');
+  };
+
+  UI.prototype.bonusEnd = function (e) {
+    this.message(e.type + ' 終了  獲得 ' + e.got + '枚');
   };
 
   UI.prototype.setLamp = function (on) {
@@ -87,14 +95,14 @@
       var r = NCS.ROLES[w.role];
       if (!r.bonus) parts.push(r.name + (r.replay ? '' : ' ' + r.pay + '枚'));
     });
-    this.message(parts.join(' / '));
+    if (!this.game.inBonus) this.message(parts.join(' / '));
   };
 
   UI.prototype.flashBonus = function (type) {
     var el = this.el.bonusFlash;
     el.textContent = type === 'BIG' ? 'BIG BONUS!' : 'REGULAR BONUS!';
     el.className = 'bonus-flash show ' + type.toLowerCase();
-    this.message((type === 'BIG' ? 'BIG' : 'REG') + ' 図柄揃い（ボーナスゲームは第2段階で実装）');
+    this.message((type === 'BIG' ? 'BIG' : 'REG') + ' 開始（' + NCS.CONFIG.BONUS_GAMES[type] + 'G・AUTOで高速消化）');
     clearTimeout(this.flashTimer);
     this.flashTimer = setTimeout(function () { el.className = 'bonus-flash'; }, 1800);
   };
