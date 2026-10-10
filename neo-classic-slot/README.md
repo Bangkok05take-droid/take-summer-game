@@ -12,6 +12,12 @@
 - 左リールの BAR を上段〜中段に狙うと、チェリー成立時に必ずチェリーが止まる
 - ランプ「NEO!」点灯でボーナス確定 → 7を狙って揃える（ボーナスゲーム本体は第2段階）
 
+## 正式筐体デザイン（準備中）
+
+`cabinet-preview.html` … 正式デザインの筐体レイアウト確認ページ（第1段階のゲームを接続済み）。
+各パーツは `js/config/skin.js` の座標で独立配置され、`js/view/cabinet.js` が状態（画像）を切り替えます。
+「デザイン重ね」で見本画像と位置を比較できます。必要素材は [docs/ASSETS.md](docs/ASSETS.md)。
+
 ## デバッグ
 
 - 画面右上の **DEBUG** でパネル表示（`js/config/game.js` の `DEBUG_PANEL`、または URL `?debug=0/1`）
@@ -35,7 +41,7 @@ index.html
 css/style.css
 js/config/   図柄・配列・役・確率・リーチ目・設定（データ）
 js/core/     抽選・判定・停止制御・ゲーム進行・検証（DOM非依存）
-js/view/     リール描画・図柄・UI
+js/view/     リール描画・図柄・UI・筐体レイヤー(cabinet.js)
 js/effects/  告知演出
 js/audio/    サウンド
 js/debug/    デバッグパネル

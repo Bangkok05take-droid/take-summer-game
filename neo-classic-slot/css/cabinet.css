@@ -1,0 +1,88 @@
+/*
+ * 筐体レイヤー（js/view/cabinet.js）
+ * 画像が無いパーツはプレースホルダーとして状態ごとに色を変えて表示する。
+ */
+.cab-wrap {
+  position: relative;
+  margin: 0 auto;
+  overflow: hidden;
+}
+.cab-stage {
+  position: absolute;
+  left: 0; top: 0;
+  transform-origin: 0 0;
+  background: #120d1c;
+}
+.cab-part {
+  position: absolute;
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  touch-action: none;
+}
+.cab-part.pass { pointer-events: none; }
+.cab-hit { position: absolute; display: block; }
+.cab-guide { position: absolute; left: 0; top: 0; z-index: 100; pointer-events: none; }
+
+/* ---- プレースホルダー（画像未配置） ---- */
+.cab-part:not(.has-img):not(.cab-reels):not(.cab-display) {
+  border: 3px dashed rgba(255, 255, 255, 0.35);
+  border-radius: 14px;
+  background-color: rgba(255, 255, 255, 0.06);
+}
+.cab-part[data-part="cabinetBg"]:not(.has-img) {
+  border: none; border-radius: 0;
+  background: linear-gradient(180deg, #2a1838 0%, #170f24 45%, #241a10 70%, #0d0a12 100%);
+}
+.cab-part[data-part="reelFrame"]:not(.has-img) { border: 10px solid #c9a23a; background: transparent; }
+.cab-part[data-state="on"]:not(.has-img),
+.cab-part[data-state="big"]:not(.has-img),
+.cab-part[data-state="reg"]:not(.has-img) {
+  background-color: rgba(255, 60, 120, 0.55);
+  border-color: #fff;
+  box-shadow: 0 0 40px 10px rgba(255, 60, 120, 0.7);
+}
+.cab-part[data-state="reg"]:not(.has-img) { background-color: rgba(60, 120, 255, 0.55); box-shadow: 0 0 40px 10px rgba(60, 120, 255, 0.7); }
+.cab-part[data-state="pressed"]:not(.has-img) { background-color: rgba(255, 255, 255, 0.35); transform: translateY(6px); }
+.cab-part[data-state="down"]:not(.has-img) { transform: translateY(40px); }
+.cab-part[data-part^="stop"]:not(.has-img), .cab-part[data-part="leverOn"]:not(.has-img) { border-radius: 50%; }
+.cab-part[data-part^="stop"][data-state="on"]:not(.has-img) { background-color: rgba(255, 40, 40, 0.75); box-shadow: 0 0 30px 6px rgba(255, 40, 40, 0.7); }
+.cab-effect[data-state="none"] { display: none; }
+.cab-effect:not(.has-img) { border: none; background: transparent !important; box-shadow: none !important; }
+
+.cab-label {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font: 900 26px/1.1 system-ui, sans-serif;
+  color: rgba(255, 255, 255, 0.8);
+  text-align: center;
+  pointer-events: none;
+}
+.cab-part.has-img .cab-label { display: none; }
+.cab-part[data-part="cabinetBg"] .cab-label,
+.cab-part[data-part="reelFrame"] .cab-label { display: none; }
+.cab-effect .cab-label { font-size: 110px; color: #fff; text-shadow: 0 0 20px #ff0, 0 0 6px #000; }
+.cab-effect[data-state="reg"] .cab-label { text-shadow: 0 0 20px #3af, 0 0 6px #000; }
+.show-labels .cab-part .cab-label { display: flex !important; color: #ff0; text-shadow: 0 0 4px #000; }
+.show-labels .cab-part { outline: 2px solid rgba(0, 255, 255, 0.8); }
+.show-labels .cab-hit { outline: 2px dotted rgba(255, 255, 0, 0.8); }
+
+/* ---- CREDIT / COUNT / PAYOUT（LED風。スプライト画像導入までフォント表示） ---- */
+.cab-display { background: #1a0306; border-radius: 6px; box-shadow: inset 0 0 12px #000; }
+.cab-display .cab-label { display: none; }
+.cab-digits {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: flex-end;
+  padding-right: 10px;
+  font: 700 62px/1 "Courier New", monospace;
+  color: #ff2a3a;
+  text-shadow: 0 0 10px rgba(255, 30, 50, 0.9);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- アニメーション ---- */
+.anim-glow { animation: cab-glow 0.6s ease-in-out infinite alternate; }
+@keyframes cab-glow { from { filter: brightness(1); } to { filter: brightness(1.45) drop-shadow(0 0 30px #c6f); } }
+.anim-blink { animation: cab-blink 0.5s steps(2) infinite; }
+@keyframes cab-blink { 50% { filter: brightness(0.6); } }
+.anim-bonusIn { animation: cab-bonus-in 0.5s cubic-bezier(.2, 1.6, .4, 1) both; }
+@keyframes cab-bonus-in { from { transform: scale(0.2); opacity: 0; } to { transform: scale(1); opacity: 1; } }
