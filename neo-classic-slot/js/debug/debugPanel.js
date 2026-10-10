@@ -11,18 +11,21 @@
   var FORCE_ITEMS = [
     { label: 'BIG', role: 'BIG' },
     { label: 'REG', role: 'REG' },
-    { label: 'チェリー外れ', role: 'RANDOM_BONUS', mode: 'CHERRY_MISS', hint: '左BAR狙い→中で外れれば2確' },
-    { label: '2確(BAR段違い)', role: 'RANDOM_BONUS', mode: 'BAR_STEP', hint: '左中段BAR＋中上段BAR' },
     { label: '先ペカ', role: 'RANDOM_BONUS', leverLamp: true },
-    { label: '大山', role: 'BIG', mode: 'OYAMA', hint: '山図柄を 左下段・中上段・右下段' },
-    { label: '小山', role: 'REG', mode: 'KOYAMA', hint: '山図柄を 左中段・中上段・右中段' },
-    { label: '山型', role: 'RANDOM_BONUS', mode: 'YAMAGATA', hint: '7/BARを 左下段・中上段・右下段' },
+    { label: 'チェリー外れ(2確)', role: 'RANDOM_BONUS', mode: 'CHERRY_MISS_7', hint: '順押し・左BAR狙い→中で外れて2確（中段7は約半分）' },
+    { label: '挟み打ち山否定', role: 'RANDOM_BONUS', mode: 'YAMA_HASAMI', hint: '左→右→中。左BAR中段付近を押して山を下段へ' },
+    { label: '山V字', role: 'RANDOM_BONUS', mode: 'V_SHAPE', hint: '左上・中下・右上に山' },
+    { label: '大山(BIG)', role: 'BIG', mode: 'OYAMA', hint: '左下・中上・右下に山' },
+    { label: '谷(BIG)', role: 'BIG', mode: 'TANI', hint: '左中・中下・右中に山' },
+    { label: '小山(REG寄り)', role: 'REG', mode: 'KOYAMA', hint: '左中・中上・右中に山' },
     { label: 'BAR一直線', role: 'RANDOM_BONUS', mode: 'BAR_LINE', hint: 'BARを各リール狙う' },
-    { label: '逆押し7', role: 'RANDOM_BONUS', mode: 'REVERSE_7', hint: '右から停止・右中段7' },
+    { label: '逆押し右中段7→2確', role: 'RANDOM_BONUS', mode: 'REV_GRAPE_MISS', hint: '右→中→左。右7狙い→中でブドウ否定' },
+    { label: '逆押し右上段7(REG)', role: 'REG', mode: 'REG_R7_TOP', hint: '右から。右7を上段付近で押す' },
     { label: 'ブドウ', role: 'GRAPE' },
+    { label: 'ブドウ(右中段7)', role: 'GRAPE', mode: 'R7_MID', hint: '逆押し右7狙いで右中段7のチャンス目' },
     { label: 'チェリー', role: 'CHERRY', hint: '左BAR狙い' },
+    { label: '山小役', role: 'YAMA', hint: '左BAR狙いで山が滑って出現' },
     { label: 'ベル', role: 'BELL' },
-    { label: 'ピエロ', role: 'PIERROT' },
     { label: 'リプレイ', role: 'REPLAY' },
     { label: 'ハズレ', role: null }
   ];
@@ -90,7 +93,7 @@
     var role = it.role;
     if (role === 'RANDOM_BONUS') {
       role = Math.random() < 0.5 ? 'BIG' : 'REG';
-      if (it.mode && NCS.REACHME_MODE_WEIGHTS[role][it.mode] === 0) role = 'BIG';
+      if (it.mode && !NCS.REACHME_MODE_WEIGHTS[role][it.mode]) role = role === 'BIG' ? 'REG' : 'BIG';
     }
     this.game.lottery.forced = { role: role, mode: it.mode || null };
     if (it.leverLamp) this.effects.forceLeverLamp = true;
@@ -104,7 +107,8 @@
   DebugPanel.prototype.showFlag = function (f) {
     this.root.querySelector('#dbg-forced').textContent = '';
     this.flagText = 'フラグ: ' + (f.bonus ? f.bonus + (f.newBonus ? '(新規成立)' : '(持ち越し)') : '-') +
-      ' / 小役: ' + (f.small || 'ハズレ') + (f.bonus ? ' / 出目モード: ' + f.mode : '');
+      ' / 小役: ' + (f.small || 'ハズレ') + (f.mode && f.mode !== 'NORMAL' ? ' / 出目モード: ' + f.mode : '') +
+      ' / 有効' + (f.lines ? f.lines.length : 5) + 'ライン' + (f.bonusGame ? ' / ボーナスゲーム' : '');
     this.renderStops();
   };
 

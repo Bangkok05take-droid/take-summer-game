@@ -100,31 +100,6 @@
       c.beginPath(); c.moveTo(w * 0.5, h * 0.14); c.lineTo(w * 0.61, h * 0.34); c.lineTo(w * 0.53, h * 0.3); c.lineTo(w * 0.47, h * 0.36); c.lineTo(w * 0.39, h * 0.34); c.closePath(); c.fill();
       c.lineWidth = h * 0.03; c.strokeStyle = '#0d4a1d';
       c.beginPath(); c.moveTo(w * 0.14, h * 0.8); c.lineTo(w * 0.5, h * 0.14); c.lineTo(w * 0.86, h * 0.8); c.closePath(); c.stroke();
-    },
-    'S': function (c, w, h) { // ピエロ
-      var cx = w / 2;
-      // 帽子
-      c.fillStyle = '#1a3fb0';
-      c.beginPath(); c.moveTo(cx - h * 0.2, h * 0.36); c.lineTo(cx, h * 0.04); c.lineTo(cx + h * 0.2, h * 0.36); c.closePath(); c.fill();
-      c.fillStyle = '#fff';
-      c.beginPath(); c.arc(cx, h * 0.05, h * 0.05, 0, Math.PI * 2); c.fill();
-      c.fillStyle = '#e8202a'; c.fillRect(cx - h * 0.28, h * 0.32, h * 0.56, h * 0.08);
-      // 顔
-      c.fillStyle = '#fff4ec';
-      c.beginPath(); c.ellipse(cx, h * 0.62, h * 0.24, h * 0.24, 0, 0, Math.PI * 2); c.fill();
-      c.lineWidth = h * 0.02; c.strokeStyle = '#a04400'; c.stroke();
-      // 髪
-      c.fillStyle = '#ff7a00';
-      [[-1], [1]].forEach(function (s) {
-        c.beginPath(); c.arc(cx + s[0] * h * 0.27, h * 0.56, h * 0.09, 0, Math.PI * 2); c.fill();
-      });
-      // 目・鼻・口
-      c.fillStyle = '#1a3fb0';
-      c.beginPath(); c.arc(cx - h * 0.09, h * 0.56, h * 0.03, 0, Math.PI * 2); c.arc(cx + h * 0.09, h * 0.56, h * 0.03, 0, Math.PI * 2); c.fill();
-      c.fillStyle = '#e8202a';
-      c.beginPath(); c.arc(cx, h * 0.64, h * 0.055, 0, Math.PI * 2); c.fill();
-      c.lineWidth = h * 0.03; c.strokeStyle = '#e8202a';
-      c.beginPath(); c.arc(cx, h * 0.67, h * 0.12, 0.2 * Math.PI, 0.8 * Math.PI); c.stroke();
     }
   };
 

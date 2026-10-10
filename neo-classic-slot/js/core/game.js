@@ -48,6 +48,9 @@
       roles: {}, reachMe: {}, history: []
     };
     this.inBonus = false;
+    this.bet = 0;       // 現在BETされている枚数（レバーONで消費）
+    this.lastBet = 0;   // 直前ゲームのBET（リプレイ用）
+    this.gameBet = 0;   // 進行中ゲームのBET
   }
 
   // 持ちメダルをクレジットへ投入（不足時は貸出）
@@ -70,19 +73,41 @@
   Game.prototype.on = function (ev, fn) { (this.listeners[ev] = this.listeners[ev] || []).push(fn); };
   Game.prototype.emit = function (ev, data) { (this.listeners[ev] || []).forEach(function (fn) { fn(data); }); };
 
+  // BET 1枚（最大 MAX_BET）。リプレイ中・回転中は不可
+  Game.prototype.addBet = function () {
+    if (this.phase !== 'IDLE' || this.replayNext || this.bet >= NCS.MAX_BET) return false;
+    var st = this.stats;
+    if (st.credit < 1) this.insertMedals();
+    if (st.credit < 1) return false; // 所持枚数を超えてBETしない
+    st.credit -= 1;
+    st.in += 1;
+    this.bet++;
+    this.emit('bet', { bet: this.bet });
+    this.emit('state', {});
+    return true;
+  };
+
+  // 大きな LEVER ON ボタン: 不足分を追加BETして MAX BET にしてからレバーON
+  Game.prototype.leverMax = function () {
+    if (this.phase !== 'IDLE') return false;
+    if (!this.replayNext) while (this.bet < NCS.MAX_BET && this.addBet()) { /* 追加BET */ }
+    return this.lever();
+  };
+
+  // レバーON（現在のBET枚数で開始。BET 0枚なら開始しない）
   Game.prototype.lever = function () {
     if (this.phase !== 'IDLE') return false;
+    if (this.replayNext) this.bet = this.lastBet; // リプレイは前回と同じBETで自動開始
+    if (this.bet < 1) return false;
     var now = Date.now();
     if (now - this.lastLeverAt < NCS.CONFIG.GAME_WAIT_MS) return false;
     this.lastLeverAt = now;
 
     var st = this.stats;
-    if (!this.replayNext) {
-      if (st.credit < NCS.BET) this.insertMedals();
-      st.credit -= NCS.BET;
-      st.in += NCS.BET;
-    }
     this.replayNext = false;
+    this.lastBet = this.bet;
+    this.gameBet = this.bet;
+    this.bet = 0;
     st.lastPay = 0;
 
     if (this.inBonus) {
@@ -94,6 +119,7 @@
       st.games++;
       st.totalGames++;
     }
+    this.flag.lines = NCS.activeLines(this.gameBet);
     this.control.reset(this.flag);
     this.stoppedCount = 0;
     this.animDone = 0;
@@ -124,7 +150,7 @@
   };
 
   Game.prototype.finish = function () {
-    var j = NCS.judge(this.control.stops, this.control.order);
+    var j = NCS.judge(this.control.stops, this.control.order, this.flag.lines);
     var pay = NCS.payout(j.wins);
     var st = this.stats;
     if (this.flag.bonusGame) pay = { pay: NCS.CONFIG.BONUS_PAY[this.flag.bonusGame], replay: false };

@@ -18,7 +18,9 @@ var root = path.join(__dirname, '..', 'js');
 var NCS = globalThis.NCS;
 
 var t0 = Date.now();
-var report = NCS.verifyControl();
+// node tools/verify.js all … 1・2枚掛けも検証
+var bets = process.argv[2] === 'all' ? [3, 2, 1] : [3];
+var report = NCS.verifyControl(null, bets);
 console.log(NCS.formatControlReport(report));
 console.log('elapsed', ((Date.now() - t0) / 1000).toFixed(1) + 's');
 process.exit(report.ok ? 0 : 1);

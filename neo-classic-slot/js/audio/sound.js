@@ -10,6 +10,7 @@
 
   var FILES = {
     lever: 'assets/sounds/lever.mp3',
+    bet: 'assets/sounds/bet.mp3',
     stop: 'assets/sounds/stop.mp3',
     pay: 'assets/sounds/pay.mp3',
     lamp: 'assets/sounds/lamp.mp3',
@@ -98,6 +99,13 @@
     if (this.playFile('lever', 'se')) return;
     this.noise('se', 0.05, 0.5, 1500);
     this.tone('se', 'square', 220, 110, 0.06, 0.15);
+  };
+
+  Sound.prototype.bet = function () {
+    if (!this.ready()) return;
+    if (this.playFile('bet', 'se')) return;
+    this.tone('se', 'square', 1320, 990, 0.05, 0.12);
+    this.noise('se', 0.03, 0.15, 5000);
   };
 
   Sound.prototype.reelStop = function () {

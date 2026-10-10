@@ -105,8 +105,16 @@
       sound.unlock();
       if (game.lever()) press('leverKnob', 'down', function () { return 'idle'; }, 180);
     }
-    cab.onTap('leverOn', function () { sound.unlock(); cab.setState('leverOn', 'pressed'); lever(); });
+    // 大きな LEVER ON: MAX BET＋レバーON / 左の物理レバー: 現在のBETでレバーON / BET: 1枚ずつ
+    cab.onTap('leverOn', function () {
+      sound.unlock(); cab.setState('leverOn', 'pressed');
+      if (game.leverMax()) press('leverKnob', 'down', function () { return 'idle'; }, 180);
+    });
     cab.onTap('leverKnob', lever);
+    cab.onTap('betButton', function () {
+      sound.unlock();
+      if (game.addBet()) { sound.bet(); press('betButton', 'pressed', function () { return 'off'; }, 120); }
+    });
     [0, 1, 2].forEach(function (i) {
       cab.onTap('stop' + i, function () {
         sound.unlock();
@@ -123,7 +131,9 @@
     });
     document.addEventListener('keydown', function (e) {
       var k = e.key.toLowerCase();
-      if (k === ' ') { e.preventDefault(); lever(); }
+      if (k === ' ') { e.preventDefault(); game.leverMax(); }
+      else if (k === 'b') { if (game.addBet()) sound.bet(); }
+      else if (k === 'arrowdown') { e.preventDefault(); lever(); }
       else if ('123'.indexOf(k) >= 0 && k) { if (game.stop(+k - 1)) press('stop' + (k - 1), 'pressed', function () { return 'off'; }, 150); }
     });
 
@@ -136,12 +146,14 @@
         var on = game.phase === 'SPINNING' && game.control.stops[i] < 0 && view.canStop(i);
         cab.setState('stop' + i, on ? 'on' : 'off');
       });
-      var betOn = !idle || game.replayNext;
-      ['betLamp1', 'betLamp2', 'betLamp3'].forEach(function (id) { cab.setState(id, betOn ? 'on' : 'off'); });
-      cab.setState('lampStart', idle ? 'on' : 'off');
+      // 3・2・1 ランプ = BET枚数（回転中はそのゲームのBET、リプレイ中は前回BET）
+      var betNow = game.phase !== 'IDLE' ? game.gameBet : (game.replayNext ? game.lastBet : game.bet);
+      [1, 2, 3].forEach(function (n) { cab.setState('betLamp' + n, betNow >= n ? 'on' : 'off'); });
+      if (cab.getState('betButton') !== 'pressed') cab.setState('betButton', idle && !game.replayNext && game.bet < NCS.MAX_BET ? 'on' : 'off');
+      cab.setState('lampStart', idle && (game.bet > 0 || game.replayNext) ? 'on' : 'off');
       cab.setState('lampReplay', game.replayNext ? 'on' : 'off');
       cab.setState('lampWait', idle && Date.now() - game.lastLeverAt < NCS.CONFIG.GAME_WAIT_MS ? 'on' : 'off');
-      cab.setState('lampInsert', idle && !game.replayNext ? 'on' : 'off');
+      cab.setState('lampInsert', idle && !game.replayNext && game.bet === 0 ? 'on' : 'off');
       cab.setDisplay('creditDisplay', s.credit);
       cab.setDisplay('countDisplay', game.inBonus ? s.bonusPlayed : s.games); // ボーナス中は消化ゲーム数
       cab.setDisplay('payoutDisplay', game.inBonus && NCS.CONFIG.PAYOUT_ACCUMULATE_IN_BONUS ? s.bonusGot : s.lastPay);

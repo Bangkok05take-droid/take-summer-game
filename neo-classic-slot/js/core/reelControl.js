@@ -25,11 +25,12 @@
 
   // ---- 最終出目の判定キャッシュ（フラグ非依存） ----
   var judgeCache = new Map();
-  function judgeCached(stops, order) {
-    // 停止順の依存は「第1停止リール」のみ（逆押しリーチ目）
-    var key = ((order[0] * N + stops[0]) * N + stops[1]) * N + stops[2];
+  // lines: 有効ライン（BET枚数で 1/3/5 ライン）。キャッシュはライン数でも区別する
+  function judgeCached(stops, order, lines) {
+    // 停止順は第1・第2停止リールまで区別する（逆押し・挟み打ちリーチ目）
+    var key = ((((lines ? lines.length : 5) * 9 + order[0] * 3 + order[1]) * N + stops[0]) * N + stops[1]) * N + stops[2];
     var j = judgeCache.get(key);
-    if (!j) { j = NCS.judge(stops, order); judgeCache.set(key, j); }
+    if (!j) { j = NCS.judge(stops, order, lines); judgeCache.set(key, j); }
     return j;
   }
 
@@ -38,7 +39,7 @@
     return false;
   }
 
-  var SCORE = { small: 100, bonus: 50, modeReach: 30, offModeReach: -5 };
+  var SCORE = { small: 100, bonus: 50, modeReach: 80, offModeReach: -5, midLine: 3, barBottom: 1 };
 
   function terminalScore(flag, mode, j, sc) {
     var i;
@@ -47,13 +48,27 @@
       if (r !== flag.bonus && r !== flag.small) return FORBID;
     }
     for (i = 0; i < j.reachMe.length; i++) {
-      if (!flag.bonus || NCS.REACHME[j.reachMe[i]].allow.indexOf(flag.bonus) < 0) return FORBID;
+      var rm = NCS.REACHME[j.reachMe[i]];
+      var ok = (flag.bonus && rm.allow.indexOf(flag.bonus) >= 0) || (flag.small && rm.allowSmall && rm.allowSmall.indexOf(flag.small) >= 0);
+      if (!ok) return FORBID;
     }
     var s = 0;
     if (flag.small && hasWin(j, flag.small)) s += sc.small;
     if (flag.bonus && hasWin(j, flag.bonus)) s += sc.bonus;
     // 出目モードのリーチ目は積極的に、それ以外のリーチ目は可能なら避ける（NORMAL はハズレ目寄り）
-    for (i = 0; i < j.reachMe.length; i++) s += j.reachMe[i] === mode ? sc.modeReach : sc.offModeReach;
+    // MODE_TARGETS[mode] = { リーチ目ID: 重み(0〜1) }。最も重いものを採用
+    var targets = (NCS.MODE_TARGETS && NCS.MODE_TARGETS[mode]) || {};
+    var hit = 0;
+    for (i = 0; i < j.reachMe.length; i++) {
+      var w = targets[j.reachMe[i]];
+      if (w) hit = Math.max(hit, w);
+      else if (NCS.REACHME[j.reachMe[i]].kind !== 'chance') s += sc.offModeReach;
+    }
+    s += hit * sc.modeReach;
+    // 見た目の基本形: 小役は中段ライン優先 / 左BARは下段停止優先
+    if (flag.small) for (i = 0; i < j.wins.length; i++) if (j.wins[i].role === flag.small && j.wins[i].line === 0) { s += sc.midLine || 0; break; }
+    if (j.leftBarBottom) s += sc.barBottom || 0;
+    if (j.rightSevenBottom) s += sc.barBottom || 0; // 逆押しの基本形: 右7下段
     return s;
   }
 
@@ -80,8 +95,11 @@
   // 状態の評価値 {min, avg}
   Solver.prototype.value = function (stops, order) {
     if (order.length === 3) {
-      var s = terminalScore(this.flag, this.mode, judgeCached(stops, order), this.score);
-      return { min: s, avg: s };
+      var j = judgeCached(stops, order, this.flag.lines);
+      var soft = terminalScore(this.flag, this.mode, j, this.score);
+      // min（最悪ケース）は「停止禁止」と「成立小役が揃うか」だけで評価。見た目の好みは avg のみに効かせる
+      var hard = soft === FORBID ? FORBID : (this.flag.small && hasWin(j, this.flag.small) ? 100 : 0);
+      return { min: hard, avg: soft };
     }
     var key = stateKey(stops, order);
     var v = this.memo.get(key);
@@ -121,9 +139,10 @@
   }
 
   ReelControl.prototype.solverFor = function (flag) {
-    var key = (flag.bonus || '-') + '/' + (flag.small || '-') + '/' + (flag.bonus ? flag.mode : 'NORMAL');
+    var mode = flag.mode || 'NORMAL';
+    var key = (flag.bonus || '-') + '/' + (flag.small || '-') + '/' + mode + '/' + (flag.lines ? flag.lines.length : 5);
     var s = this.solvers.get(key);
-    if (!s) { s = new Solver(flag, flag.bonus ? flag.mode : 'NORMAL'); this.solvers.set(key, s); }
+    if (!s) { s = new Solver(flag, mode); this.solvers.set(key, s); }
     return s;
   };
 
@@ -145,10 +164,10 @@
 
   // 未停止リールがどこに止まってもリーチ目になるか（= この停止でボーナス確定）
   ReelControl.prototype.isDetermined = function () {
-    return NCS.isDeterminedState(this.stops, this.order);
+    return NCS.isDeterminedState(this.stops, this.order, this.flag && this.flag.lines);
   };
 
-  NCS.isDeterminedState = function (stops, order) {
+  NCS.isDeterminedState = function (stops, order, lines) {
     if (order.length === 0 || order.length === 3) return false;
     var rest = [0, 1, 2].filter(function (r) { return stops[r] < 0; });
     var st = stops.slice();
@@ -156,7 +175,7 @@
     for (var pi = 0; pi < perms.length; pi++) {
       var full = order.concat(perms[pi]);
       var ok = (function rec(i) {
-        if (i === rest.length) return judgeCached(st, full).reachMe.length > 0;
+        if (i === rest.length) return judgeCached(st, full, lines).reachMe.some(function (id) { return NCS.REACHME[id].kind !== 'chance'; });
         for (var x = 0; x < N; x++) { st[rest[i]] = x; if (!rec(i + 1)) return false; }
         return true;
       })(0);

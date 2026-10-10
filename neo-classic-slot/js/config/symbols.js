@@ -13,7 +13,6 @@
     'G': { name: 'ブドウ',   short: 'GR', color: '#7a2fb8', img: 'assets/images/symbols/sym_grape.png' },
     'L': { name: 'ベル',     short: 'BL', color: '#e8b400', img: 'assets/images/symbols/sym_bell.png' },
     'R': { name: 'リプレイ', short: 'RP', color: '#1a6fd0', img: 'assets/images/symbols/sym_replay.png' },
-    'M': { name: '山',       short: '山', color: '#1f8a3a', img: 'assets/images/symbols/sym_mountain.png' },
-    'S': { name: 'ピエロ',   short: 'PI', color: '#ff7a00', img: 'assets/images/symbols/sym_pierrot.png' }
+    'M': { name: '山',       short: '山', color: '#1f8a3a', img: 'assets/images/symbols/sym_mountain.png' }
   };
 })(typeof window !== 'undefined' ? window : globalThis);

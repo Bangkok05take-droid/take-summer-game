@@ -22,8 +22,8 @@
     return null; // ハズレ
   };
 
-  Lottery.prototype.pickMode = function (bonus) {
-    var w = NCS.REACHME_MODE_WEIGHTS[bonus], total = 0, k;
+  Lottery.prototype.pickMode = function (w) {
+    var total = 0, k;
     for (k in w) total += w[k];
     var r = this.rng() * total;
     for (k in w) { if (r < w[k]) return k; r -= w[k]; }
@@ -52,7 +52,9 @@
     } else if (role) {
       flag.small = role;
     }
-    if (flag.bonus) flag.mode = forcedMode || this.pickMode(flag.bonus);
+    // 出目モード: 強制モードはそのフラグで有効な場合のみ採用（例: REG専用モードをBIGに適用しない）
+    var w = flag.bonus ? NCS.REACHME_MODE_WEIGHTS[flag.bonus] : (flag.small && NCS.SMALL_MODE_WEIGHTS && NCS.SMALL_MODE_WEIGHTS[flag.small]);
+    if (w) flag.mode = (forcedMode && w[forcedMode] > 0) ? forcedMode : this.pickMode(w);
     return flag;
   };
 

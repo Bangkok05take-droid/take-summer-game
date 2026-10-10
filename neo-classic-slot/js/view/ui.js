@@ -11,7 +11,7 @@
     this.view = view;
     this.sound = sound;
     this.el = {
-      lamp: $('lamp'), lever: $('lever'), msg: $('message'),
+      lamp: $('lamp'), lever: $('lever'), bet: $('bet'), msg: $('message'),
       stops: [].slice.call(document.querySelectorAll('.stop')),
       medals: $('v-medals'), hold: $('v-hold'), pay: $('v-pay'), games: $('v-games'),
       big: $('v-big'), reg: $('v-reg'), diff: $('v-diff'), total: $('v-total'),
@@ -34,7 +34,8 @@
         fn();
       });
     }
-    tap(this.el.lever, function () { game.lever(); });
+    tap(this.el.lever, function () { game.leverMax(); }); // MAX BET＋レバーON
+    tap(this.el.bet, function () { if (game.addBet()) self.sound.bet(); });
     this.el.stops.forEach(function (b) {
       tap(b, function () { game.stop(+b.dataset.reel); });
     });
@@ -43,7 +44,9 @@
       if (e.repeat || e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
       self.sound.unlock();
       var k = e.key.toLowerCase();
-      if (k === ' ' || k === 'arrowdown') { e.preventDefault(); game.lever(); }
+      if (k === ' ') { e.preventDefault(); game.leverMax(); }
+      else if (k === 'arrowdown') { e.preventDefault(); game.lever(); }
+      else if (k === 'b') { if (game.addBet()) self.sound.bet(); }
       else if (k === '1' || k === 'j') game.stop(0);
       else if (k === '2' || k === 'k') game.stop(1);
       else if (k === '3' || k === 'l') game.stop(2);
@@ -54,6 +57,8 @@
   UI.prototype.refreshButtons = function () {
     var game = this.game, view = this.view;
     this.el.lever.classList.toggle('active', game.phase === 'IDLE');
+    this.el.bet.classList.toggle('active', game.phase === 'IDLE' && !game.replayNext && game.bet < NCS.MAX_BET);
+    this.el.bet.textContent = 'BET ' + (game.phase === 'IDLE' ? (game.replayNext ? game.lastBet : game.bet) : game.gameBet);
     this.el.stops.forEach(function (b, i) {
       var on = game.phase === 'SPINNING' && game.control.stops[i] < 0 && view.canStop(i);
       b.classList.toggle('active', on);

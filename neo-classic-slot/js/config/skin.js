@@ -77,7 +77,11 @@
       { id: 'stop2', type: 'image', rect: [650, 1328, 125, 125], z: 50, hit: 30, label: 'STOP', reel: 2,
         states: { off: 'buttons/stop_off.png', on: 'buttons/stop_on.png', pressed: 'buttons/stop_pressed.png' } },
 
-      // ---- レバー（実物レバーの見た目。タップでもレバーONとして扱う） ----
+      // ---- BET ボタン（1タップ1枚・最大3枚）。正式デザインのメダル受け左の銀色ボタン位置 ----
+      { id: 'betButton', type: 'image', rect: [245, 1172, 130, 92], z: 50, hit: 22, label: 'BET',
+        states: { off: 'buttons/bet_off.png', on: 'buttons/bet_on.png', pressed: 'buttons/bet_pressed.png' } },
+
+      // ---- レバー（実物レバー。タップで現在のBET枚数のままレバーON） ----
       { id: 'leverKnob', type: 'image', rect: [40, 1285, 165, 170], z: 50, hit: 20, label: 'レバー',
         states: { idle: 'buttons/lever_knob.png', down: 'buttons/lever_knob_down.png' } },
 

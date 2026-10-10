@@ -59,7 +59,7 @@
     var self = this, game = this.game;
     if (!this.enabled || !game.inBonus) { this.setRunning(false); return; }
     if (game.phase === 'IDLE') {
-      if (!game.lever()) { this.timer = setTimeout(function () { self.step(); }, 100); return; }
+      if (!game.leverMax()) { this.timer = setTimeout(function () { self.step(); }, 100); return; }
     }
     // 順押しで、定速になり次第一定間隔で停止
     var next = [0, 1, 2].filter(function (r) { return game.control.stops[r] < 0; })[0];

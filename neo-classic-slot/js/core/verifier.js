@@ -11,21 +11,29 @@
   NCS.CONTROL_ORDERS = ORDERS;
   NCS.CONTROL_ORDER_NAMES = ORDER_NAMES;
 
-  function cases() {
+  // bets: 検証するBET枚数（既定は3枚のみ）。1・2枚掛けは有効ラインが減る
+  function cases(bets) {
     var list = [];
-    [null, 'GRAPE', 'CHERRY', 'BELL', 'PIERROT', 'REPLAY'].forEach(function (s) {
+    [null, 'GRAPE', 'CHERRY', 'BELL', 'YAMA', 'REPLAY'].forEach(function (s) {
       list.push({ bonus: null, small: s, mode: 'NORMAL' });
+    });
+    Object.keys(NCS.SMALL_MODE_WEIGHTS || {}).forEach(function (s) {
+      Object.keys(NCS.SMALL_MODE_WEIGHTS[s]).forEach(function (m) { if (m !== 'NORMAL') list.push({ bonus: null, small: s, mode: m }); });
     });
     ['BIG', 'REG'].forEach(function (b) {
       var w = NCS.REACHME_MODE_WEIGHTS[b];
       Object.keys(w).forEach(function (m) { if (w[m] > 0) list.push({ bonus: b, small: null, mode: m }); });
-      ['GRAPE', 'CHERRY', 'REPLAY'].forEach(function (s) { list.push({ bonus: b, small: s, mode: 'NORMAL' }); });
+      ['GRAPE', 'CHERRY', 'REPLAY', 'YAMA'].forEach(function (s) { list.push({ bonus: b, small: s, mode: 'NORMAL' }); });
     });
-    return list;
+    var all = [];
+    (bets || [NCS.MAX_BET]).forEach(function (bet) {
+      list.forEach(function (f) { var c = Object.assign({}, f); c.lines = NCS.activeLines(bet); c.bet = bet; all.push(c); });
+    });
+    return all;
   }
 
   function flagName(f) {
-    return (f.bonus ? f.bonus + (f.small ? '+' + f.small : '') + (f.mode !== 'NORMAL' ? ' [' + f.mode + ']' : '') : (f.small || 'ハズレ'));
+    return (f.bet && f.bet !== NCS.MAX_BET ? f.bet + '枚掛け ' : '') + (f.bonus ? f.bonus + (f.small ? '+' + f.small : '') : (f.small || 'ハズレ')) + (f.mode && f.mode !== 'NORMAL' ? ' [' + f.mode + ']' : '');
   }
 
   NCS.verifyCase = function (flag) {
@@ -37,7 +45,7 @@
     function det(stops, order) {
       var k = order.join('') + ':' + stops.join(',');
       var v = detMemo.get(k);
-      if (v === undefined) { v = NCS.isDeterminedState(stops, order); detMemo.set(k, v); }
+      if (v === undefined) { v = NCS.isDeterminedState(stops, order, flag.lines); detMemo.set(k, v); }
       return v;
     }
 
@@ -52,13 +60,15 @@
           if (res.slide > st.maxSlide) st.maxSlide = res.slide;
           if (!determinedAt && i < 2 && flag.bonus && det(ctrl.stops, ctrl.order)) determinedAt = i + 1;
         }
-        var j = NCS.judge(ctrl.stops, ctrl.order);
+        var j = NCS.judge(ctrl.stops, ctrl.order, flag.lines);
         st.games++;
         var bad = false;
         j.wins.forEach(function (w) { if (w.role !== flag.bonus && w.role !== flag.small) bad = true; });
         j.reachMe.forEach(function (r) {
           st.reach[r] = (st.reach[r] || 0) + 1;
-          if (!flag.bonus || NCS.REACHME[r].allow.indexOf(flag.bonus) < 0) bad = true;
+          var rm = NCS.REACHME[r];
+          var ok = (flag.bonus && rm.allow.indexOf(flag.bonus) >= 0) || (flag.small && rm.allowSmall && rm.allowSmall.indexOf(flag.small) >= 0);
+          if (!ok) bad = true;
         });
         if (bad) {
           st.forbidden++;
@@ -72,14 +82,15 @@
     return st;
   };
 
-  NCS.verifyControl = function (onProgress) {
-    var list = cases(), out = [], ok = true;
+  NCS.verifyControl = function (onProgress, bets) {
+    var list = cases(bets), out = [], ok = true;
     list.forEach(function (flag, idx) {
       var st = NCS.verifyCase(flag);
       var errors = [];
       if (st.forbidden) errors.push('停止禁止出目 ' + st.forbidden + '件');
       if (st.maxSlide > NCS.MAX_SLIDE) errors.push('すべり超過');
-      if (flag.small && MUST_ALIGN.indexOf(flag.small) >= 0 && st.small !== st.games) errors.push(flag.small + ' 取りこぼし ' + (st.games - st.small) + '件');
+      // 取りこぼし無しの保証は MAX BET（5ライン）のみ。1・2枚掛けは有効ラインが少ないため対象外
+      if (flag.bet === NCS.MAX_BET && flag.small && MUST_ALIGN.indexOf(flag.small) >= 0 && st.small !== st.games) errors.push(flag.small + ' 取りこぼし ' + (st.games - st.small) + '件');
       if (errors.length) ok = false;
       out.push({ flag: flag, name: flagName(flag), stats: st, errors: errors });
       if (onProgress) onProgress(idx + 1, list.length);
