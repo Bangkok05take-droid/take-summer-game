@@ -31,6 +31,7 @@
     var self = this;
     this.fit();
     window.addEventListener('resize', function () { self.fit(); });
+    if (window.visualViewport) window.visualViewport.addEventListener('resize', function () { self.fit(); });
     window.addEventListener('orientationchange', function () { setTimeout(function () { self.fit(); }, 200); });
   }
 
@@ -152,8 +153,13 @@
   // 画面に収まる最大の縮小率（縦画面は横幅基準、縦が足りなければ高さ基準）
   Cabinet.prototype.fit = function () {
     var s = this.skin;
-    var vw = this.host.clientWidth || window.innerWidth;
-    var vh = this.opts.fitHeight === false ? Infinity : (window.innerHeight - (this.opts.reserveHeight || 0));
+    // 実際に見えている幅・高さを使う（アプリ内表示や iframe で host が画面より広くなっても右端が切れないように）
+    var vv = window.visualViewport;
+    var vw = Math.min(this.host.clientWidth || Infinity, document.documentElement.clientWidth || Infinity,
+                      window.innerWidth || Infinity, vv ? vv.width : Infinity);
+    if (!isFinite(vw)) vw = 360;
+    var vh = this.opts.fitHeight === false ? Infinity
+      : (Math.min(window.innerHeight, vv ? vv.height : Infinity) - (this.opts.reserveHeight || 0));
     var k = Math.min(vw / s.designWidth, vh / s.designHeight);
     this.scale = k;
     this.stage.style.transform = 'scale(' + k + ')';
