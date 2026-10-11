@@ -12,18 +12,18 @@
     NORMAL: [
       { role: 'BIG',    weight: 655 },   // 1/100.05
       { role: 'REG',    weight: 655 },   // 1/100.05  （合算 1/50.03）
-      { role: 'CHERRY', weight: 1820 },  // 1/36.0
+      { role: 'CHERRY', weight: 2185 },  // 1/30.0
       { role: 'GRAPE',  weight: 10923 }, // 1/6.0
       { role: 'BELL',   weight: 64 },    // 1/1024
-      { role: 'YAMA',   weight: 3277 },  // 1/20.0
+      { role: 'YAMA',   weight: 2185 },  // 1/30.0
       { role: 'REPLAY', weight: 8978 }   // 1/7.3
     ],
     // ボーナス内部中（持ち越し中）: ボーナスは抽選しない
     CARRY: [
-      { role: 'CHERRY', weight: 1820 },
+      { role: 'CHERRY', weight: 2185 },
       { role: 'GRAPE',  weight: 10923 },
       { role: 'BELL',   weight: 64 },
-      { role: 'YAMA',   weight: 3277 },
+      { role: 'YAMA',   weight: 2185 },
       { role: 'REPLAY', weight: 8978 }
     ]
   };
