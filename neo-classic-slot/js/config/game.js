@@ -17,11 +17,11 @@
 
     // プレミア演出（すべてBIG確定）。内部抽選とは別に、BIG成立ゲームのレバーONで演出抽選する
     PREMIUM: {
-      revivalRate: 0.30,     // ジャグ連中BIG当選のうち復活フリーズになる割合
-      silentPekaRate: 0.40,  // 先行抽選で1G目BIG当選時、BIG消化中に無音先ペカする割合
+      revivalRate: 0.10,     // ジャグ連中BIG当選のうち復活フリーズになる割合（無音先ペカと同時発生しない）
+      silentPekaRate: 0.10,  // 先行抽選で1G目BIG当選時、BIG消化中に無音先ペカする割合
       // 各演出の発生率（BIG成立ゲーム）: 通常時 / ジャグ連チャンス中
-      normal: { freeze: 0.03, delay: 0.08, stop2: 0.05, vibe: 0.06 },
-      chance: { freeze: 0.10, delay: 0.20, stop2: 0.15, vibe: 0.15 },
+      normal: { freeze: 0.02, delay: 0.05, stop2: 0.03, vibe: 0.05 },
+      chance: { freeze: 0.05, delay: 0.12, stop2: 0.10, vibe: 0.12 },
       freezeMs: 2800,        // レバーONフリーズ
       delayMs: 450,          // 遅れ（リール始動の遅れ）
       revivalMs: 3800        // 復活フリーズ
@@ -37,6 +37,7 @@
     REEL_RPM: 80,            // 定速回転数（80回転/分 = 約28コマ/秒）
     ACCEL_MS: 300,           // 加速時間（定速到達まで停止ボタン無効）
     USE_IMAGE_ASSETS: false, // true で symbols.js / skin.js の画像を読み込む（第5段階）
-    USE_SOUND_ASSETS: false  // true で sound.js の音声ファイルを読み込む（第4段階）
+    USE_SOUND_ASSETS: false, // true で sound.js / bgm.js の音声ファイルを読み込む
+    NORMAL_BGM: true         // 通常時のBGM（控えめ）を流す
   };
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -71,6 +71,19 @@
 
 未配置の間はプログラムで描いた仮のドル箱を表示します。
 
+## 6. 音声（任意・`assets/sounds/`）
+
+`?sounds=1` または `CONFIG.USE_SOUND_ASSETS = true` で読み込み。置いていない音は合成音で代用。
+
+| ファイル | 用途 | ループ |
+|---|---|---|
+| `bgm_normal.mp3` / `bgm_big.mp3` / `bgm_reg.mp3` / `bgm_chance.mp3` | 通常時 / BIG中 / REG中 / ジャグ連チャンス中のBGM | ループ |
+| `lever.mp3` / `bet.mp3` / `stop.mp3` | レバー / BET / リール停止 | — |
+| `lamp.mp3` | 告知ランプ点灯 | — |
+| `pay.mp3` | 払い出し（1回分） | — |
+| `box_complete.mp3` / `legendary.mp3` | ドル箱完成 / 万枚達成 | — |
+| `premium_freeze.mp3` / `premium_revival.mp3` / `premium_stop2.mp3` | プレミア演出 | — |
+
 ## 優先度
 
 1. **最優先**: `cabinet_bg`、図柄8種、`reel_frame`、`lucky_off/on`、`stop_*`、`lever_on_*` … これで遊べる見た目になる

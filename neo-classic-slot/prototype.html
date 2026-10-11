@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0b0b14">
+  <title>NEO CLASSIC SLOT（旧試作画面）</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/cabinet.css">
+</head>
+<body>
+  <div id="app">
+    <header class="top">
+      <h1>NEO CLASSIC SLOT</h1>
+      <span>
+        <button id="box-open" class="debug-toggle">BOX×0</button>
+        <button id="auto-toggle" class="debug-toggle">AUTO</button>
+        <button id="data-open" class="debug-toggle">DATA</button>
+        <button id="debug-toggle" class="debug-toggle" hidden>DEBUG</button>
+      </span>
+    </header>
+
+    <section class="cabinet">
+      <div class="reel-frame">
+        <canvas id="reels"></canvas>
+        <div id="bonus-flash" class="bonus-flash"></div>
+      </div>
+
+      <div class="panel">
+        <div id="lamp" class="lamp"><span>NEO!</span></div>
+        <div class="info">
+          <div><label>CREDIT</label><b id="v-medals">0</b></div>
+          <div><label>PAY</label><b id="v-pay">0</b></div>
+          <div><label>GAME</label><b id="v-games">0</b></div>
+          <div><label>BIG</label><b id="v-big">0</b></div>
+          <div><label>REG</label><b id="v-reg">0</b></div>
+          <div><label>差枚</label><b id="v-diff">0</b></div>
+          <div class="wide"><label>総所持 / TOTAL</label><b><span id="v-hold">0</span> / <span id="v-total">0</span></b></div>
+        </div>
+      </div>
+      <div id="message" class="message"></div>
+    </section>
+
+    <section class="controls">
+      <div class="lever-row">
+        <button id="bet" class="bet">BET</button>
+        <button id="lever" class="lever">LEVER ON</button>
+      </div>
+      <div class="stops">
+        <button class="stop" data-reel="0">STOP</button>
+        <button class="stop" data-reel="1">STOP</button>
+        <button class="stop" data-reel="2">STOP</button>
+      </div>
+    </section>
+
+    <div id="debug" class="debug hidden"></div>
+  </div>
+
+  <!-- 設定 -->
+  <script src="js/config/game.js"></script>
+  <script src="js/config/symbols.js"></script>
+  <script src="js/config/reels.js"></script>
+  <script src="js/config/roles.js"></script>
+  <script src="js/config/probability.js"></script>
+  <script src="js/config/reachme.js"></script>
+  <!-- コア（抽選・判定・停止制御・進行） -->
+  <script src="js/core/lottery.js"></script>
+  <script src="js/core/judge.js"></script>
+  <script src="js/core/reelControl.js"></script>
+  <script src="js/core/verifier.js"></script>
+  <script src="js/core/wallet.js"></script>
+  <script src="js/core/jugren.js"></script>
+  <script src="js/core/game.js"></script>
+  <script src="js/core/autoPlay.js"></script>
+  <!-- 表示・演出・音 -->
+  <script src="js/view/symbolArt.js"></script>
+  <script src="js/view/reelView.js"></script>
+  <script src="js/view/ui.js"></script>
+  <script src="js/view/dataScreen.js"></script>
+  <script src="js/view/dollarBox.js"></script>
+  <script src="js/audio/sound.js"></script>
+  <script src="js/effects/premium.js"></script>
+  <script src="js/effects/effects.js"></script>
+  <script src="js/debug/debugPanel.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>

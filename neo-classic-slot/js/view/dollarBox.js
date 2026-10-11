@@ -129,11 +129,14 @@
     document.body.appendChild(el);
     this.coll = el;
     var self = this;
+    // ゴーストクリック対策（開いたタップの click で即閉じないように）
+    el.addEventListener('click', function (e) { if (Date.now() - self.openedAt < 400) { e.stopPropagation(); e.preventDefault(); } }, true);
     el.querySelector('button').addEventListener('click', function () { self.closeCollection(); });
     this.game.on('state', function () { if (self.collectionOpen) self.renderCollection(); });
   };
 
   DollarBoxView.prototype.openCollection = function () {
+    this.openedAt = Date.now();
     this.collectionOpen = true;
     this.coll.hidden = false;
     this.renderCollection();

@@ -22,11 +22,26 @@
     el.querySelector('.data-reset').addEventListener('click', function () {
       if (window.confirm('クレジット・ドル箱・最高記録を初期化しますか？')) { game.wallet.reset(); game.emit('state', {}); }
     });
-    el.addEventListener('click', function (e) { if (e.target === el) self.close(); });
+    // ゴーストクリック対策: 開いたタップの click が下にあるボタンや背景に落ちるので、開いた直後のクリックは無視
+    el.addEventListener('click', function (e) {
+      if (Date.now() - self.openedAt < 400) { e.stopPropagation(); e.preventDefault(); return; }
+      if (e.target === el) self.close();
+    }, true);
     game.on('state', function () { if (!el.hidden) self.render(); });
   }
 
-  DataScreen.prototype.open = function () { this.render(); this.el.hidden = false; };
+  // データ画面の下部に設定ボタンを追加（label は文字列 or 文字列を返す関数）
+  DataScreen.prototype.addButton = function (label, fn) {
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'data-reset data-opt';
+    var txt = function () { b.textContent = typeof label === 'function' ? label() : label; };
+    txt();
+    b.addEventListener('click', function () { fn(); txt(); });
+    this.el.querySelector('.data-box').insertBefore(b, this.el.querySelector('.data-box .data-reset'));
+    return b;
+  };
+
+  DataScreen.prototype.open = function () { this.openedAt = Date.now(); this.render(); this.el.hidden = false; };
   DataScreen.prototype.close = function () { this.el.hidden = true; };
   DataScreen.prototype.isOpen = function () { return !this.el.hidden; };
 

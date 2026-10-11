@@ -202,3 +202,4 @@
 .pm-l2 { margin-top: 10px; font: 900 22px "Arial Black", Impact, sans-serif; color: #ffe27a; text-shadow: 0 0 10px #f60, 0 0 3px #000; }
 .stop2 .pm-l1 { font-size: 34px; color: #e9d0ff; text-shadow: 0 0 14px #a050ff; }
 @keyframes pm-zoom { from { transform: scale(3); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.data-opt { background: #1a1a2a; color: #ddd; border-color: #555; }

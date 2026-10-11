@@ -23,11 +23,14 @@
     bgmBonus: 'assets/sounds/bgm_bonus.mp3'
   };
 
+  var PREF_KEY = 'ncs.sound.v1';
+
   function Sound() {
     this.ctx = null;
     this.buffers = {};
     this.channels = {};
-    this.enabled = true;
+    var pref = NCS.storage && NCS.storage.get(PREF_KEY);
+    this.enabled = !(pref && pref.enabled === false);
     this.silent = false;   // 無音ペカリ中は true
     this.payTimer = null;
   }
@@ -38,7 +41,7 @@
     if (!AC) return;
     this.ctx = new AC();
     var master = this.ctx.createGain();
-    master.gain.value = 0.6;
+    master.gain.value = this.enabled ? 0.6 : 0;
     master.connect(this.ctx.destination);
     this.master = master;
     var self = this;
@@ -49,6 +52,7 @@
       self.channels[ch] = gn;
     });
     if (NCS.CONFIG.USE_SOUND_ASSETS) this.loadFiles();
+    if (this.onUnlock) this.onUnlock();
   };
 
   Sound.prototype.loadFiles = function () {
@@ -143,10 +147,22 @@
     }
   };
 
+  // 告知ランプ「ペカッ」: 明るい上昇音＋きらめき
   Sound.prototype.lamp = function () {
     if (!this.ready()) return;
     if (this.playFile('lamp', 'jingle')) return;
-    this.tone('jingle', 'sawtooth', 880, 1760, 0.12, 0.15);
+    this.tone('jingle', 'square', 1319, 2637, 0.09, 0.14);
+    this.tone('jingle', 'triangle', 2637, null, 0.35, 0.12, 0.08);
+    this.tone('jingle', 'triangle', 3951, null, 0.25, 0.06, 0.12);
+    this.noise('jingle', 0.15, 0.05, 9000, 0.08);
+  };
+
+  // サウンドON/OFF（設定を保存）
+  Sound.prototype.setEnabled = function (on) {
+    this.enabled = on;
+    if (NCS.storage) NCS.storage.set(PREF_KEY, { enabled: on });
+    if (this.master) this.master.gain.setTargetAtTime(on && !this.silent ? 0.6 : 0, this.ctx.currentTime, 0.02);
+    if (this.onToggle) this.onToggle(on);
   };
 
   // ドル箱完成: メダルがジャラッと落ちる音＋上昇チャイム
@@ -194,7 +210,7 @@
   // 無音ペカリ等: すべての音を止める
   Sound.prototype.muteAll = function (on) {
     this.silent = on;
-    if (this.master) this.master.gain.setTargetAtTime(on ? 0 : 0.6, this.ctx.currentTime, 0.005);
+    if (this.master) this.master.gain.setTargetAtTime(on || !this.enabled ? 0 : 0.6, this.ctx.currentTime, 0.005);
   };
 
   NCS.Sound = Sound;

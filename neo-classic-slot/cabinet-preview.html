@@ -38,7 +38,7 @@
     <button data-force="BIG">次G BIG</button>
     <button data-force="REG">次G REG</button>
     <button data-force="CHERRY_MISS">次G チェリー外れ</button>
-    <button data-force="PIERROT">次G ピエロ</button>
+    <button data-force="YAMA">次G 山小役</button>
     <button id="open-data">データ画面</button>
     <div id="info"></div>
   </div>
@@ -55,6 +55,7 @@
   <script src="js/core/reelControl.js"></script>
   <script src="js/core/wallet.js"></script>
   <script src="js/core/jugren.js"></script>
+  <script src="js/core/verifier.js"></script>
   <script src="js/core/game.js"></script>
   <script src="js/core/autoPlay.js"></script>
   <script src="js/view/symbolArt.js"></script>
@@ -63,124 +64,27 @@
   <script src="js/view/dataScreen.js"></script>
   <script src="js/view/dollarBox.js"></script>
   <script src="js/audio/sound.js"></script>
+  <script src="js/audio/bgm.js"></script>
   <script src="js/effects/premium.js"></script>
   <script src="js/effects/effects.js"></script>
+  <script src="js/debug/debugPanel.js"></script>
+  <script src="js/app.js"></script>
   <script>
   (function () {
-    var NCS = window.NCS;
-    var q = new URLSearchParams(location.search);
-    if (q.get('images') === '1') NCS.CONFIG.USE_IMAGE_ASSETS = true;
-    NCS.loadSymbolImages();
-
-    var cab = new NCS.Cabinet(document.getElementById('host'), NCS.SKIN);
-    var view = cab.createReelView();
-    var sound = new NCS.Sound();
-    var game = new NCS.Game({ reels: view });
-    var data = new NCS.DataScreen(game);
-    var showBonusGot = false; // ボーナス獲得枚数表示（終了後は次のレバーONまで残す）
-
-    // Effects が呼ぶ表示インターフェースを筐体パーツへ割り当てるアダプタ
-    var ui = {
-      setLamp: function (on) { cab.setState('luckyLamp', on ? 'on' : 'off'); },
-      showResult: function (e) { view.showWins(e.wins); },
-      flashBonus: function (type) {
-        var k = type.toLowerCase();
-        cab.setState('bonusEffect', k);
-        cab.el('bonusEffect').querySelector('.cab-label').textContent = type === 'BIG' ? 'BIG BONUS!' : 'REG BONUS!';
-        cab.setState('bonusPanel', k); // ボーナス消化中は点灯したまま
-        setTimeout(function () { cab.setState('bonusEffect', 'none'); }, 2000);
-      },
-      bonusEnd: function () { cab.setState('bonusPanel', 'off'); }
-    };
-    var effects = new NCS.Effects(game, ui, sound);
-    var auto = new NCS.AutoPlay(game, view);
-    // ドル箱: 完成演出・専用画面。筐体下部のカウンターをタップで開く
-    var dbx = new NCS.DollarBoxView(game, sound);
-    var boxEl = cab.el('boxCounter');
-    boxEl.insertAdjacentHTML('beforeend', '<div class="box-counter"><canvas width="172" height="144"></canvas><span>× 0 BOX</span></div>');
-    NCS.drawDollarBox(boxEl.querySelector('canvas').getContext('2d'), 14, 34, 130, 1);
-    cab.onTap('boxCounter', function () { dbx.openCollection(); });
-    auto.on(function (e) {
-      effects.autoRunning = e.running;
-      cab.setState('autoPlay', e.enabled ? 'on' : 'off');
+    // 共通アプリ（js/app.js）を起動し、レイアウト確認用のツールだけ追加する
+    var app = NCS.startCabinetApp(document.getElementById('host'), {
+      onFrame: function () {
+        var s = app.game.stats, cab = app.cab, game = app.game, auto = app.auto;
+        document.getElementById('info').textContent =
+          '縮小率 ' + cab.scale.toFixed(3) + ' / 画面 ' + window.innerWidth + '×' + window.innerHeight +
+          '\nSTOPボタン表示 ' + Math.round(125 * cab.scale) + 'px（タッチ範囲 ' + Math.round(185 * cab.scale) + 'px）' +
+          ' / LEVER ON ' + Math.round(330 * cab.scale) + 'px' +
+          '\nCREDIT ' + s.credit + ' / ドル箱 ' + game.wallet.boxes() + '箱 / 総所持 ' + game.wallet.holdings() + ' / BIG ' + s.big + ' / REG ' + s.reg + ' / 総G ' + s.totalGames +
+          (game.inBonus ? '\n★' + s.bonusType + ' 消化中 ' + s.bonusPlayed + '/' + NCS.CONFIG.BONUS_GAMES[s.bonusType] + 'G 獲得' + s.bonusGot + '枚' + (auto.running ? '（オート）' : '') : '') +
+          (auto.enabled ? '\nAUTO PLAY: ON' : '');
+      }
     });
-    game.on('lever', function () { if (!game.inBonus) showBonusGot = false; });
-    game.on('bonus', function () { showBonusGot = true; });
-
-    function press(id, state, back, ms) {
-      cab.setState(id, state);
-      setTimeout(function () { cab.setState(id, back()); }, ms || 120);
-    }
-    function lever() {
-      sound.unlock();
-      if (game.lever()) press('leverKnob', 'down', function () { return 'idle'; }, 180);
-    }
-    // 大きな LEVER ON: MAX BET＋レバーON / 左の物理レバー: 現在のBETでレバーON / BET: 1枚ずつ
-    cab.onTap('leverOn', function () {
-      sound.unlock(); cab.setState('leverOn', 'pressed');
-      if (game.leverMax()) press('leverKnob', 'down', function () { return 'idle'; }, 180);
-    });
-    cab.onTap('leverKnob', lever);
-    cab.onTap('betButton', function () {
-      sound.unlock();
-      if (game.addBet()) { sound.bet(); press('betButton', 'pressed', function () { return 'off'; }, 120); }
-    });
-    [0, 1, 2].forEach(function (i) {
-      cab.onTap('stop' + i, function () {
-        sound.unlock();
-        if (game.stop(i)) press('stop' + i, 'pressed', function () { return 'off'; }, 150);
-      });
-    });
-    cab.onTap('autoPlay', function () {
-      sound.unlock();
-      auto.toggle(); // ボーナス中のみ動作。途中でOFFにすると残りは手動
-    });
-    cab.onTap('menu', function () {
-      press('menu', 'pressed', function () { return 'off'; });
-      data.open();
-    });
-    document.addEventListener('keydown', function (e) {
-      var k = e.key.toLowerCase();
-      if (k === ' ') { e.preventDefault(); game.leverMax(); }
-      else if (k === 'b') { if (game.addBet()) sound.bet(); }
-      else if (k === 'arrowdown') { e.preventDefault(); lever(); }
-      else if ('123'.indexOf(k) >= 0 && k) { if (game.stop(+k - 1)) press('stop' + (k - 1), 'pressed', function () { return 'off'; }, 150); }
-    });
-
-    // 毎フレーム: ボタン・ランプ・数字表示をゲーム状態に同期
-    requestAnimationFrame(function loop() {
-      var idle = game.phase === 'IDLE' && !auto.running, s = game.stats;
-      if (cab.getState('leverOn') !== 'pressed' || !idle) cab.setState('leverOn', idle ? 'on' : 'off');
-      [0, 1, 2].forEach(function (i) {
-        if (cab.getState('stop' + i) === 'pressed') return;
-        var on = game.phase === 'SPINNING' && game.control.stops[i] < 0 && view.canStop(i);
-        cab.setState('stop' + i, on ? 'on' : 'off');
-      });
-      // 3・2・1 ランプ = BET枚数（回転中はそのゲームのBET、リプレイ中は前回BET）
-      var betNow = game.phase !== 'IDLE' ? game.gameBet : (game.replayNext ? game.lastBet : game.bet);
-      [1, 2, 3].forEach(function (n) { cab.setState('betLamp' + n, betNow >= n ? 'on' : 'off'); });
-      if (cab.getState('betButton') !== 'pressed') cab.setState('betButton', idle && !game.replayNext && game.bet < NCS.MAX_BET ? 'on' : 'off');
-      cab.setState('lampStart', idle && (game.bet > 0 || game.replayNext) ? 'on' : 'off');
-      cab.setState('lampReplay', game.replayNext ? 'on' : 'off');
-      cab.setState('lampWait', idle && Date.now() - game.lastLeverAt < NCS.CONFIG.GAME_WAIT_MS ? 'on' : 'off');
-      cab.setState('lampInsert', idle && !game.replayNext && game.bet === 0 ? 'on' : 'off');
-      cab.setDisplay('creditDisplay', s.credit);
-      boxEl.querySelector('.box-counter span').textContent = '× ' + game.wallet.boxes() + ' BOX';
-      cab.setDisplay('countDisplay', game.inBonus ? s.bonusPlayed : s.games); // ボーナス中は消化ゲーム数
-      cab.setDisplay('payoutDisplay', game.inBonus && NCS.CONFIG.PAYOUT_ACCUMULATE_IN_BONUS ? s.bonusGot : s.lastPay);
-      cab.setVisible('bonusGotDisplay', showBonusGot);
-      cab.setDisplay('bonusGotDisplay', s.bonusGot);
-      document.getElementById('info').textContent =
-        '縮小率 ' + cab.scale.toFixed(3) + ' / 画面 ' + window.innerWidth + '×' + window.innerHeight +
-        '\nSTOPボタン表示 ' + Math.round(125 * cab.scale) + 'px（タッチ範囲 ' + Math.round(185 * cab.scale) + 'px）' +
-        ' / LEVER ON ' + Math.round(330 * cab.scale) + 'px' +
-        '\nCREDIT ' + s.credit + ' / ドル箱 ' + game.wallet.boxes() + '箱 / 総所持 ' + game.wallet.holdings() + ' / BIG ' + s.big + ' / REG ' + s.reg + ' / 総G ' + s.totalGames + '（MENUでデータ画面）' +
-        (game.inBonus ? '\n★' + s.bonusType + ' 消化中 ' + s.bonusPlayed + '/' + NCS.CONFIG.BONUS_GAMES[s.bonusType] + 'G 獲得' + s.bonusGot + '枚' + (auto.running ? '（オート）' : '') : '') +
-        (auto.enabled ? '\nAUTO PLAY: ON' : '');
-      requestAnimationFrame(loop);
-    });
-
-    // ---- ツール ----
+    var cab = app.cab, game = app.game;
     [].forEach.call(document.querySelectorAll('[data-guide]'), function (b) {
       b.addEventListener('click', function () { cab.setGuide(+b.dataset.guide); });
     });
@@ -194,17 +98,16 @@
         if (id === 'bonusEffect') cab.el(id).querySelector('.cab-label').textContent = states[i] === 'big' ? 'BIG BONUS!' : 'REG BONUS!';
       });
     });
-    document.getElementById('toggle-got').addEventListener('click', function () { showBonusGot = !showBonusGot; });
+    var got = false;
+    document.getElementById('toggle-got').addEventListener('click', function () { got = !got; app.setShowBonusGot(got); });
     [].forEach.call(document.querySelectorAll('[data-force]'), function (b) {
       b.addEventListener('click', function () {
         var f = b.dataset.force;
-        game.lottery.forced = f === 'CHERRY_MISS' ? { role: 'BIG', mode: 'CHERRY_MISS' } : { role: f };
+        game.lottery.forced = f === 'CHERRY_MISS' ? { role: 'BIG', mode: 'CHERRY_MISS_7' } : { role: f };
       });
     });
-
-    document.getElementById('open-data').addEventListener('click', function () { data.open(); });
-
-    NCS.preview = { cab: cab, view: view, game: game, effects: effects, auto: auto, dbx: dbx };
+    document.getElementById('open-data').addEventListener('click', function () { app.data.open(); });
+    NCS.preview = app;
   })();
   </script>
 </body>
