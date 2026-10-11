@@ -58,6 +58,9 @@
         }
         return true;
       } },
+    // 右中段7の上がBAR・下がリプレイ（右リール番号13の赤7）: 右窓にブドウが無くブドウを否定 = 第1停止でボーナス確定
+    REV_BAR7_1K: { name: '逆押し 上BAR・中段赤7・下リプレイ', allow: BONUS,
+      test: function (c) { return c.order[0] === 2 && c.sym(2, 0) === 'B' && c.sym(2, 1) === '7' && c.sym(2, 2) === 'R'; } },
     REG_R7_TOP: { name: '逆押し右上段7', allow: ['REG'],
       test: function (c) { return c.order[0] === 2 && c.sym(2, 0) === '7'; } }
   };
