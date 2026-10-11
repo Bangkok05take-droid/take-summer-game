@@ -7,8 +7,8 @@
   var NCS = (g.NCS = g.NCS || {});
 
   NCS.SYMBOLS = {
-    '7': { name: '赤7',     short: '7',  color: '#e8202a', img: 'assets/images/symbols/sym_seven.png' },
-    'B': { name: 'BAR',     short: 'BAR',color: '#222222', img: 'assets/images/symbols/sym_bar.png' },
+    '7': { name: '赤7',     short: '7',  color: '#e8202a', img: 'assets/images/symbols/sym_red7.png', bundled: true },
+    'B': { name: 'BAR',     short: 'BAR',color: '#222222', img: 'assets/images/symbols/sym_bar.png', bundled: true },
     'C': { name: 'チェリー', short: 'CH', color: '#d0103a', img: 'assets/images/symbols/sym_cherry.png' },
     'G': { name: 'ブドウ',   short: 'GR', color: '#7a2fb8', img: 'assets/images/symbols/sym_grape.png' },
     'L': { name: 'ベル',     short: 'BL', color: '#e8b400', img: 'assets/images/symbols/sym_bell.png' },

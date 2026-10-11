@@ -1,6 +1,6 @@
 /*
- * 図柄の描画（仮素材）
- * CONFIG.USE_IMAGE_ASSETS が true で画像が読み込めた図柄は画像を使い、
+ * 図柄の描画
+ * 正式素材が同梱済みの図柄（赤7・BAR）と、CONFIG.USE_IMAGE_ASSETS が true で画像が読み込めた図柄は画像を使い、
  * それ以外はここで描くベクター図柄を使う。描画結果は図柄サイズごとにキャッシュする。
  */
 (function (g) {
@@ -9,9 +9,12 @@
   var images = {};
   var cache = {};
 
+  // 正式素材が同梱済みの図柄（symbols.js の bundled: true）は常に画像を使う。
+  // それ以外は CONFIG.USE_IMAGE_ASSETS（または URL の ?images=1）の時だけ画像を探す。
   NCS.loadSymbolImages = function (onDone) {
-    if (!NCS.CONFIG.USE_IMAGE_ASSETS) { if (onDone) onDone(); return; }
-    var ids = Object.keys(NCS.SYMBOLS), left = ids.length;
+    var ids = Object.keys(NCS.SYMBOLS).filter(function (id) { return NCS.CONFIG.USE_IMAGE_ASSETS || NCS.SYMBOLS[id].bundled; });
+    var left = ids.length;
+    if (!left) { if (onDone) onDone(); return; }
     ids.forEach(function (id) {
       var img = new Image();
       img.onload = function () { images[id] = img; cache = {}; if (--left === 0 && onDone) onDone(); };
@@ -112,6 +115,7 @@
     var c = cv.getContext('2d');
     if (images[id]) {
       var img = images[id], s = Math.min(w / img.width, h / img.height);
+      c.imageSmoothingEnabled = true; c.imageSmoothingQuality = 'high';
       c.drawImage(img, (w - img.width * s) / 2, (h - img.height * s) / 2, img.width * s, img.height * s);
     } else {
       painters[id](c, w, h);
