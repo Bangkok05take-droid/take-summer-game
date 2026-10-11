@@ -3,7 +3,7 @@
  *   node tools/simulate.js [試行数=300] [上限時間(時間)=6] [通常1G秒=3.0]
  *
  * 戦略 A: ランダム停止（順押し・タイミング任意）
- * 戦略 B: 左BAR狙い（順押し）。ボーナス内部中（告知後）は全リール赤7狙いで即揃え
+ * 戦略 B: 左BAR狙い（順押し）。ボーナス内部中（告知後）はボーナス図柄を上段〜枠上に目押しして即揃え
  * 時間の仮定: 通常ゲーム n 秒、ボーナス中はオート 0.65 秒/G、フリーズ・復活・遅れの時間を加算
  * 差枚（払い出し−投入）が 1,000 / 5,000 / 10,000 枚に初めて届くまでの時間を集計する。
  */
@@ -22,7 +22,8 @@ var P = NCS.CONFIG.PREMIUM;
 
 var L = NCS.STRIPS[0], barAim = [];
 for (var i = 0; i < 21; i++) if (L[i] === 'B') barAim.push((i + 20) % 21, i); // BARが上段〜中段
-var sevens = [0, 1, 2].map(function (r) { var a = []; for (var i = 0; i < 21; i++) if (NCS.STRIPS[r][i] === '7') a.push(i); return a; });
+// ボーナス図柄（BIG 7・7・7 / REG 7・7・BAR）を中段の2コマ上で押す = NCS.CARRY_AIM の範囲内
+function aimFor(bonus, r) { var a = [], sym = NCS.ROLES[bonus].pattern[r]; for (var i = 0; i < 21; i++) if (NCS.STRIPS[r][i] === sym) a.push((i + 19) % 21); return a; }
 function pick(a) { return a[Math.floor(Math.random() * a.length)]; }
 function rnd21() { return Math.floor(Math.random() * 21); }
 
@@ -39,7 +40,7 @@ function trial(strategy) {
   while (t < cap) {
     var inBonus = g.inBonus, aim7 = strategy === 'B' && !inBonus && g.carry;
     for (var r = 0; r < 3; r++) {
-      if (aim7) nextPress[r] = pick(sevens[r]);
+      if (aim7) nextPress[r] = pick(aimFor(g.carry, r));
       else if (strategy === 'B' && r === 0) nextPress[r] = pick(barAim);
       else nextPress[r] = rnd21();
     }

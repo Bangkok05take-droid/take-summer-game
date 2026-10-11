@@ -25,6 +25,12 @@
       Object.keys(w).forEach(function (m) { if (w[m] > 0) list.push({ bonus: b, small: null, mode: m }); });
       ['GRAPE', 'CHERRY', 'REPLAY', 'YAMA'].forEach(function (s) { list.push({ bonus: b, small: s, mode: 'NORMAL' }); });
     });
+    // ボーナス持ち越し中（次ゲーム以降）: 正しく目押しすれば必ず揃うこと
+    ['BIG', 'REG'].forEach(function (b) {
+      var w = NCS.REACHME_MODE_WEIGHTS[b];
+      Object.keys(w).forEach(function (m) { if (w[m] > 0) list.push({ bonus: b, small: null, mode: m, newBonus: false }); });
+      ['GRAPE', 'CHERRY', 'REPLAY', 'YAMA'].forEach(function (s) { list.push({ bonus: b, small: s, mode: 'NORMAL', newBonus: false }); });
+    });
     var all = [];
     (bets || [NCS.MAX_BET]).forEach(function (bet) {
       list.forEach(function (f) { var c = Object.assign({}, f); c.lines = NCS.activeLines(bet); c.bet = bet; all.push(c); });
@@ -33,13 +39,13 @@
   }
 
   function flagName(f) {
-    return (f.bet && f.bet !== NCS.MAX_BET ? f.bet + '枚掛け ' : '') + (f.bonus ? f.bonus + (f.small ? '+' + f.small : '') : (f.small || 'ハズレ')) + (f.mode && f.mode !== 'NORMAL' ? ' [' + f.mode + ']' : '');
+    return (f.bet && f.bet !== NCS.MAX_BET ? f.bet + '枚掛け ' : '') + (f.bonus ? f.bonus + (f.small ? '+' + f.small : '') : (f.small || 'ハズレ')) + (f.mode && f.mode !== 'NORMAL' ? ' [' + f.mode + ']' : '') + (f.newBonus === false ? ' (持ち越し中)' : '');
   }
 
   NCS.verifyCase = function (flag) {
     var ctrl = new NCS.ReelControl();
     var N = NCS.REEL_SIZE;
-    var st = { games: 0, forbidden: 0, small: 0, bonus: 0, reach: {}, detAt: [0, 0, 0, 0], maxSlide: 0, samples: [] };
+    var st = { games: 0, forbidden: 0, small: 0, bonus: 0, aimed: 0, aimedOk: 0, reach: {}, detAt: [0, 0, 0, 0], maxSlide: 0, samples: [] };
     var detMemo = new Map();
 
     function det(stops, order) {
@@ -49,10 +55,22 @@
       return v;
     }
 
+    // 持ち越し中の「正しい目押し」: ボーナス図柄が中段の1〜3コマ上にある時に押す（NCS.CARRY_AIM）
+    var carry = flag.bonus && flag.newBonus === false;
+    var aimable = [0, 1, 2].map(function (r) {
+      var out = [];
+      for (var p = 0; p < N; p++) {
+        out[p] = false;
+        for (var d = NCS.CARRY_AIM[0]; d <= NCS.CARRY_AIM[1]; d++) if (carry && NCS.STRIPS[r][(((p - d) % N) + N) % N] === NCS.ROLES[flag.bonus].pattern[r]) out[p] = true;
+      }
+      return out;
+    });
+
     for (var oi = 0; oi < ORDERS.length; oi++) {
       var ord = ORDERS[oi];
       for (var a = 0; a < N; a++) for (var b = 0; b < N; b++) for (var c = 0; c < N; c++) {
         var press = [a, b, c];
+        var aimed = carry && aimable[ord[0]][a] && aimable[ord[1]][b] && aimable[ord[2]][c];
         ctrl.reset(flag);
         var determinedAt = 0;
         for (var i = 0; i < 3; i++) {
@@ -75,7 +93,9 @@
           if (st.samples.length < 5) st.samples.push({ order: ord, press: press, stops: ctrl.stops.slice(), wins: j.wins, reachMe: j.reachMe });
         }
         if (flag.small && j.wins.some(function (w) { return w.role === flag.small; })) st.small++;
-        if (flag.bonus && j.wins.some(function (w) { return w.role === flag.bonus; })) st.bonus++;
+        var bonusWin = flag.bonus && j.wins.some(function (w) { return w.role === flag.bonus; });
+        if (bonusWin) st.bonus++;
+        if (aimed) { st.aimed++; if (bonusWin) st.aimedOk++; }
         if (j.reachMe.length) st.detAt[determinedAt || 3]++;
       }
     }
@@ -90,7 +110,9 @@
       if (st.forbidden) errors.push('停止禁止出目 ' + st.forbidden + '件');
       if (st.maxSlide > NCS.MAX_SLIDE) errors.push('すべり超過');
       // 取りこぼし無しの保証は MAX BET（5ライン）のみ。1・2枚掛けは有効ラインが少ないため対象外
-      if (flag.bet === NCS.MAX_BET && flag.small && MUST_ALIGN.indexOf(flag.small) >= 0 && st.small !== st.games) errors.push(flag.small + ' 取りこぼし ' + (st.games - st.small) + '件');
+      if (st.aimed && st.aimedOk !== st.aimed) errors.push('目押ししても揃わない ' + (st.aimed - st.aimedOk) + '件');
+      // 持ち越し中は目押しされたボーナスを小役より優先するため、取りこぼし無し保証の対象外
+      if (flag.newBonus !== false && flag.bet === NCS.MAX_BET && flag.small && MUST_ALIGN.indexOf(flag.small) >= 0 && st.small !== st.games) errors.push(flag.small + ' 取りこぼし ' + (st.games - st.small) + '件');
       if (errors.length) ok = false;
       out.push({ flag: flag, name: flagName(flag), stats: st, errors: errors });
       if (onProgress) onProgress(idx + 1, list.length);
@@ -107,6 +129,7 @@
       var s = r.stats, parts = [];
       if (r.flag.small) parts.push(r.flag.small + '入賞 ' + pct(s.small, s.games));
       if (r.flag.bonus) parts.push(r.flag.bonus + '揃い ' + pct(s.bonus, s.games));
+      if (s.aimed) parts.push('目押し時の揃い ' + s.aimedOk + '/' + s.aimed);
       var rm = Object.keys(s.reach).map(function (k) { return k + ' ' + pct(s.reach[k], s.games); });
       if (rm.length) parts.push('リーチ目: ' + rm.join(', '));
       if (r.flag.bonus) parts.push('確定停止 1st/2nd/3rd: ' + s.detAt[1] + '/' + s.detAt[2] + '/' + s.detAt[3]);

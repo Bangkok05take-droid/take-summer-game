@@ -156,10 +156,102 @@
 
   // 停止ボタン押下。press = 押下時に中段へ到達している（次の）図柄番号
   ReelControl.prototype.stop = function (reel, press) {
-    var c = this.solver.choose(this.stops, this.order, reel, ((press % N) + N) % N);
+    var p = ((press % N) + N) % N;
+    var c = this.carryChoice(reel, p) || this.solver.choose(this.stops, this.order, reel, p);
     this.stops[reel] = c.pos;
     this.order.push(reel);
     return { reel: reel, press: press, slide: c.slide, pos: c.pos };
+  };
+
+  /*
+   * ボーナス持ち越し中（成立ゲームの次ゲーム以降 = flag.newBonus === false）の目押し保証。
+   *
+   * 「正しい目押し」= ボーナス図柄（BIG 7・7・7 / REG 7・7・BAR）が中段の 1〜3コマ上にある時に押す
+   *   （= 図柄が上段〜枠のすぐ上に見えている時に押す）。各リールをこの範囲で押せば、押し順・BET枚数に
+   *   かかわらず必ず揃う（verify.js で総当たり確認）。
+   * 揃い方は「残りリールを正しく目押しされた時に揃えられる確率」が最大になる位置を先読みで選ぶ。
+   * 7の下にブドウが並ぶ配列のため、ブドウなど非成立役が同時に揃う停止は使わない。
+   * 目押しされたボーナスは同時成立の小役より優先する。成立ゲームは従来どおりリーチ目優先の探索に任せる。
+   */
+  NCS.CARRY_AIM = [-3, -1]; // 押下位置 − ボーナス図柄の位置（コマ）
+
+  var carryTables = new Map();
+  function carryTable(bonus, lines) {
+    var key = bonus + '/' + (lines ? lines.join('') : '01234');
+    var t = carryTables.get(key);
+    if (t) return t;
+    var pat = NCS.ROLES[bonus].pattern;
+    var aim = [0, 1, 2].map(function (r) {
+      var out = [];
+      for (var p = 0; p < N; p++) {
+        out[p] = false;
+        for (var d = NCS.CARRY_AIM[0]; d <= NCS.CARRY_AIM[1]; d++) if (NCS.STRIPS[r][(((p - d) % N) + N) % N] === pat[r]) out[p] = true;
+      }
+      return out;
+    });
+    t = { bonus: bonus, lines: lines, aim: aim, memo: [new Map(), new Map()], final: new Map() };
+    carryTables.set(key, t);
+    return t;
+  }
+
+  // 最終出目にボーナスがきれいに揃うか（他の役が揃わず、リーチ目もどの押し順で見ても許可されたもの）
+  var ALL_ORDERS = [[0, 1, 2], [0, 2, 1], [1, 0, 2], [1, 2, 0], [2, 0, 1], [2, 1, 0]];
+  function carryClean(t, stops) {
+    var key = (stops[0] * N + stops[1]) * N + stops[2];
+    var v = t.final.get(key);
+    if (v !== undefined) return v;
+    v = 0;
+    var j0 = judgeCached(stops, ALL_ORDERS[0], t.lines);
+    if (hasWin(j0, t.bonus) && j0.wins.every(function (w) { return w.role === t.bonus; })) {
+      v = ALL_ORDERS.every(function (o) {
+        return judgeCached(stops, o, t.lines).reachMe.every(function (id) { return NCS.REACHME[id].allow.indexOf(t.bonus) >= 0; });
+      }) ? 1 : 0;
+    }
+    t.final.set(key, v);
+    return v;
+  }
+
+  // 残りリールを（aimOnly なら正しい目押しで / そうでなければ任意の位置で）押された時に揃えられる確率
+  // 次に押されるリールは分からないので最悪の押し順で評価する
+  function carryValue(t, stops, aimOnly) {
+    var rest = [0, 1, 2].filter(function (r) { return stops[r] < 0; });
+    if (!rest.length) return carryClean(t, stops);
+    var memo = t.memo[aimOnly ? 1 : 0], key = (stops[0] + 1) * 484 + (stops[1] + 1) * 22 + (stops[2] + 1);
+    var v = memo.get(key);
+    if (v !== undefined) return v;
+    v = 1;
+    var ns = stops.slice();
+    rest.forEach(function (r) {
+      var sum = 0, n = 0;
+      for (var p = 0; p < N; p++) {
+        if (aimOnly && !t.aim[r][p]) continue;
+        var best = 0;
+        for (var s = 0; s <= NCS.MAX_SLIDE && best < 1; s++) { ns[r] = (p + s) % N; best = Math.max(best, carryValue(t, ns, aimOnly)); }
+        ns[r] = -1;
+        sum += best; n++;
+      }
+      v = Math.min(v, n ? sum / n : 0);
+    });
+    memo.set(key, v);
+    return v;
+  }
+
+  ReelControl.prototype.carryChoice = function (reel, p) {
+    var f = this.flag;
+    if (!f || !f.bonus || f.newBonus !== false) return null;
+    var t = carryTable(f.bonus, f.lines);
+    var best = null, ns = this.stops.slice(), no = this.order.concat([reel]);
+    for (var s = 0; s <= NCS.MAX_SLIDE; s++) {
+      var pos = (p + s) % N;
+      ns[reel] = pos;
+      var v = this.solver.value(ns, no);
+      if (v.min === FORBID) continue;
+      var c = { slide: s, pos: pos, v: v, a: carryValue(t, ns, true), b: carryValue(t, ns, false) };
+      if (no.length === 3 && !c.a) continue; // 最終停止は揃う位置のみ
+      if (!best || c.a > best.a + 1e-12 || (Math.abs(c.a - best.a) <= 1e-12 &&
+          (c.b > best.b + 1e-12 || (Math.abs(c.b - best.b) <= 1e-12 && better(v, best.v, s, best.slide))))) best = c;
+    }
+    return best && (best.a > 0 || best.b > 0) ? best : null;
   };
 
   // 未停止リールがどこに止まってもリーチ目になるか（= この停止でボーナス確定）
@@ -189,5 +281,5 @@
   NCS.ReelControl.Solver = Solver;
   NCS.ReelControl.FORBID = FORBID;
   NCS.ReelControl.SCORE = SCORE;
-  NCS.ReelControl.clearCache = function () { judgeCache.clear(); };
+  NCS.ReelControl.clearCache = function () { judgeCache.clear(); carryTables.clear(); };
 })(typeof window !== 'undefined' ? window : globalThis);
