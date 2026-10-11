@@ -118,17 +118,16 @@
       c.fillStyle = grd; c.fillRect(x0 + 2, 0, W - 4, H * 3);
 
       var base = Math.floor(r.pos);
-      var blur = r.speed > this.maxSpeed() * 0.6 && r.phase !== 'IDLE';
+      var blur = r.speed > this.maxSpeed() * 0.8 && r.phase !== 'IDLE';
       for (var d = -2; d <= 2; d++) {
         var idx = base + d;
         var y = H * 1.5 - (idx - r.pos) * H - H / 2 + bounce;
         if (y > H * 3 || y + H < 0) continue;
         var sym = NCS.STRIPS[i][((idx % n) + n) % n];
         var img = NCS.symbolCanvas(sym, W - 8, H);
-        c.globalAlpha = blur ? 0.75 : 1;
+        // 回転中も図柄本体は不透明のまま描く（赤7・BARを見分けやすく）。残像は上側に薄く短く
+        if (blur) { c.globalAlpha = 0.15; c.drawImage(img, x0 + 4, y - H * 0.1); c.globalAlpha = 1; }
         c.drawImage(img, x0 + 4, y);
-        if (blur) { c.globalAlpha = 0.25; c.drawImage(img, x0 + 4, y - H * 0.18); }
-        c.globalAlpha = 1;
       }
       // 上下の陰影
       var sh = c.createLinearGradient(0, 0, 0, H * 3);
