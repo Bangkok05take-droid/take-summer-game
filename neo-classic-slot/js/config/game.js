@@ -22,7 +22,8 @@
       // 各演出の発生率（BIG成立ゲーム）: 通常時 / ジャグ連チャンス中
       normal: { freeze: 0.02, delay: 0.05, stop2: 0.03, vibe: 0.05 },
       chance: { freeze: 0.05, delay: 0.12, stop2: 0.10, vibe: 0.12 },
-      freezeMs: 2800,        // レバーONフリーズ
+      freezeMs: 4000,        // プチュンフリーズ（レバーONフリーズ）全体の長さ
+      puchun: { silentAt: 150, lampAt: 1200, textAt: 1900 }, // プチュン音→無音→紫ランプ→PREMIUM BIG BONUS（ms）
       delayMs: 450,          // 遅れ（リール始動の遅れ）
       revivalMs: 3800        // 復活フリーズ
     },

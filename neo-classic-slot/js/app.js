@@ -27,6 +27,9 @@
     // Effects が呼ぶ表示インターフェースを筐体パーツへ割り当てるアダプタ
     var ui = {
       setLamp: function (on) { cab.setState('luckyLamp', on ? 'on' : 'off'); },
+      setLampPremium: function () { cab.setState('luckyLamp', 'premium'); },  // プチュン: 紫に激しく発光
+      lampRect: function () { return cab.el('luckyLamp').getBoundingClientRect(); },
+      blackout: function (on) { cab.wrap.classList.toggle('blackout', on); },
       showResult: function (e) { view.showWins(e.wins); },
       flashBonus: function (type) {
         var k = type.toLowerCase();

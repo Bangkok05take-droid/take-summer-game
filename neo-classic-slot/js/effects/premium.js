@@ -1,7 +1,9 @@
 /*
  * プレミア演出（すべてBIG確定）— 演出抽選は内部抽選と分離。フラグを見て「どう見せるか」だけを決める。
  *
- *   レバーONフリーズ … リール始動を止め、画面が明滅して無音→告知
+ *   プチュンフリーズ … レバーONで「プチュン」→ 照明・画面が暗転し約1秒の完全な静寂 →
+ *                      LUCKY CHANCE が紫に激しく発光 → 金色の光と「PREMIUM BIG BONUS」→ 通常のBIG確定状態へ（約4秒）
+ *                      （NEO独自の演出。音はすべて合成音、映像はCSS）
  *   遅れ             … リール始動がわずかに遅れる（告知は通常タイミング）
  *   第2停止プレミア  … 第2停止で特殊告知（リーチ目に関係なく点灯）
  *   振動             … 告知時に長い振動（Vibration API 対応端末のみ）
@@ -88,15 +90,46 @@
     var pick = this.pick(f);
     this.current = pick;
     if (pick.main === 'freeze') {
-      game.startDelay = P.freezeMs;
-      fx.sound.premium('freeze');
-      this.show('freeze', '', '', P.freezeMs);
-      setTimeout(function () { fx.light('FREEZE', pick.vibe); }, P.freezeMs - 300);
+      this.puchun(game, pick);
       return true;
     }
     if (pick.main === 'delay') game.startDelay = P.delayMs; // 告知は通常タイミング
     if (pick.main === 'stop2') return true;                 // 告知は第2停止で
     return false;
+  };
+
+  // プチュンフリーズ（約4秒・リール始動を止める）
+  Premium.prototype.puchun = function (game, pick) {
+    var P = NCS.CONFIG.PREMIUM, T = P.puchun, fx = this.fx, self = this;
+    game.startDelay = P.freezeMs;
+    fx.sound.premium('puchun');                       // ① プチュン！
+    var r = fx.ui.lampRect ? fx.ui.lampRect() : null; // 紫に光るランプの画面上の位置
+    if (this.el && r) {
+      this.el.style.setProperty('--lx', (r.left + r.width / 2) + 'px');
+      this.el.style.setProperty('--ly', (r.top + r.height / 2) + 'px');
+    }
+    this.show('puchun', '', '', P.freezeMs);          // ② 暗転
+    if (fx.ui.blackout) fx.ui.blackout(true);
+    setTimeout(function () { fx.sound.muteAll(true); }, T.silentAt); // ③ 完全な静寂
+    setTimeout(function () {                          // ④ LUCKY CHANCE が紫に発光
+      fx.sound.muteAll(false);
+      fx.sound.premium('puchunLamp');
+      if (fx.ui.setLampPremium) fx.ui.setLampPremium();
+      NCS.vibrate([150, 60, 150]);
+    }, T.lampAt);
+    setTimeout(function () {                          // ⑤ 金色の光と PREMIUM BIG BONUS
+      fx.sound.premium('puchunGold');
+      if (self.el) {
+        self.el.querySelector('.pm-l1').textContent = 'PREMIUM';
+        self.el.querySelector('.pm-l2').textContent = 'BIG BONUS';
+        self.el.classList.add('gold');
+      }
+    }, T.textAt);
+    setTimeout(function () {                          // ⑥ 通常のBIG確定状態へ
+      if (fx.ui.blackout) fx.ui.blackout(false);
+      fx.lampOn = false;
+      fx.light('PUCHUN', pick.vibe);
+    }, P.freezeMs - 250);
   };
 
   // 停止時（Effects から呼ばれる）。戻り値 true で通常の告知処理を行わない

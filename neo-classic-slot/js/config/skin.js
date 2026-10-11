@@ -60,7 +60,7 @@
 
       // ---- ③ LUCKY CHANCE 告知ランプ ----
       { id: 'luckyLamp', type: 'image', rect: [385, 940, 315, 212], z: 40, label: 'LUCKY CHANCE',
-        states: { off: 'lamps/lucky_off.png', on: 'lamps/lucky_on.png' }, anim: 'glow' },
+        states: { off: 'lamps/lucky_off.png', on: 'lamps/lucky_on.png', premium: 'lamps/lucky_premium.png' }, anim: 'glow' },
 
       // ---- ⑦ CREDIT / COUNT / PAYOUT ----
       { id: 'creditDisplay', type: 'display', rect: [125, 1022, 137, 78], z: 30, label: 'CREDIT', digits: 3 },

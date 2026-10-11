@@ -13,7 +13,9 @@
     bet: 'assets/sounds/bet.mp3',
     box: 'assets/sounds/box_complete.mp3',
     legend: 'assets/sounds/legendary.mp3',
-    premium_freeze: 'assets/sounds/premium_freeze.mp3',
+    premium_puchun: 'assets/sounds/premium_puchun.mp3',
+    premium_puchunLamp: 'assets/sounds/premium_puchun_lamp.mp3',
+    premium_puchunGold: 'assets/sounds/premium_puchun_gold.mp3',
     premium_revival: 'assets/sounds/premium_revival.mp3',
     premium_stop2: 'assets/sounds/premium_stop2.mp3',
     stop: 'assets/sounds/stop.mp3',
@@ -196,6 +198,21 @@
     if (kind === 'freeze') {
       this.tone('jingle', 'sine', 60, 40, 1.2, 0.5);            // 低い唸り
       for (i = 0; i < 6; i++) this.tone('jingle', 'square', 2093 + i * 150, null, 0.08, 0.06, 1.4 + i * 0.12);
+    } else if (kind === 'puchun') {
+      // 短い「プチュン」: 高い電子音が一気に落ちて切れる
+      this.tone('jingle', 'square', 3200, 180, 0.11, 0.22);
+      this.tone('jingle', 'sine', 900, 60, 0.12, 0.25);
+      this.noise('jingle', 0.02, 0.2, 3000);
+    } else if (kind === 'puchunLamp') {
+      // 紫ランプの発光: 低音のうねり＋高いきらめき
+      this.tone('jingle', 'sawtooth', 55, 110, 0.7, 0.28);
+      this.tone('jingle', 'triangle', 1760, 3520, 0.5, 0.12, 0.05);
+      for (i = 0; i < 8; i++) this.tone('jingle', 'sine', 2637 + i * 200, null, 0.12, 0.05, 0.1 + i * 0.06);
+    } else if (kind === 'puchunGold') {
+      // 金色の光: 上昇ファンファーレ
+      var gn = [523, 659, 784, 1047, 1319, 1568];
+      for (i = 0; i < gn.length; i++) this.tone('jingle', 'square', gn[i], null, 0.3, 0.1, i * 0.08);
+      for (i = 0; i < 24; i++) this.noise('jingle', 0.04, 0.07, 7000, 0.4 + i * 0.04);
     } else if (kind === 'revival') {
       this.tone('jingle', 'sawtooth', 110, 880, 1.5, 0.25);       // 上昇音
       var notes = [784, 988, 1175, 1568, 1976];

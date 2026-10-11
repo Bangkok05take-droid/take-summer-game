@@ -185,12 +185,36 @@
 /* ---- プレミア演出（js/effects/premium.js） ---- */
 .premium-overlay { position: fixed; inset: 0; z-index: 160; pointer-events: none; display: none; align-items: center; justify-content: center; }
 .premium-overlay.show { display: flex; }
-.premium-overlay.freeze { background: #000; animation: pm-freeze 2.8s steps(1) forwards; }
-@keyframes pm-freeze {
-  0% { background: rgba(0,0,0,0.92); } 40% { background: rgba(0,0,0,0.92); }
-  45% { background: rgba(255,255,255,0.9); } 50% { background: rgba(0,0,0,0.92); }
-  60% { background: rgba(255,40,120,0.6); } 70% { background: rgba(0,0,0,0.92); }
-  80% { background: rgba(255,220,60,0.7); } 100% { background: rgba(0,0,0,0); }
+.premium-overlay.puchun { background: #000; }
+/* ④ ランプ位置に紫の強い発光 */
+.premium-overlay.puchun::before {
+  content: ''; position: absolute; left: var(--lx, 50%); top: var(--ly, 55%); width: 640px; height: 640px;
+  border-radius: 50%; transform: translate(-50%, -50%); opacity: 0;
+  background: radial-gradient(circle, rgba(255, 230, 255, 1) 0%, rgba(200, 90, 255, 0.95) 10%, rgba(150, 40, 255, 0.7) 28%, rgba(90, 0, 200, 0.35) 50%, rgba(60, 0, 140, 0) 70%);
+  animation: pm-purple 4s linear forwards;
+}
+.premium-overlay .pm-text { position: relative; z-index: 1; }
+@keyframes pm-purple {
+  0%, 29% { opacity: 0; } 30% { opacity: 1; } 33% { opacity: 0.4; } 36% { opacity: 1; } 39% { opacity: 0.5; } 42%, 47% { opacity: 1; } 60% { opacity: 0.35; } 88% { opacity: 0.25; } 100% { opacity: 0; }
+}
+/* ⑤ 金色の光が広がる */
+.premium-overlay.puchun.gold { animation: pm-gold 2.1s ease-out forwards; }
+@keyframes pm-gold {
+  0% { background: #000; }
+  25% { background: radial-gradient(circle at 50% 45%, rgba(255, 245, 190, 0.95), rgba(255, 190, 40, 0.75) 30%, rgba(60, 20, 0, 0.92) 70%); }
+  85% { background: radial-gradient(circle at 50% 45%, rgba(255, 230, 140, 0.7), rgba(200, 120, 0, 0.5) 40%, rgba(20, 5, 0, 0.85) 75%); }
+  100% { background: rgba(0, 0, 0, 0); }
+}
+.premium-overlay.puchun .pm-text { opacity: 0; }
+.premium-overlay.puchun.gold .pm-text { opacity: 1; }
+.premium-overlay.puchun .pm-l1 { font-size: 46px; color: #fff6c8; letter-spacing: 0.08em; text-shadow: 0 0 18px #ffcc33, 0 0 40px #ff9900, 0 3px 0 #6a3a00; }
+.premium-overlay.puchun .pm-l2 { font-size: 40px; color: #ffe27a; text-shadow: 0 0 16px #ff7a00, 0 3px 0 #6a3a00; }
+/* 筐体の照明を落とす（暗転） */
+.cab-wrap.blackout .cab-stage { filter: brightness(0.05); transition: filter 0.05s; }
+/* LUCKY CHANCE 紫（画像未配置時） */
+.cab-part[data-part="luckyLamp"][data-state="premium"]:not(.has-img) {
+  background-color: rgba(170, 60, 255, 0.85); border-color: #f0d0ff;
+  box-shadow: 0 0 60px 20px rgba(170, 60, 255, 0.9);
 }
 .premium-overlay.revival { background: radial-gradient(circle at 50% 45%, rgba(255,240,150,0.95), rgba(255,120,0,0.6) 35%, rgba(60,0,20,0.92) 70%);
   animation: pm-revival 3.8s ease-out forwards; }

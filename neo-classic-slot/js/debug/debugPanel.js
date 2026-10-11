@@ -33,7 +33,7 @@
   // プレミア・ジャグ連の強制（第3段階）
   //   premium: 次のBIG成立ゲームで発生させる演出 / jugren: ジャグ連の当選を予約（BIG後のチャンスで発生）
   var PREMIUM_ITEMS = [
-    { label: 'レバーONフリーズ', premium: 'freeze', hint: '次ゲームBIG成立＋フリーズ' },
+    { label: 'プチュンフリーズ', premium: 'freeze', hint: '次ゲームBIG成立＋プチュンフリーズ（約4秒）' },
     { label: '遅れ', premium: 'delay', hint: '次ゲームBIG成立＋リール始動遅れ' },
     { label: '第2停止プレミア', premium: 'stop2', hint: '次ゲームBIG成立＋第2停止で特殊告知' },
     { label: 'スマホ振動', premium: 'vibe', hint: '次ゲームBIG成立＋告知時に長い振動' },

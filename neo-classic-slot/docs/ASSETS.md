@@ -30,6 +30,7 @@
 | ファイル名 | 推奨サイズ | 透過 | 表示位置 (x, y) | アニメ | 内容 |
 |---|---|---|---|---|---|
 | `lamps/lucky_off.png` / `lucky_on.png` | 315×212 | **必要** | (385, 940) | on時 明滅（CSS） | ③ LUCKY CHANCE 告知ランプ |
+| `lamps/lucky_premium.png` | 315×212 | **必要** | (385, 940) | 激しい明滅（CSS） | LUCKY CHANCE の紫発光（プチュンフリーズ用） |
 | `lamps/bonus_panel_off.png` / `_big.png` / `_reg.png` | 850×112 | **必要** | (150, 420) | 点滅（CSS） | 上部「BIG CHANCE! / BONUS GAME」パネル。BIG中・REG中に点灯 |
 | `lamps/bet3_off.png` / `bet3_on.png` | 90×105 | **必要** | (50, 535) | なし | BET枚数ランプ「3」 |
 | `lamps/bet2_off.png` / `bet2_on.png` | 90×105 | **必要** | (50, 645) | なし | BET枚数ランプ「2」 |
@@ -82,7 +83,8 @@
 | `lamp.mp3` | 告知ランプ点灯 | — |
 | `pay.mp3` | 払い出し（1回分） | — |
 | `box_complete.mp3` / `legendary.mp3` | ドル箱完成 / 万枚達成 | — |
-| `premium_freeze.mp3` / `premium_revival.mp3` / `premium_stop2.mp3` | プレミア演出 | — |
+| `premium_puchun.mp3` / `premium_puchun_lamp.mp3` / `premium_puchun_gold.mp3` | プチュンフリーズ（プチュン音 / 紫ランプ / 金色の光） | — |
+| `premium_revival.mp3` / `premium_stop2.mp3` | 復活フリーズ / 第2停止プレミア | — |
 
 ## 優先度
 
