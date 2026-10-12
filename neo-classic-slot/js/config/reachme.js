@@ -22,15 +22,16 @@
     LEFT_CHERRY: { kind: 'chance', name: '左チェリー出現', allow: BONUS, allowSmall: ['CHERRY'],
       test: function (c) { return leftHas(c, 'C'); } },
     // 左リール第1停止で左上段に山（BAR狙いからBARが滑って山）の時のみチャンス目扱い
-    LEFT_YAMA: { kind: 'chance', name: '左上段山出現', allow: BONUS, allowSmall: ['YAMA'],
-      test: function (c) { return c.order[0] === 0 && c.sym(0, 0) === 'M'; } },
+    LEFT_YAMA: { kind: 'chance', name: '左山出現（上段・下段）', allow: BONUS, allowSmall: ['YAMA'],
+      test: function (c) { return c.order[0] === 0 && (c.sym(0, 0) === 'M' || c.sym(0, 2) === 'M'); } },
     // ---- 確定リーチ目 ----
     CHERRY_MISS: { name: 'チェリー外れ', allow: BONUS,
       test: function (c) { return leftHas(c, 'C') && !cherryWin(c); } },
     CHERRY_MISS_7: { name: 'チェリー外れ＋中段7', allow: BONUS,
       test: function (c) { return leftHas(c, 'C') && !cherryWin(c) && c.sym(1, 1) === '7'; } },
-    YAMA_HASAMI_MISS: { name: '挟み打ち山否定', allow: BONUS,
-      test: function (c) { return c.order[0] === 0 && c.order[1] === 2 && c.sym(0, 2) === 'M' && c.sym(2, 0) !== 'M'; } },
+    // 左に山（上段・下段）→ 右に山が出ない = 山小役が外れ（ボーナス濃厚）。山小役で右の山に届かない時も出るのでチャンス目扱い
+    YAMA_HASAMI_MISS: { kind: 'chance', name: '左山＋右山なし', allow: BONUS, allowSmall: ['YAMA'],
+      test: function (c) { return c.order[0] === 0 && (c.sym(0, 0) === 'M' || c.sym(0, 2) === 'M') && !rightHas(c, 'M'); } },
     V_SHAPE: { name: '山V字', allow: BONUS,
       test: function (c) { return c.sym(0, 0) === 'M' && c.sym(1, 2) === 'M' && c.sym(2, 0) === 'M'; } },
     OYAMA: { name: '大山（中山上段）', allow: ['BIG'],

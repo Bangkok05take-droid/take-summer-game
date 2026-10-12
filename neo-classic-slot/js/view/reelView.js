@@ -61,12 +61,20 @@
 
   // 押下位置: これから中段に到達する図柄（現在位置以上の最小整数）
   ReelView.prototype.press = function (i) {
-    var base = Math.ceil(this.reels[i].pos - 1e-6);
+    // 画面の表示・タッチの遅れ（STOP_LAG_MS）を差し引き、プレイヤーが見て押した時点の位置で判定する
+    var r = this.reels[i], lag = (NCS.CONFIG.STOP_LAG_MS || 0) / 1000;
+    var seen = r.phase === 'SPIN' ? r.pos - r.speed * lag : r.pos;
+    var base = Math.ceil(seen - 1e-6);
     return { base: base, press: base % NCS.REEL_SIZE };
   };
 
   ReelView.prototype.stop = function (i, absTarget, cb) {
     var r = this.reels[i];
+    if (absTarget < r.pos) { // 遅れ補正で目標が少し手前（1コマ未満）: その場で止めて停止時のバウンドに紛れさせる
+      r.pos = absTarget; r.phase = 'IDLE'; r.bounceAt = this.last || 0; r.onStop = null;
+      if (cb) cb();
+      return;
+    }
     r.phase = 'STOPPING'; r.target = absTarget; r.onStop = cb;
   };
 
