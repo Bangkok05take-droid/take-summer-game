@@ -92,17 +92,20 @@
     this.preload();
   };
 
-  // 画像の存在確認。CONFIG.USE_IMAGE_ASSETS が false の間は読み込まずプレースホルダーのまま。
+  // 画像の存在確認。CONFIG.USE_IMAGE_ASSETS が false の間は同梱済み（bundled）以外は読み込まずプレースホルダーのまま。
   Cabinet.prototype.preload = function () {
-    if (!NCS.CONFIG || !NCS.CONFIG.USE_IMAGE_ASSETS) return;
-    var self = this, files = {};
+    var all = !!(NCS.CONFIG && NCS.CONFIG.USE_IMAGE_ASSETS);
+    var self = this, files = {}, bgFile = null;
     this.skin.parts.forEach(function (p) {
+      if (p.id === 'cabinetBg' && p.states) bgFile = p.states[Object.keys(p.states)[0]];
+      if (!all && !p.bundled) return; // 同梱済みのパーツだけは常に読み込む
       if (p.states) Object.keys(p.states).forEach(function (k) { if (p.states[k]) files[p.states[k]] = true; });
     });
     Object.keys(files).forEach(function (f) {
       var img = new Image();
       img.onload = function () {
         self.available[f] = true;
+        if (f === bgFile) self.stage.classList.add('skin-bg'); // 正式筐体: パーツを光・影のオーバーレイ表示に
         Object.keys(self.parts).forEach(function (id) { var pt = self.parts[id]; if (pt.state) self.setState(id, pt.state); });
       };
       img.src = self.skin.imageBase + f;

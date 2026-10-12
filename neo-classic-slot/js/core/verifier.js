@@ -6,7 +6,7 @@
 
   var ORDERS = [[0, 1, 2], [0, 2, 1], [1, 0, 2], [1, 2, 0], [2, 0, 1], [2, 1, 0]];
   var ORDER_NAMES = ['順押し', '順挟み(左右中)', '中左右', '中右左', '挟み(右左中)', '逆押し'];
-  var MUST_ALIGN = ['GRAPE', 'REPLAY']; // 取りこぼし不可の役
+  var MUST_ALIGN = ['GRAPE', 'REPLAY']; // できるだけ取りこぼさない役（左・右から止めた時を優先。取りこぼしは許容）
 
   NCS.CONTROL_ORDERS = ORDERS;
   NCS.CONTROL_ORDER_NAMES = ORDER_NAMES;
@@ -45,7 +45,7 @@
   NCS.verifyCase = function (flag) {
     var ctrl = new NCS.ReelControl();
     var N = NCS.REEL_SIZE;
-    var st = { games: 0, forbidden: 0, small: 0, bonus: 0, aimed: 0, aimedOk: 0, reach: {}, detAt: [0, 0, 0, 0], maxSlide: 0, samples: [] };
+    var st = { games: 0, forbidden: 0, small: 0, smallLR: 0, gamesLR: 0, bonus: 0, aimed: 0, aimedOk: 0, reach: {}, detAt: [0, 0, 0, 0], maxSlide: 0, samples: [] };
     var detMemo = new Map();
 
     function det(stops, order) {
@@ -92,7 +92,9 @@
           st.forbidden++;
           if (st.samples.length < 5) st.samples.push({ order: ord, press: press, stops: ctrl.stops.slice(), wins: j.wins, reachMe: j.reachMe });
         }
-        if (flag.small && j.wins.some(function (w) { return w.role === flag.small; })) st.small++;
+        var smallWin = flag.small && j.wins.some(function (w) { return w.role === flag.small; });
+        if (smallWin) st.small++;
+        if (ord[0] !== 1) { st.gamesLR++; if (smallWin) st.smallLR++; } // 順押し・逆押し・挟み打ち（左か右から）
         var bonusWin = flag.bonus && j.wins.some(function (w) { return w.role === flag.bonus; });
         if (bonusWin) st.bonus++;
         if (aimed) { st.aimed++; if (bonusWin) st.aimedOk++; }
@@ -111,8 +113,7 @@
       if (st.maxSlide > NCS.MAX_SLIDE) errors.push('すべり超過');
       // 取りこぼし無しの保証は MAX BET（5ライン）のみ。1・2枚掛けは有効ラインが少ないため対象外
       if (st.aimed && st.aimedOk !== st.aimed) errors.push('目押ししても揃わない ' + (st.aimed - st.aimedOk) + '件');
-      // 持ち越し中は目押しされたボーナスを小役より優先するため、取りこぼし無し保証の対象外
-      if (flag.newBonus !== false && flag.bet === NCS.MAX_BET && flag.small && MUST_ALIGN.indexOf(flag.small) >= 0 && st.small !== st.games) errors.push(flag.small + ' 取りこぼし ' + (st.games - st.small) + '件');
+      // ブドウ・リプレイの取りこぼしは許容（出目・演出を優先）。入賞率を表示するのみ
       if (errors.length) ok = false;
       out.push({ flag: flag, name: flagName(flag), stats: st, errors: errors });
       if (onProgress) onProgress(idx + 1, list.length);
@@ -127,7 +128,7 @@
     lines.push('== 停止制御 総当たり検証 (6停止順 × 21^3押下位置 = 55566通り/フラグ) ==');
     rep.results.forEach(function (r) {
       var s = r.stats, parts = [];
-      if (r.flag.small) parts.push(r.flag.small + '入賞 ' + pct(s.small, s.games));
+      if (r.flag.small) parts.push(r.flag.small + '入賞 ' + pct(s.small, s.games) + '（左・右から ' + pct(s.smallLR, s.gamesLR) + '）');
       if (r.flag.bonus) parts.push(r.flag.bonus + '揃い ' + pct(s.bonus, s.games));
       if (s.aimed) parts.push('目押し時の揃い ' + s.aimedOk + '/' + s.aimed);
       var rm = Object.keys(s.reach).map(function (k) { return k + ' ' + pct(s.reach[k], s.games); });

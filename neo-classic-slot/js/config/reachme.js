@@ -14,15 +14,16 @@
 (function (g) {
   var NCS = (g.NCS = g.NCS || {});
   function cherryWin(c) { for (var i = 0; i < c.wins.length; i++) if (c.wins[i].role === 'CHERRY') return true; return false; }
+  function rightHas(c, s) { return c.sym(2, 0) === s || c.sym(2, 1) === s || c.sym(2, 2) === s; }
   function leftHas(c, s) { return c.sym(0, 0) === s || c.sym(0, 1) === s || c.sym(0, 2) === s; }
   var BONUS = ['BIG', 'REG'];
   NCS.REACHME = {
     // ---- チャンス目（確定ではない。指定の小役かボーナスでのみ停止） ----
     LEFT_CHERRY: { kind: 'chance', name: '左チェリー出現', allow: BONUS, allowSmall: ['CHERRY'],
       test: function (c) { return leftHas(c, 'C'); } },
-    // 左リール第1停止（BAR狙いからの滑り）で山が見えた時のみチャンス目扱い
-    LEFT_YAMA: { kind: 'chance', name: '左山出現', allow: BONUS, allowSmall: ['YAMA'],
-      test: function (c) { return c.order[0] === 0 && leftHas(c, 'M'); } },
+    // 左リール第1停止で左上段に山（BAR狙いからBARが滑って山）の時のみチャンス目扱い
+    LEFT_YAMA: { kind: 'chance', name: '左上段山出現', allow: BONUS, allowSmall: ['YAMA'],
+      test: function (c) { return c.order[0] === 0 && c.sym(0, 0) === 'M'; } },
     // ---- 確定リーチ目 ----
     CHERRY_MISS: { name: 'チェリー外れ', allow: BONUS,
       test: function (c) { return leftHas(c, 'C') && !cherryWin(c); } },
@@ -61,6 +62,15 @@
     // 右中段7の上がBAR・下がリプレイ（右リール番号13の赤7）: 右窓にブドウが無くブドウを否定 = 第1停止でボーナス確定
     REV_BAR7_1K: { name: '逆押し 上BAR・中段赤7・下リプレイ', allow: BONUS,
       test: function (c) { return c.order[0] === 2 && c.sym(2, 0) === 'B' && c.sym(2, 1) === '7' && c.sym(2, 2) === 'R'; } },
+    // 右上段BAR・右窓に赤7なし … REG確定
+    REG_BAR_TOP: { name: '逆押し右上段BAR（赤7なし）', allow: ['REG'],
+      test: function (c) { return c.order[0] === 2 && c.sym(2, 0) === 'B' && !rightHas(c, '7'); } },
+    // 逆押し2確: 右窓に赤7とBARが両方 → 中リール中段に赤7・BAR
+    REV_7BAR_2K: { name: '逆押し 右7・BAR＋中段7・BAR', allow: BONUS,
+      test: function (c) { return c.order[0] === 2 && c.order[1] === 1 && rightHas(c, '7') && rightHas(c, 'B') && (c.sym(1, 1) === '7' || c.sym(1, 1) === 'B'); } },
+    // 順押し2確: 左チェリー（非入賞）＋中段BAR（中段7は CHERRY_MISS_7）
+    CHERRY_MISS_BAR: { name: 'チェリー外れ＋中段BAR', allow: BONUS,
+      test: function (c) { return leftHas(c, 'C') && !cherryWin(c) && c.sym(1, 1) === 'B'; } },
     REG_R7_TOP: { name: '逆押し右上段7', allow: ['REG'],
       test: function (c) { return c.order[0] === 2 && c.sym(2, 0) === '7'; } }
   };

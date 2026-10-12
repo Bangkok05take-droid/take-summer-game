@@ -14,6 +14,7 @@
  *   anim   : 状態切替時などに付与するアニメーション名（css/cabinet.css）
  *   label  : 画像が無い時のプレースホルダー表示名
  *   hidden : true なら初期状態で非表示（cab.setVisible で切替）
+ *   bundled: true なら画像を同梱済みとして常に読み込む（USE_IMAGE_ASSETS が false でも）
  *
  * 画像が未配置・読込失敗のパーツはプレースホルダー（半透明の枠＋名前）で表示される。
  */
@@ -28,8 +29,9 @@
 
     parts: [
       // ---- ① 筐体背景 ----
-      { id: 'cabinetBg', type: 'image', rect: [0, 0, 1080, 1920], z: 0, label: '筐体背景',
-        states: { normal: 'cabinet/cabinet_bg.png' } },
+      // 正式デザイン画像（同梱）。描き込まれたランプ・ボタンの上に、各パーツが光・影として重なる
+      { id: 'cabinetBg', type: 'image', rect: [0, 0, 1080, 1920], z: 0, label: '筐体背景', bundled: true,
+        states: { normal: 'cabinet/cabinet_bg.jpg' } },
 
       // ---- ② リール（3リールは1枚のcanvasに描画。リール間の隙間は背景が見える） ----
       { id: 'reels', type: 'reels', rect: [185, 570, 710, 380], z: 10, label: 'リール',

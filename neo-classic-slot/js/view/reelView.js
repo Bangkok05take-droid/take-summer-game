@@ -107,6 +107,11 @@
   ReelView.prototype.draw = function (t) {
     var c = this.ctx, W = this.reelW, H = this.symH, n = NCS.REEL_SIZE;
     c.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    // リール間の隙間は暗い仕切り（筐体背景に描かれた図柄が透けないように）
+    if (this.gap > 0) {
+      c.fillStyle = '#16101c';
+      for (var gi = 1; gi < 3; gi++) c.fillRect(gi * this.pitch - this.gap, 0, this.gap, H * 3);
+    }
     for (var i = 0; i < 3; i++) {
       var r = this.reels[i], x0 = i * this.pitch;
       // 停止時の小さなバウンド

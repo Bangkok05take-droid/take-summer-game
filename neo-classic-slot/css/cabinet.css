@@ -227,3 +227,43 @@
 .stop2 .pm-l1 { font-size: 34px; color: #e9d0ff; text-shadow: 0 0 14px #a050ff; }
 @keyframes pm-zoom { from { transform: scale(3); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 .data-opt { background: #1a1a2a; color: #ddd; border-color: #555; }
+
+/* ---- 正式筐体（.skin-bg）: 背景に描き込まれたランプ・ボタンの上に、光と影だけを重ねる ---- */
+.skin-bg .cab-part:not(.has-img):not(.cab-reels):not(.cab-display):not([data-part="boxCounter"]) {
+  border: none; background-color: transparent; box-shadow: none; border-radius: 16px;
+}
+.skin-bg .cab-part .cab-label { display: none; }
+.skin-bg [data-part="cabinetBg"].has-img { box-shadow: none; }
+/* ランプ類: 消灯は暗く、点灯は光る */
+.skin-bg [data-part^="betLamp"][data-state="off"],
+.skin-bg [data-part^="lamp"][data-state="off"] { background: rgba(0, 0, 0, 0.62) !important; }
+.skin-bg [data-part^="betLamp"][data-state="on"],
+.skin-bg [data-part^="lamp"][data-state="on"] {
+  background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0) 70%) !important;
+  box-shadow: 0 0 26px 6px rgba(255, 220, 120, 0.6) !important;
+}
+.skin-bg [data-part="bonusPanel"][data-state="off"] { background: rgba(0, 0, 0, 0.45) !important; }
+.skin-bg [data-part="bonusPanel"][data-state="big"] { background: rgba(255, 60, 80, 0.12) !important; box-shadow: 0 0 46px 12px rgba(255, 60, 80, 0.75) !important; }
+.skin-bg [data-part="bonusPanel"][data-state="reg"] { background: rgba(60, 140, 255, 0.12) !important; box-shadow: 0 0 46px 12px rgba(60, 140, 255, 0.75) !important; }
+.skin-bg [data-part="luckyLamp"] { border-radius: 50% !important; }
+.skin-bg [data-part="luckyLamp"][data-state="off"] {
+  background: radial-gradient(ellipse at center, rgba(4, 0, 12, 0.8) 0%, rgba(4, 0, 12, 0.72) 58%, rgba(4, 0, 12, 0) 72%) !important;
+}
+.skin-bg [data-part="luckyLamp"][data-state="on"] {
+  background: radial-gradient(ellipse at center, rgba(255, 235, 255, 0.4), rgba(210, 90, 255, 0.18) 55%, rgba(0, 0, 0, 0) 72%) !important;
+  box-shadow: 0 0 70px 24px rgba(190, 90, 255, 0.8) !important;
+}
+.skin-bg [data-part="luckyLamp"][data-state="premium"] {
+  background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.6), rgba(160, 40, 255, 0.45) 55%, rgba(0, 0, 0, 0) 74%) !important;
+  box-shadow: 0 0 110px 40px rgba(170, 60, 255, 0.95) !important;
+}
+/* ボタン類: 押せない時は暗く、押せる時は縁が光る、押した瞬間は沈む */
+.skin-bg [data-part^="stop"], .skin-bg [data-part="leverOn"] { border-radius: 50% !important; }
+.skin-bg [data-part^="stop"][data-state="off"], .skin-bg [data-part="leverOn"][data-state="off"],
+.skin-bg [data-part="betButton"][data-state="off"] { background: rgba(0, 0, 0, 0.5) !important; }
+.skin-bg [data-part^="stop"][data-state="on"] { box-shadow: 0 0 28px 8px rgba(255, 70, 70, 0.85) !important; }
+.skin-bg [data-part="leverOn"][data-state="on"] { box-shadow: 0 0 40px 10px rgba(255, 80, 60, 0.8) !important; }
+.skin-bg [data-part="betButton"][data-state="on"],
+.skin-bg [data-part="autoPlay"][data-state="on"] { box-shadow: 0 0 24px 6px rgba(255, 215, 90, 0.8) !important; }
+.skin-bg [data-state="pressed"] { background: rgba(0, 0, 0, 0.4) !important; transform: scale(0.94) !important; }
+.skin-bg [data-part="leverKnob"][data-state="down"] { transform: none !important; background: rgba(255, 255, 255, 0.22) !important; }

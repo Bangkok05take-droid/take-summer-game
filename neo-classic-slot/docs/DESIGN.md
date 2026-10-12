@@ -11,52 +11,48 @@
 
 | 番号 | 左 | 中 | 右 |
 |---:|:---:|:---:|:---:|
-| 20 | リプレイ | リプレイ | ブドウ |
-| 19 | ブドウ | チェリー | 山 |
-| 18 | リプレイ | 赤7 | ベル |
-| 17 | リプレイ | ブドウ | リプレイ |
-| 16 | ブドウ | BAR | ブドウ |
-| 15 | 赤7 | リプレイ | 山 |
-| 14 | ブドウ | チェリー | BAR |
-| 13 | 山 | 山 | 赤7 |
-| 12 | リプレイ | ブドウ | リプレイ |
+| 20 | 赤7 | 赤7 | 赤7 |
+| 19 | ブドウ | ブドウ | BAR |
+| 18 | 山 | チェリー | リプレイ |
+| 17 | リプレイ | リプレイ | ブドウ |
+| 16 | ブドウ | ブドウ | リプレイ |
+| 15 | BAR | リプレイ | 山 |
+| 14 | チェリー | チェリー | ベル |
+| 13 | リプレイ | 山 | ブドウ |
+| 12 | ベル | BAR | リプレイ |
 | 11 | ブドウ | ブドウ | ブドウ |
-| 10 | BAR | リプレイ | リプレイ |
-| 9 | チェリー | リプレイ | 山 |
-| 8 | リプレイ | チェリー | ブドウ |
-| 7 | 赤7 | 赤7 | 赤7 |
-| 6 | ブドウ | ブドウ | BAR |
-| 5 | 山 | BAR | リプレイ |
-| 4 | リプレイ | リプレイ | 山 |
-| 3 | ブドウ | チェリー | ブドウ |
-| 2 | BAR | 山 | 赤7 |
-| 1 | チェリー | ブドウ | ブドウ |
-| 0 | ベル | ベル | リプレイ |
+| 10 | 赤7 | チェリー | リプレイ |
+| 9 | リプレイ | リプレイ | 山 |
+| 8 | 山 | ブドウ | リプレイ |
+| 7 | ブドウ | リプレイ | ブドウ |
+| 6 | リプレイ | チェリー | リプレイ |
+| 5 | チェリー | 山 | ベル |
+| 4 | BAR | BAR | ブドウ |
+| 3 | リプレイ | ブドウ | リプレイ |
+| 2 | ブドウ | チェリー | 山 |
+| 1 | 山 | リプレイ | リプレイ |
+| 0 | リプレイ | ベル | ブドウ |
 
 ### 図柄数
 
 | 図柄 | 左 | 中 | 右 |
 |---|---:|---:|---:|
-| 赤7 | 2 | 2 | 3 |
-| BAR | 2 | 2 | 2 |
-| チェリー | 2 | 4 | 0 |
-| ブドウ | 6 | 5 | 6 |
-| ベル | 1 | 1 | 1 |
-| リプレイ | 6 | 5 | 5 |
-| 山 | 2 | 2 | 4 |
+| 赤7 | 2 | 1 | 1 |
+| BAR | 2 | 2 | 1 |
+| チェリー | 2 | 5 | 0 |
+| ブドウ | 5 | 5 | 6 |
+| ベル | 1 | 1 | 2 |
+| リプレイ | 6 | 5 | 8 |
+| 山 | 3 | 2 | 3 |
 
-### 配列の仕組み
+### 配列の方針（Ver.10・ユーザー指定の位置固定版）
 
-| 場所 | 並び（下→上） | 狙い |
-|---|---|---|
-| 左 | **チェリー / BAR / ブドウ / リプレイ / 山**（1〜5、9〜13） | BAR狙いで「通常=BAR下段」「チェリー成立=チェリー下段」「山小役=山が滑って中段」「ボーナス=山が下段まで大滑り」 |
-| 中 | **赤7 の真上にチェリー**（7→8、18→19） | チェリーが否定されると中段に赤7 |
-| 中 | チェリー4個 | 左チェリー停止時に対応チェリーを必ず引き込める |
-| 右 | **BAR / 赤7 / ブドウ**（6〜8）・**赤7 / BAR**（13〜14） | **赤7とBARが隣り合う**（画面の上から「ブドウ・赤7・BAR」「山・BAR・赤7」）。逆押しで赤7・BARを目印に狙える。ハズレ時の通常停止形は右7下段 |
-| 右 | **ブドウ / 赤7 / ブドウ**（1〜3） | 右中段7でもブドウを成立させられる（右中段7＝ブドウかボーナスのチャンス目） |
-| 右 | リプレイ5個（間隔4コマ以内） | 右から止めても・最後に止めてもリプレイを取りこぼさない |
-| 右 | 山4個 | 挟み打ちで左山に対して右上段の山を必ずフォローできる |
-| 全リール | ブドウ・リプレイ5〜6個 | 3枚掛けで取りこぼし無し |
+- **赤7・BAR・チェリーはオリジナルジャグラーと同じ位置、山は 左18・8・1／中13・5／右15・9・2 に固定**（ユーザー指定）。
+  リプレイ・ブドウ・ベルはその間に配置し、同じ図柄が縦に連続しない。旧サイ図柄はリプレイ。
+- 右リールは赤7（20）とBAR（19）を1組にまとめて狙いやすく。右0番のブドウで「上ブドウ・中赤7・下BAR」の形。
+- **ブドウ・リプレイの取りこぼしは許容**（出目・演出を優先）。順押し・逆押し・挟み打ち（左か右から停止）を優先して揃え、
+  中押しは小役の取りこぼしを気にしない。入賞率は `node tools/verify.js` で表示（左・右から: ブドウ約99.6%・リプレイ約98.5%）。
+- 左右リールの山は上段・下段が基本形（中段は避ける）。山小役は左BARが滑って左上段に山。
 
 ## 2. BETと有効ライン
 
@@ -94,7 +90,7 @@
 | 名称 | 条件 | 停止を許す内部 |
 |---|---|---|
 | 左チェリー出現 | 左リール窓にチェリー | チェリー or ボーナス |
-| 左山出現 | 左第1停止で左リール窓に山 | 山小役 or ボーナス |
+| 左上段山出現 | 左第1停止で左上段に山（BAR狙いからBARが滑って山） | 山小役 or ボーナス |
 | 逆押し右中段7 | 右第1停止で右中段に赤7 | ブドウ or ボーナス |
 
 ### 確定リーチ目（ボーナス非成立では絶対に停止しない）
@@ -110,6 +106,9 @@
 | 小山 | 左中・中上・右中が山 | BIG/REG（REG寄り） | 第3停止 |
 | BAR一直線 | BAR-BAR-BAR が有効ライン上 | BIG/REG | 第3停止 |
 | 逆押し右中段7・ブドウ否定 | 右第1停止で右中段7、ブドウ非入賞 | BIG/REG | 第2停止（中でブドウの全ラインが消える形を優先） |
+| 逆押し右上段BAR（赤7なし） | 右第1停止で右上段BAR・右窓に赤7が無い | **REGのみ** | 第1停止 |
+| 逆押し 右7・BAR＋中段7・BAR | 右第1停止で右窓に赤7とBAR → 中リール中段に赤7かBAR | BIG/REG | 第2停止 |
+| チェリー外れ＋中段BAR | 左チェリー（非入賞）＋中リール中段BAR | BIG/REG | 第3停止 |
 | **逆押し 上BAR・中段赤7・下リプレイ** | 右第1停止で右窓が 上BAR／中赤7／下リプレイ（右番号13の赤7） | BIG/REG | **第1停止（1確）** |
 | 逆押し右上段7 | 右第1停止で右上段に赤7 | **REGのみ** | 第1停止 |
 
@@ -242,37 +241,62 @@ BGMは状態が変わるとクロスフェードで切替。オート中はレ�
 ```
 == 停止制御 総当たり検証 (6停止順 × 21^3押下位置 = 55566通り/フラグ) ==
 OK ハズレ : 
-OK GRAPE : GRAPE入賞 100.0% | リーチ目: RIGHT_7_MID 9.5%
-OK CHERRY : CHERRY入賞 66.2% | リーチ目: LEFT_CHERRY 66.2%
-OK BELL : BELL入賞 1.8%
-OK YAMA : YAMA入賞 24.0% | リーチ目: LEFT_YAMA 19.0%
-OK REPLAY : REPLAY入賞 100.0%
-OK GRAPE [R7_MID] : GRAPE入賞 100.0% | リーチ目: RIGHT_7_MID 23.8%
-OK BIG : BIG揃い 22.4% | リーチ目: LEFT_YAMA 11.1%, YAMA_HASAMI_MISS 4.5%, RIGHT_7_MID 1.6%, REV_GRAPE_MISS 1.6%, REV_GRAPE_MISS_2 0.4% | 確定停止 1st/2nd/3rd: 0/2898/4158
-OK BIG [CHERRY_MISS_7] : BIG揃い 13.2% | リーチ目: LEFT_CHERRY 64.2%, CHERRY_MISS 64.2%, CHERRY_MISS_7 27.2%, LEFT_YAMA 3.2%, YAMA_HASAMI_MISS 1.3%, RIGHT_7_MID 1.6%, REV_GRAPE_MISS 1.6%, REV_GRAPE_MISS_2 0.4% | 確定停止 1st/2nd/3rd: 0/13167/24595
-OK BIG [YAMA_HASAMI] : BIG揃い 22.2% | リーチ目: LEFT_YAMA 15.9%, YAMA_HASAMI_MISS 7.9%, RIGHT_7_MID 1.6%, REV_GRAPE_MISS 1.6%, REV_GRAPE_MISS_2 0.4% | 確定停止 1st/2nd/3rd: 0/4809/4893
-OK BIG [V_SHAPE] : BIG揃い 11.7% | リーチ目: LEFT_YAMA 19.0%, V_SHAPE 18.4%, YAMA_HASAMI_MISS 1.3% | 確定停止 1st/2nd/3rd: 0/714/16670
-OK BIG [OYAMA] : BIG揃い 18.2% | リーチ目: LEFT_YAMA 15.9%, OYAMA 10.4%, YAMA_HASAMI_MISS 7.6%, RIGHT_7_MID 9.5%, REV_GRAPE_MISS 9.5%, REV_GRAPE_MISS_2 2.1% | 確定停止 1st/2nd/3rd: 0/7329/9583
-OK BIG [TANI] : BIG揃い 12.9% | リーチ目: LEFT_YAMA 17.5%, TANI 15.1%, YAMA_HASAMI_MISS 0.6% | 確定停止 1st/2nd/3rd: 0/357/14545
-OK BIG [KOYAMA] : BIG揃い 13.7% | リーチ目: LEFT_YAMA 17.5%, KOYAMA 14.4%, YAMA_HASAMI_MISS 0.6% | 確定停止 1st/2nd/3rd: 0/357/14345
-OK BIG [BAR_LINE] : BIG揃い 9.8% | リーチ目: BAR_LINE 19.6%, LEFT_YAMA 1.6%, LEFT_CHERRY 12.3%, CHERRY_MISS 12.3%, YAMA_HASAMI_MISS 0.6%, RIGHT_7_MID 1.6%, REV_GRAPE_MISS 1.6%, REV_GRAPE_MISS_2 0.4% | 確定停止 1st/2nd/3rd: 0/3780/12628
-OK BIG [REV_GRAPE_MISS] : BIG揃い 20.2% | リーチ目: LEFT_YAMA 11.1%, YAMA_HASAMI_MISS 4.5%, RIGHT_7_MID 23.8%, REV_GRAPE_MISS 23.8%, REV_GRAPE_MISS_2 11.9% | 確定停止 1st/2nd/3rd: 0/12474/6930
-OK BIG+GRAPE : GRAPE入賞 100.0% | BIG揃い 3.0% | リーチ目: OYAMA 0.8%, RIGHT_7_MID 12.7% | 確定停止 1st/2nd/3rd: 0/0/7488
-OK BIG+CHERRY : CHERRY入賞 65.6% | BIG揃い 20.6% | リーチ目: LEFT_CHERRY 65.6%, LEFT_YAMA 3.2%, YAMA_HASAMI_MISS 1.3% | 確定停止 1st/2nd/3rd: 0/714/37506
-OK BIG+REPLAY : REPLAY入賞 100.0% | BIG揃い 0.0% | リーチ目: LEFT_YAMA 17.5%, LEFT_CHERRY 6.7%, CHERRY_MISS 6.7% | 確定停止 1st/2nd/3rd: 0/0/13419
-OK BIG+YAMA : YAMA入賞 25.3% | BIG揃い 13.4% | リーチ目: LEFT_YAMA 22.2%, YAMA_HASAMI_MISS 1.5%, RIGHT_7_MID 7.9%, REV_GRAPE_MISS 7.9%, REV_GRAPE_MISS_2 3.8% | 確定停止 1st/2nd/3rd: 0/3255/13503
-OK REG : REG揃い 14.4% | リーチ目: LEFT_YAMA 11.1%, YAMA_HASAMI_MISS 1.1% | 確定停止 1st/2nd/3rd: 0/588/5586
-OK REG [CHERRY_MISS_7] : REG揃い 9.0% | リーチ目: LEFT_CHERRY 64.4%, CHERRY_MISS 64.4%, CHERRY_MISS_7 27.2%, LEFT_YAMA 3.2%, YAMA_HASAMI_MISS 0.3% | 確定停止 1st/2nd/3rd: 0/12096/25452
-OK REG [YAMA_HASAMI] : REG揃い 12.3% | リーチ目: LEFT_YAMA 15.9%, YAMA_HASAMI_MISS 7.9% | 確定停止 1st/2nd/3rd: 0/4410/4410
-OK REG [V_SHAPE] : REG揃い 9.8% | リーチ目: LEFT_YAMA 19.0%, V_SHAPE 18.4%, YAMA_HASAMI_MISS 0.3% | 確定停止 1st/2nd/3rd: 0/168/17216
-OK REG [KOYAMA] : REG揃い 7.0% | リーチ目: LEFT_YAMA 17.5%, KOYAMA 16.2%, YAMA_HASAMI_MISS 0.2%, REG_R7_TOP 7.9% | 確定停止 1st/2nd/3rd: 4410/84/14618
-OK REG [BAR_LINE] : REG揃い 6.0% | リーチ目: BAR_LINE 19.6%, LEFT_YAMA 1.6%, LEFT_CHERRY 12.3%, CHERRY_MISS 12.3%, YAMA_HASAMI_MISS 0.2% | 確定停止 1st/2nd/3rd: 0/3108/12418
-OK REG [REV_GRAPE_MISS] : REG揃い 10.8% | リーチ目: LEFT_YAMA 11.1%, YAMA_HASAMI_MISS 1.1%, RIGHT_7_MID 23.8%, REV_GRAPE_MISS 23.8%, REV_GRAPE_MISS_2 11.9% | 確定停止 1st/2nd/3rd: 0/11613/7791
-OK REG [REG_R7_TOP] : REG揃い 11.2% | リーチ目: LEFT_YAMA 11.1%, YAMA_HASAMI_MISS 1.1%, REG_R7_TOP 23.8% | 確定停止 1st/2nd/3rd: 13230/588/5586
-OK REG+GRAPE : GRAPE入賞 100.0% | REG揃い 12.2% | 確定停止 1st/2nd/3rd: 0/0/0
-OK REG+CHERRY : CHERRY入賞 65.9% | REG揃い 13.8% | リーチ目: LEFT_CHERRY 65.9%, LEFT_YAMA 3.2%, YAMA_HASAMI_MISS 0.3%, CHERRY_MISS 0.0% | 確定停止 1st/2nd/3rd: 0/168/38220
-OK REG+REPLAY : REPLAY入賞 100.0% | REG揃い 0.0% | リーチ目: LEFT_YAMA 17.5%, LEFT_CHERRY 6.7%, CHERRY_MISS 6.7% | 確定停止 1st/2nd/3rd: 0/0/13419
-OK REG+YAMA : YAMA入賞 24.8% | REG揃い 13.1% | リーチ目: LEFT_YAMA 22.2%, YAMA_HASAMI_MISS 1.5% | 確定停止 1st/2nd/3rd: 0/840/11508
+OK GRAPE : GRAPE入賞 99.8%（左・右から 99.6%） | リーチ目: RIGHT_7_MID 6.3%
+OK CHERRY : CHERRY入賞 66.5%（左・右から 66.5%） | リーチ目: LEFT_CHERRY 66.5%
+OK BELL : BELL入賞 3.6%（左・右から 3.7%）
+OK YAMA : YAMA入賞 28.4%（左・右から 27.8%） | リーチ目: LEFT_YAMA 22.2%
+OK REPLAY : REPLAY入賞 98.7%（左・右から 98.5%）
+OK GRAPE [R7_MID] : GRAPE入賞 99.8%（左・右から 99.6%） | リーチ目: RIGHT_7_MID 7.9%
+OK BIG : BIG揃い 4.4% | リーチ目: LEFT_YAMA 9.5%, YAMA_HASAMI_MISS 0.8%, LEFT_CHERRY 0.0%, CHERRY_MISS 0.0% | 確定停止 1st/2nd/3rd: 0/420/5302
+OK BIG [CHERRY_MISS_7] : BIG揃い 2.3% | リーチ目: LEFT_CHERRY 66.5%, CHERRY_MISS 66.5%, CHERRY_MISS_BAR 31.7%, CHERRY_MISS_7 15.9%, LEFT_YAMA 6.3% | 確定停止 1st/2nd/3rd: 0/12306/28166
+OK BIG [YAMA_HASAMI] : BIG揃い 4.2% | リーチ目: LEFT_YAMA 1.6%, YAMA_HASAMI_MISS 11.1%, LEFT_CHERRY 0.0%, CHERRY_MISS 0.0% | 確定停止 1st/2nd/3rd: 0/6174/892
+OK BIG [V_SHAPE] : BIG揃い 2.7% | リーチ目: LEFT_YAMA 22.2%, V_SHAPE 22.7%, LEFT_CHERRY 0.0%, CHERRY_MISS 0.0% | 確定停止 1st/2nd/3rd: 0/0/20754
+OK BIG [OYAMA] : BIG揃い 3.2% | リーチ目: OYAMA 22.7%, LEFT_YAMA 1.6%, YAMA_HASAMI_MISS 9.2%, LEFT_CHERRY 0.0%, CHERRY_MISS 0.0% | 確定停止 1st/2nd/3rd: 0/5124/11385
+OK BIG [TANI] : BIG揃い 3.6% | リーチ目: TANI 9.2%, LEFT_YAMA 1.6%, YAMA_HASAMI_MISS 0.4%, LEFT_CHERRY 0.0%, CHERRY_MISS 0.0% | 確定停止 1st/2nd/3rd: 0/210/6022
+OK BIG [KOYAMA] : BIG揃い 2.3% | リーチ目: KOYAMA 20.9%, TANI 1.3%, LEFT_CHERRY 0.0%, CHERRY_MISS 0.0% | 確定停止 1st/2nd/3rd: 0/0/12322
+OK BIG [BAR_LINE] : BIG揃い 3.0% | リーチ目: BAR_LINE 8.9%, LEFT_CHERRY 10.7%, CHERRY_MISS 10.7%, CHERRY_MISS_BAR 2.9%, LEFT_YAMA 4.8%, RIGHT_7_MID 7.9%, REV_GRAPE_MISS 7.9%, REV_GRAPE_MISS_2 3.2%, REV_7BAR_2K 1.3% | 確定停止 1st/2nd/3rd: 0/5754/8891
+OK BIG [REV_GRAPE_MISS] : BIG揃い 4.3% | リーチ目: LEFT_YAMA 9.5%, YAMA_HASAMI_MISS 0.8%, LEFT_CHERRY 0.0%, CHERRY_MISS 0.0%, RIGHT_7_MID 7.9%, REV_GRAPE_MISS 7.9%, REV_GRAPE_MISS_2 4.0%, REV_7BAR_2K 0.9% | 確定停止 1st/2nd/3rd: 0/3675/6453
+OK BIG+GRAPE : GRAPE入賞 100.0%（左・右から 100.0%） | BIG揃い 0.0% | リーチ目: LEFT_YAMA 3.2%, YAMA_HASAMI_MISS 4.0%, RIGHT_7_MID 6.3% | 確定停止 1st/2nd/3rd: 0/2205/5292
+OK BIG+CHERRY : CHERRY入賞 66.5%（左・右から 66.5%） | BIG揃い 1.1% | リーチ目: LEFT_CHERRY 66.5%, LEFT_YAMA 6.3% | 確定停止 1st/2nd/3rd: 0/0/40506
+OK BIG+REPLAY : REPLAY入賞 99.4%（左・右から 99.4%） | BIG揃い 0.0% | リーチ目: LEFT_YAMA 4.8%, YAMA_HASAMI_MISS 0.8%, TANI 0.1%, LEFT_CHERRY 0.4%, CHERRY_MISS 0.4% | 確定停止 1st/2nd/3rd: 0/441/2934
+OK BIG+YAMA : YAMA入賞 29.7%（左・右から 29.7%） | BIG揃い 2.7% | リーチ目: LEFT_YAMA 22.2%, YAMA_HASAMI_MISS 0.9%, LEFT_CHERRY 0.0%, CHERRY_MISS 0.0% | 確定停止 1st/2nd/3rd: 0/504/12354
+OK REG : REG揃い 4.8% | リーチ目: LEFT_YAMA 9.5%, YAMA_HASAMI_MISS 0.8%, REG_BAR_TOP 7.9%, RIGHT_7_MID 3.2%, REV_GRAPE_MISS 3.2%, REV_GRAPE_MISS_2 0.5%, REV_7BAR_2K 0.1% | 確定停止 1st/2nd/3rd: 4410/1512/5964
+OK REG [CHERRY_MISS_7] : REG揃い 1.7% | リーチ目: LEFT_CHERRY 66.5%, CHERRY_MISS 66.5%, CHERRY_MISS_BAR 31.7%, CHERRY_MISS_7 15.9%, LEFT_YAMA 6.3% | 確定停止 1st/2nd/3rd: 0/12306/28166
+OK REG [YAMA_HASAMI] : REG揃い 4.7% | リーチ目: LEFT_YAMA 1.6%, YAMA_HASAMI_MISS 11.1%, REG_BAR_TOP 7.9%, RIGHT_7_MID 3.2%, REV_GRAPE_MISS 3.2%, REV_GRAPE_MISS_2 0.5%, REV_7BAR_2K 0.1% | 確定停止 1st/2nd/3rd: 4410/7266/1554
+OK REG [V_SHAPE] : REG揃い 3.2% | リーチ目: LEFT_YAMA 22.2%, V_SHAPE 22.7%, REG_BAR_TOP 4.8% | 確定停止 1st/2nd/3rd: 2646/0/20748
+OK REG [KOYAMA] : REG揃い 2.5% | リーチ目: KOYAMA 17.6%, REG_BAR_TOP 4.8% | 確定停止 1st/2nd/3rd: 2646/0/9800
+OK REG [BAR_LINE] : REG揃い 3.1% | リーチ目: BAR_LINE 9.8%, LEFT_CHERRY 11.2%, CHERRY_MISS 11.2%, CHERRY_MISS_BAR 3.0%, LEFT_YAMA 4.8%, REG_BAR_TOP 7.9%, RIGHT_7_MID 3.2%, REV_GRAPE_MISS 3.2%, REV_GRAPE_MISS_2 1.3%, REV_7BAR_2K 0.2% | 確定停止 1st/2nd/3rd: 4410/4410/7588
+OK REG [REV_GRAPE_MISS] : REG揃い 4.8% | リーチ目: LEFT_YAMA 9.5%, YAMA_HASAMI_MISS 0.8%, REG_BAR_TOP 3.2%, RIGHT_7_MID 7.9%, REV_GRAPE_MISS 7.9%, REV_GRAPE_MISS_2 4.0%, REV_7BAR_2K 0.2% | 確定停止 1st/2nd/3rd: 1764/4725/5397
+OK REG [REG_R7_TOP] : REG揃い 4.6% | リーチ目: LEFT_YAMA 9.5%, YAMA_HASAMI_MISS 0.8%, REG_BAR_TOP 1.6%, REG_R7_TOP 7.9%, RIGHT_7_MID 1.6%, REV_GRAPE_MISS 1.6%, REV_7BAR_2K 1.0%, REV_GRAPE_MISS_2 0.2% | 確定停止 1st/2nd/3rd: 5292/966/5628
+OK REG+GRAPE : GRAPE入賞 100.0%（左・右から 100.0%） | REG揃い 0.0% | リーチ目: LEFT_YAMA 3.2%, YAMA_HASAMI_MISS 4.0%, RIGHT_7_MID 6.3% | 確定停止 1st/2nd/3rd: 0/2205/5292
+OK REG+CHERRY : CHERRY入賞 66.5%（左・右から 66.5%） | REG揃い 0.8% | リーチ目: LEFT_CHERRY 66.5%, LEFT_YAMA 6.3% | 確定停止 1st/2nd/3rd: 0/0/40506
+OK REG+REPLAY : REPLAY入賞 99.4%（左・右から 99.3%） | REG揃い 0.0% | リーチ目: LEFT_YAMA 4.8%, YAMA_HASAMI_MISS 0.8%, LEFT_CHERRY 0.4%, CHERRY_MISS 0.4% | 確定停止 1st/2nd/3rd: 0/441/2878
+OK REG+YAMA : YAMA入賞 29.7%（左・右から 29.7%） | REG揃い 2.7% | リーチ目: LEFT_YAMA 22.2%, YAMA_HASAMI_MISS 0.9%, REG_BAR_TOP 1.6% | 確定停止 1st/2nd/3rd: 882/504/12348
+OK BIG (持ち越し中) : BIG揃い 4.6% | 目押し時の揃い 324/324 | リーチ目: LEFT_YAMA 9.5%, YAMA_HASAMI_MISS 0.8%, LEFT_CHERRY 0.0%, CHERRY_MISS 0.0%, RIGHT_7_MID 1.6%, REV_GRAPE_MISS 1.6%, REV_GRAPE_MISS_2 0.2%, REV_7BAR_2K 0.2% | 確定停止 1st/2nd/3rd: 0/735/5869
+OK BIG [CHERRY_MISS_7] (持ち越し中) : BIG揃い 4.4% | 目押し時の揃い 324/324 | リーチ目: LEFT_YAMA 7.9%, LEFT_CHERRY 52.4%, CHERRY_MISS 52.4%, CHERRY_MISS_BAR 24.6%, CHERRY_MISS_7 11.6%, YAMA_HASAMI_MISS 0.8%, RIGHT_7_MID 1.6%, REV_GRAPE_MISS 1.6%, REV_GRAPE_MISS_2 0.6%, REV_7BAR_2K 0.6% | 確定停止 1st/2nd/3rd: 0/9534/24781
+OK BIG [YAMA_HASAMI] (持ち越し中) : BIG揃い 4.6% | 目押し時の揃い 324/324 | リーチ目: LEFT_YAMA 4.8%, YAMA_HASAMI_MISS 9.5%, LEFT_CHERRY 0.0%, CHERRY_MISS 0.0%, RIGHT_7_MID 1.6%, REV_GRAPE_MISS 1.6%, REV_GRAPE_MISS_2 0.2%, REV_7BAR_2K 0.2% | 確定停止 1st/2nd/3rd: 0/5607/3223
+OK BIG [V_SHAPE] (持ち越し中) : BIG揃い 4.6% | 目押し時の揃い 324/324 | リーチ目: LEFT_YAMA 14.3%, V_SHAPE 17.6%, YAMA_HASAMI_MISS 0.8%, LEFT_CHERRY 0.0%, CHERRY_MISS 0.0%, RIGHT_7_MID 1.6%, REV_GRAPE_MISS 1.6%, REV_GRAPE_MISS_2 0.2%, REV_7BAR_2K 0.2% | 確定停止 1st/2nd/3rd: 0/735/15795
+OK BIG [OYAMA] (持ち越し中) : BIG揃い 4.4% | 目押し時の揃い 324/324 | リーチ目: LEFT_YAMA 4.8%, OYAMA 19.0%, YAMA_HASAMI_MISS 8.0%, LEFT_CHERRY 0.0%, CHERRY_MISS 0.0%, RIGHT_7_MID 1.6%, REV_GRAPE_MISS 1.6%, REV_GRAPE_MISS_2 0.2%, REV_7BAR_2K 0.2% | 確定停止 1st/2nd/3rd: 0/4767/12163
+OK BIG [TANI] (持ち越し中) : BIG揃い 4.6% | 目押し時の揃い 324/324 | リーチ目: LEFT_YAMA 9.5%, TANI 5.5%, YAMA_HASAMI_MISS 0.8%, LEFT_CHERRY 0.0%, CHERRY_MISS 0.0%, RIGHT_7_MID 1.6%, REV_GRAPE_MISS 1.6%, REV_GRAPE_MISS_2 0.2%, REV_7BAR_2K 0.2% | 確定停止 1st/2nd/3rd: 0/735/8899
+OK BIG [KOYAMA] (持ち越し中) : BIG揃い 4.6% | 目押し時の揃い 324/324 | リーチ目: LEFT_YAMA 7.9%, KOYAMA 13.7%, TANI 0.6%, YAMA_HASAMI_MISS 0.8%, LEFT_CHERRY 0.0%, CHERRY_MISS 0.0%, RIGHT_7_MID 1.6%, REV_GRAPE_MISS 1.6%, REV_GRAPE_MISS_2 0.2%, REV_7BAR_2K 0.2% | 確定停止 1st/2nd/3rd: 0/735/12909
+OK BIG [BAR_LINE] (持ち越し中) : BIG揃い 4.6% | 目押し時の揃い 324/324 | リーチ目: LEFT_YAMA 7.9%, BAR_LINE 4.9%, LEFT_CHERRY 4.5%, CHERRY_MISS 4.5%, CHERRY_MISS_BAR 2.1%, YAMA_HASAMI_MISS 0.8%, RIGHT_7_MID 1.6%, REV_GRAPE_MISS 1.6%, REV_GRAPE_MISS_2 0.6%, REV_7BAR_2K 0.3% | 確定停止 1st/2nd/3rd: 0/2436/7324
+OK BIG [REV_GRAPE_MISS] (持ち越し中) : BIG揃い 4.6% | 目押し時の揃い 324/324 | リーチ目: LEFT_YAMA 9.5%, YAMA_HASAMI_MISS 0.8%, LEFT_CHERRY 0.0%, CHERRY_MISS 0.0%, RIGHT_7_MID 1.6%, REV_GRAPE_MISS 1.6%, REV_GRAPE_MISS_2 0.8%, REV_7BAR_2K 0.2% | 確定停止 1st/2nd/3rd: 0/1071/5533
+OK BIG+GRAPE (持ち越し中) : GRAPE入賞 86.6%（左・右から 86.3%） | BIG揃い 3.9% | 目押し時の揃い 324/324 | リーチ目: LEFT_YAMA 4.8%, YAMA_HASAMI_MISS 4.3%, LEFT_CHERRY 0.1%, CHERRY_MISS 0.1%, RIGHT_7_MID 1.6%, REV_GRAPE_MISS 0.3%, REV_GRAPE_MISS_2 0.2%, REV_7BAR_2K 0.2% | 確定停止 1st/2nd/3rd: 0/2520/3463
+OK BIG+CHERRY (持ち越し中) : CHERRY入賞 46.8%（左・右から 46.4%） | BIG揃い 4.4% | 目押し時の揃い 324/324 | リーチ目: LEFT_YAMA 7.9%, LEFT_CHERRY 46.8%, YAMA_HASAMI_MISS 0.8%, CHERRY_MISS 0.0%, RIGHT_7_MID 1.6%, REV_GRAPE_MISS 1.6%, REV_GRAPE_MISS_2 0.6%, REV_7BAR_2K 0.2% | 確定停止 1st/2nd/3rd: 0/945/30338
+OK BIG+REPLAY (持ち越し中) : REPLAY入賞 78.2%（左・右から 80.1%） | BIG揃い 4.1% | 目押し時の揃い 324/324 | リーチ目: LEFT_YAMA 4.8%, YAMA_HASAMI_MISS 1.7%, LEFT_CHERRY 1.0%, CHERRY_MISS 1.0%, TANI 0.1%, RIGHT_7_MID 1.6%, REV_GRAPE_MISS 1.6%, REV_GRAPE_MISS_2 0.2%, REV_7BAR_2K 0.2% | 確定停止 1st/2nd/3rd: 0/1302/3759
+OK BIG+YAMA (持ち越し中) : YAMA入賞 26.5%（左・右から 24.9%） | BIG揃い 4.5% | 目押し時の揃い 324/324 | リーチ目: LEFT_YAMA 14.3%, YAMA_HASAMI_MISS 3.1%, LEFT_CHERRY 0.0%, CHERRY_MISS 0.0%, RIGHT_7_MID 1.6%, REV_GRAPE_MISS 1.6%, REV_GRAPE_MISS_2 0.2%, REV_7BAR_2K 0.2% | 確定停止 1st/2nd/3rd: 0/2037/8515
+OK REG (持ち越し中) : REG揃い 4.9% | 目押し時の揃い 324/324 | リーチ目: LEFT_YAMA 9.5%, YAMA_HASAMI_MISS 1.5%, REG_BAR_TOP 7.9%, RIGHT_7_MID 3.2%, REV_GRAPE_MISS 3.2%, REV_GRAPE_MISS_2 0.5%, REV_7BAR_2K 0.1% | 確定停止 1st/2nd/3rd: 4410/1932/5964
+OK REG [CHERRY_MISS_7] (持ち越し中) : REG揃い 4.9% | 目押し時の揃い 324/324 | リーチ目: LEFT_YAMA 7.9%, LEFT_CHERRY 51.3%, CHERRY_MISS 51.3%, CHERRY_MISS_BAR 24.5%, CHERRY_MISS_7 11.0%, YAMA_HASAMI_MISS 1.5%, REG_BAR_TOP 7.9%, RIGHT_7_MID 3.2%, REV_GRAPE_MISS 3.2%, REV_GRAPE_MISS_2 1.1%, REV_7BAR_2K 1.1% | 確定停止 1st/2nd/3rd: 4410/10668/22004
+OK REG [YAMA_HASAMI] (持ち越し中) : REG揃い 4.9% | 目押し時の揃い 324/324 | リーチ目: LEFT_YAMA 4.8%, YAMA_HASAMI_MISS 9.5%, REG_BAR_TOP 7.9%, RIGHT_7_MID 3.2%, REV_GRAPE_MISS 3.2%, REV_GRAPE_MISS_2 0.5%, REV_7BAR_2K 0.1% | 確定停止 1st/2nd/3rd: 4410/6384/3318
+OK REG [V_SHAPE] (持ち越し中) : REG揃い 4.9% | 目押し時の揃い 324/324 | リーチ目: LEFT_YAMA 14.3%, V_SHAPE 17.6%, YAMA_HASAMI_MISS 1.5%, REG_BAR_TOP 7.9%, RIGHT_7_MID 3.2%, REV_GRAPE_MISS 3.2%, REV_GRAPE_MISS_2 0.5%, REV_7BAR_2K 0.1% | 確定停止 1st/2nd/3rd: 4410/1932/15890
+OK REG [KOYAMA] (持ち越し中) : REG揃い 4.9% | 目押し時の揃い 324/324 | リーチ目: LEFT_YAMA 7.9%, KOYAMA 11.4%, YAMA_HASAMI_MISS 1.5%, REG_BAR_TOP 7.9%, RIGHT_7_MID 3.2%, REV_GRAPE_MISS 3.2%, REV_GRAPE_MISS_2 0.5%, REV_7BAR_2K 0.1% | 確定停止 1st/2nd/3rd: 4410/1932/11422
+OK REG [BAR_LINE] (持ち越し中) : REG揃い 4.9% | 目押し時の揃い 324/324 | リーチ目: LEFT_YAMA 7.9%, BAR_LINE 6.7%, LEFT_CHERRY 5.2%, CHERRY_MISS 5.2%, CHERRY_MISS_BAR 2.2%, YAMA_HASAMI_MISS 1.5%, REG_BAR_TOP 7.9%, RIGHT_7_MID 3.2%, REV_GRAPE_MISS 3.2%, REV_GRAPE_MISS_2 1.3%, REV_7BAR_2K 0.2% | 確定停止 1st/2nd/3rd: 4410/3822/7230
+OK REG [REV_GRAPE_MISS] (持ち越し中) : REG揃い 4.9% | 目押し時の揃い 324/324 | リーチ目: LEFT_YAMA 9.5%, YAMA_HASAMI_MISS 1.5%, REG_BAR_TOP 3.2%, RIGHT_7_MID 7.9%, REV_GRAPE_MISS 7.9%, REV_GRAPE_MISS_2 4.0%, REV_7BAR_2K 0.2% | 確定停止 1st/2nd/3rd: 1764/5145/5397
+OK REG [REG_R7_TOP] (持ち越し中) : REG揃い 4.9% | 目押し時の揃い 324/324 | リーチ目: LEFT_YAMA 9.5%, YAMA_HASAMI_MISS 1.5%, REG_BAR_TOP 7.9%, RIGHT_7_MID 3.2%, REV_GRAPE_MISS 3.2%, REV_GRAPE_MISS_2 0.5%, REV_7BAR_2K 0.1% | 確定停止 1st/2nd/3rd: 4410/1932/5964
+OK REG+GRAPE (持ち越し中) : GRAPE入賞 79.6%（左・右から 76.5%） | REG揃い 4.9% | 目押し時の揃い 324/324 | リーチ目: LEFT_YAMA 6.3%, YAMA_HASAMI_MISS 4.7%, REG_BAR_TOP 3.2%, RIGHT_7_MID 7.9%, REV_GRAPE_MISS 3.8%, LEFT_CHERRY 0.1%, CHERRY_MISS 0.1%, REV_GRAPE_MISS_2 1.1%, REV_7BAR_2K 0.2% | 確定停止 1st/2nd/3rd: 1764/4725/5838
+OK REG+CHERRY (持ち越し中) : CHERRY入賞 45.7%（左・右から 45.6%） | REG揃い 4.9% | 目押し時の揃い 324/324 | リーチ目: LEFT_YAMA 7.9%, LEFT_CHERRY 45.7%, YAMA_HASAMI_MISS 1.5%, REG_BAR_TOP 7.9%, RIGHT_7_MID 3.2%, REV_GRAPE_MISS 3.2%, REV_GRAPE_MISS_2 1.2%, REV_7BAR_2K 0.1% | 確定停止 1st/2nd/3rd: 4410/2394/27550
+OK REG+REPLAY (持ち越し中) : REPLAY入賞 71.5%（左・右から 72.6%） | REG揃い 4.9% | 目押し時の揃い 324/324 | リーチ目: LEFT_YAMA 11.1%, YAMA_HASAMI_MISS 4.2%, LEFT_CHERRY 1.0%, CHERRY_MISS 1.0%, REG_BAR_TOP 7.9%, RIGHT_7_MID 3.2%, REV_GRAPE_MISS 3.2%, REV_GRAPE_MISS_2 0.5%, REV_7BAR_2K 0.1% | 確定停止 1st/2nd/3rd: 4410/3444/6974
+OK REG+YAMA (持ち越し中) : YAMA入賞 25.8%（左・右から 23.9%） | REG揃い 4.9% | 目押し時の揃い 324/324 | リーチ目: LEFT_YAMA 14.3%, YAMA_HASAMI_MISS 3.1%, REG_BAR_TOP 7.9%, RIGHT_7_MID 3.2%, REV_GRAPE_MISS 3.2%, REV_GRAPE_MISS_2 0.5%, REV_7BAR_2K 0.1% | 確定停止 1st/2nd/3rd: 4410/2814/8610
 結果: すべてOK
 ```
 
@@ -300,15 +324,16 @@ BIG[CHERRY_MISS_7] 左チェリーの停止位置: 中段 50.0% / 下段 50.0%
 BIG[YAMA_HASAMI] 左山の停止位置: なし 50.0% / 下段 50.0%
 ```
 
-### 逆押し右中段7の見分け方
+### 逆押し右中段7の見分け方（Ver.10: 右の赤7は1個）
 
-| 右窓（上/中/下） | 右の赤7 | 対応 |
-|---|---|---|
-| ブドウ / 赤7 / ブドウ | 番号2 | ブドウ or ボーナス（中リールでブドウがテンパイしなければ **2確**） |
-| ブドウ / 赤7 / BAR | 番号7 | ブドウ or ボーナス（同上） |
-| BAR / 赤7 / リプレイ | 番号13 | **ボーナス1確**（右窓にブドウが無い） |
+| 右窓（上/中/下） | 対応 |
+|---|---|
+| ブドウ / 赤7 / BAR（右20番） | ブドウ or ボーナス。中リールでブドウがテンパイしなければ **2確**。中段に赤7・BARが止まっても **2確** |
+| 上段BAR・赤7なし | **REG確定** |
+| 上段赤7（右19番・下にBAR） | REG確定（逆押し右上段7） |
 
 右中段7はハズレ・リプレイ・チェリー・ベル・山では止まらない（停止制御で禁止）。
+以下の「逆押しの確認項目」は旧配列（Ver.9まで）の記録。
 
 ### 逆押しの確認項目（右7狙い＝押下時に右7が上段〜中段）
 

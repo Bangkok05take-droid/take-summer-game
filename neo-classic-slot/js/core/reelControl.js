@@ -4,7 +4,7 @@
  * テーブル方式ではなく「探索方式」:
  *   押下位置から 0〜4 コマ先の5候補それぞれについて、
  *   残りリールが「どの順番・どのタイミングで押されても」到達しうる最終出目を評価し、
- *     1) 最悪ケース(min)が最も良い候補  … 停止禁止出目を絶対に出さない／取りこぼし不可役を必ず揃える
+ *     1) 最悪ケース(min)が最も良い候補  … 停止禁止出目を絶対に出さない／左・右から止めた時はブドウ・リプレイをできるだけ揃える
  *     2) 平均(avg)が最も良い候補        … 引き込める役・狙いの出目をできるだけ出す
  *     3) すべりコマ数が少ない候補       … 自然な停止
  *   の優先順で選ぶ。
@@ -39,7 +39,7 @@
     return false;
   }
 
-  var SCORE = { small: 100, bonus: 50, modeReach: 80, offModeReach: -5, midLine: 3, barBottom: 1 };
+  var SCORE = { small: 100, bonus: 50, modeReach: 80, offModeReach: -5, midLine: 3, barBottom: 1, yamaMid: -2, yamaTop: 3 };
 
   function terminalScore(flag, mode, j, sc) {
     var i;
@@ -69,6 +69,9 @@
     if (flag.small) for (i = 0; i < j.wins.length; i++) if (j.wins[i].role === flag.small && j.wins[i].line === 0) { s += sc.midLine || 0; break; }
     if (j.leftBarBottom) s += sc.barBottom || 0;
     if (j.rightSevenBottom) s += sc.barBottom || 0; // 逆押しの基本形: 右7下段
+    // 左右の山は上段・下段を基本に。山小役は左BARが滑って左上段に山
+    if (j.sideMidYama) s += (sc.yamaMid || 0) * j.sideMidYama;
+    if (flag.small === 'YAMA' && j.leftTopYama) s += sc.yamaTop || 0;
     return s;
   }
 
@@ -107,9 +110,11 @@
     var min = Infinity, sum = 0, n = 0;
     for (var r = 0; r < 3; r++) {
       if (stops[r] >= 0) continue;
+      // 小役の取りこぼし保証（min）は左・右から止めた時が対象。中押しは停止禁止だけを見る
+      var centerFirst = order.length === 0 && r === 1;
       for (var p = 0; p < N; p++) {
         var c = this.choose(stops, order, r, p);
-        if (c.v.min < min) min = c.v.min;
+        if (c.v.min < min && (!centerFirst || c.v.min === FORBID)) min = c.v.min;
         sum += c.v.avg;
         n++;
       }
