@@ -11,6 +11,9 @@
 
   NCS.startCabinetApp = function (host, opts) {
     opts = opts || {};
+    // リール速度（メニューで選択・端末に保存）
+    var RPM_CHOICES = [35, 40, 45, 50, 60];
+    try { var savedRpm = +localStorage.getItem('ncs.rpm.v1'); if (RPM_CHOICES.indexOf(savedRpm) >= 0) NCS.CONFIG.REEL_RPM = savedRpm; } catch (e) { /* 保存不可 */ }
     var q = new URLSearchParams(location.search);
     if (q.get('images') === '1') NCS.CONFIG.USE_IMAGE_ASSETS = true;
     if (q.get('sounds') === '1') NCS.CONFIG.USE_SOUND_ASSETS = true;
@@ -102,6 +105,13 @@
     document.addEventListener('contextmenu', function (e) { e.preventDefault(); });
 
     // データ画面の設定ボタン
+    var chart = new NCS.ReelChart();
+    data.addButton('リール配列を見る', function () { data.close(); chart.open(); });
+    data.addButton(function () { return 'リール速度: ' + NCS.CONFIG.REEL_RPM + '回転（タップで変更）'; }, function () {
+      var i = RPM_CHOICES.indexOf(NCS.CONFIG.REEL_RPM);
+      NCS.CONFIG.REEL_RPM = RPM_CHOICES[(i + 1) % RPM_CHOICES.length];
+      try { localStorage.setItem('ncs.rpm.v1', String(NCS.CONFIG.REEL_RPM)); } catch (e) { /* 保存不可 */ }
+    });
     data.addButton(function () { return 'サウンド: ' + (sound.enabled ? 'ON' : 'OFF'); }, function () { sound.unlock(); sound.setEnabled(!sound.enabled); });
     var panel = null;
     if (NCS.CONFIG.DEBUG_PANEL && document.getElementById('debug') && NCS.DebugPanel) {
