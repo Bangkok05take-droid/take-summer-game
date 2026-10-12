@@ -85,7 +85,7 @@
       cab.onRelease('stop' + i, function () { thirdRelease(i); });
     });
     cab.onTap('autoPlay', function () { sound.unlock(); auto.toggle(); }); // ボーナス中のみ動作
-    cab.onTap('menu', function () { press('menu', 'pressed', function () { return 'off'; }); data.open(); });
+    cab.onTap('menu', function () { press('menu', 'pressed', function () { return 'off'; }); menu.open(); });
 
     // PC確認用キーボード: Space=LEVER ON / ↓=レバー / B=BET / 1・2・3 または J・K・L=停止
     document.addEventListener('keydown', function (e) {
@@ -105,18 +105,22 @@
     document.addEventListener('contextmenu', function (e) { e.preventDefault(); });
 
     // データ画面の設定ボタン
+    // メニュー画面（MENU ボタン）: リール配列確認・速度設定・データ確認・サウンド。今後の設定もここに追加
     var chart = new NCS.ReelChart();
-    data.addButton('リール配列を見る', function () { data.close(); chart.open(); });
-    data.addButton(function () { return 'リール速度: ' + NCS.CONFIG.REEL_RPM + '回転（タップで変更）'; }, function () {
-      var i = RPM_CHOICES.indexOf(NCS.CONFIG.REEL_RPM);
-      NCS.CONFIG.REEL_RPM = RPM_CHOICES[(i + 1) % RPM_CHOICES.length];
-      try { localStorage.setItem('ncs.rpm.v1', String(NCS.CONFIG.REEL_RPM)); } catch (e) { /* 保存不可 */ }
+    var menu = new NCS.MenuScreen();
+    menu.addItem('リール配列を確認', function () { chart.open(); });
+    menu.addChoice('リール速度', RPM_CHOICES.map(function (v) {
+      return { value: v, label: v + '回転', note: v === 45 ? '標準' : (v < 45 ? 'ゆっくり（目押ししやすい）' : '速い') };
+    }), function () { return NCS.CONFIG.REEL_RPM; }, function (v) {
+      NCS.CONFIG.REEL_RPM = v;
+      try { localStorage.setItem('ncs.rpm.v1', String(v)); } catch (e) { /* 保存不可 */ }
     });
-    data.addButton(function () { return 'サウンド: ' + (sound.enabled ? 'ON' : 'OFF'); }, function () { sound.unlock(); sound.setEnabled(!sound.enabled); });
+    menu.addItem('データ確認', function () { data.open(); });
+    menu.addToggle(function () { return 'サウンド: ' + (sound.enabled ? 'ON' : 'OFF'); }, function () { sound.unlock(); sound.setEnabled(!sound.enabled); });
     var panel = null;
     if (NCS.CONFIG.DEBUG_PANEL && document.getElementById('debug') && NCS.DebugPanel) {
       panel = new NCS.DebugPanel(game, effects);
-      data.addButton('デバッグパネルを開く', function () { data.close(); panel.toggle(true); });
+      menu.addItem('デバッグパネル', function () { panel.toggle(true); });
     }
 
     // 毎フレーム: ボタン・ランプ・数字表示をゲーム状態に同期
@@ -146,7 +150,7 @@
       requestAnimationFrame(loop);
     });
 
-    var app = { cab: cab, view: view, game: game, effects: effects, auto: auto, dbx: dbx, sound: sound, bgm: bgm, data: data, debug: panel,
+    var app = { cab: cab, view: view, game: game, effects: effects, auto: auto, dbx: dbx, sound: sound, bgm: bgm, data: data, menu: menu, chart: chart, debug: panel,
       setShowBonusGot: function (on) { showBonusGot = on; } };
     NCS.app = app;
     return app;
