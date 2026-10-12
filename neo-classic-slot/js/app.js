@@ -69,13 +69,18 @@
     function lever() { sound.unlock(); if (game.lever()) knob(); }
     function leverMax() { sound.unlock(); if (game.leverMax()) knob(); }
     function bet() { sound.unlock(); if (game.addBet()) { sound.bet(); press('betButton', 'pressed', function () { return 'off'; }, 120); } }
+    // 第3停止のボタンを離した瞬間（LUCKY CHANCE の後ペカ）
+    function thirdRelease(i) { if (game.stoppedCount === 3 && game.control.stops[i] >= 0 && game.control.order[2] === i) effects.onThirdRelease(); }
     function stop(i) { sound.unlock(); if (game.stop(i)) press('stop' + i, 'pressed', function () { return 'off'; }, 150); }
 
     // 大きな LEVER ON: MAX BET＋レバーON / 左の物理レバー: 現在のBETでレバーON / BET: 1枚ずつ
     cab.onTap('leverOn', function () { cab.setState('leverOn', 'pressed'); leverMax(); });
     cab.onTap('leverKnob', lever);
     cab.onTap('betButton', bet);
-    [0, 1, 2].forEach(function (i) { cab.onTap('stop' + i, function () { stop(i); }); });
+    [0, 1, 2].forEach(function (i) {
+      cab.onTap('stop' + i, function () { stop(i); });
+      cab.onRelease('stop' + i, function () { thirdRelease(i); });
+    });
     cab.onTap('autoPlay', function () { sound.unlock(); auto.toggle(); }); // ボーナス中のみ動作
     cab.onTap('menu', function () { press('menu', 'pressed', function () { return 'off'; }); data.open(); });
 
@@ -89,6 +94,10 @@
       else if (k === '1' || k === 'j') stop(0);
       else if (k === '2' || k === 'k') stop(1);
       else if (k === '3' || k === 'l') stop(2);
+    });
+    document.addEventListener('keyup', function (e) {
+      var k = e.key.toLowerCase(), i = { '1': 0, j: 0, '2': 1, k: 1, '3': 2, l: 2 }[k];
+      if (i !== undefined) thirdRelease(i);
     });
     document.addEventListener('contextmenu', function (e) { e.preventDefault(); });
 

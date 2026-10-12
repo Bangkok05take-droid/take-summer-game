@@ -72,6 +72,16 @@
     // 順押し2確: 左チェリー（非入賞）＋中段BAR（中段7は CHERRY_MISS_7）
     CHERRY_MISS_BAR: { name: 'チェリー外れ＋中段BAR', allow: BONUS,
       test: function (c) { return leftHas(c, 'C') && !cherryWin(c) && c.sym(1, 1) === 'B'; } },
+    // どのラインでも赤7・BARだけで3つ並んだら（7・7・BAR、BAR・7・7、BAR・BAR・BAR など）ボーナス確定
+    BONUS_SYMBOL_LINE: { name: 'ボーナス図柄揃い（赤7・BARの組み合わせ）', allow: BONUS,
+      test: function (c) {
+        for (var i = 0; i < NCS.LINES.length; i++) { var r = NCS.LINES[i].rows, ok = true;
+          for (var k = 0; k < 3; k++) { var y = c.sym(k, r[k]); if (y !== '7' && y !== 'B') { ok = false; break; } }
+          if (ok) return true; }
+        return false; } },
+    // 左リール中段チェリー … BIG確定（チェリー成立時・REG時は滑って上段か下段）
+    LEFT_MID_CHERRY: { name: '左中段チェリー', allow: ['BIG'],
+      test: function (c) { return c.sym(0, 1) === 'C'; } },
     REG_R7_TOP: { name: '逆押し右上段7', allow: ['REG'],
       test: function (c) { return c.order[0] === 2 && c.sym(2, 0) === '7'; } }
   };

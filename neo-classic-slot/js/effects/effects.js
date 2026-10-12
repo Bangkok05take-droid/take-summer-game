@@ -52,6 +52,7 @@
   };
 
   Effects.prototype.onLever = function (e) {
+    this.released3 = false;
     var handled = this.premium.onLever(e, this.game);
     if (!this.autoRunning && !this.premium.silent) this.sound.lever();
     var f = e.flag;
@@ -71,8 +72,18 @@
     if (this.pending && e.determined && !stop2Wait) this.light('STOP' + e.nth);
   };
 
-  Effects.prototype.onResult = function (e) {
+  // 後ペカ: 第3停止ボタンを離した瞬間に点灯（離す操作が無い時は結果表示から少し後に点灯）
+  Effects.prototype.onThirdRelease = function () {
+    this.released3 = true;
     if (this.pending) this.light('AFTER');
+  };
+
+  Effects.prototype.onResult = function (e) {
+    var self = this;
+    if (this.pending) {
+      if (this.released3 || this.autoRunning) this.light('AFTER');
+      else setTimeout(function () { if (self.pending) self.light('AFTER'); }, 1200);
+    }
     this.ui.showResult(e);
     if (e.pay) this.sound.payout(e.pay, this.autoRunning);
   };

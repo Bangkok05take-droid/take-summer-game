@@ -147,6 +147,14 @@
     if (el) el.hidden = !on;
   };
 
+  // ボタンを離した時の処理（pointerup / pointercancel）
+  Cabinet.prototype.onRelease = function (id, fn) {
+    var el = this.el(id);
+    if (!el) return;
+    el.addEventListener('pointerup', function (e) { fn(e); });
+    el.addEventListener('pointercancel', function (e) { fn(e); });
+  };
+
   Cabinet.prototype.onTap = function (id, fn) {
     var el = this.el(id);
     if (!el) return;

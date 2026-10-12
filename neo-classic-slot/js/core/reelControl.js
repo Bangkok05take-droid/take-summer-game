@@ -245,8 +245,11 @@
 
   ReelControl.prototype.carryChoice = function (reel, p) {
     var f = this.flag;
-    if (!f || !f.bonus || f.newBonus !== false) return null;
+    if (!f || !f.bonus || f.bonusGame) return null;
     var t = carryTable(f.bonus, f.lines);
+    // 成立ゲームはリーチ目優先。ただしボーナス図柄を狙って押した時（中段の1〜3コマ上）は揃える方向にサポート
+    var newGame = f.newBonus !== false;
+    if (newGame && !t.aim[reel][p]) return null;
     var best = null, ns = this.stops.slice(), no = this.order.concat([reel]);
     for (var s = 0; s <= NCS.MAX_SLIDE; s++) {
       var pos = (p + s) % N;
@@ -258,6 +261,7 @@
       if (!best || c.a > best.a + 1e-12 || (Math.abs(c.a - best.a) <= 1e-12 &&
           (c.b > best.b + 1e-12 || (Math.abs(c.b - best.b) <= 1e-12 && better(v, best.v, s, best.slide))))) best = c;
     }
+    if (newGame) return best && best.a > 0 ? best : null;
     return best && (best.a > 0 || best.b > 0) ? best : null;
   };
 
