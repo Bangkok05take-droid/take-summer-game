@@ -48,7 +48,8 @@
     return { wins: wins, reachMe: NCS.evalReachMe(stops, order, wins), leftBarBottom: NCS.symAt(0, stops[0], 2) === 'B', rightSevenBottom: order[0] === 2 && NCS.symAt(2, stops[2], 2) === '7',
       // 左右リールの山は上段・下段が基本形（中段は避ける）。左第1停止の左上段山は「BARが滑って山」の形
       sideMidYama: (NCS.symAt(0, stops[0], 1) === 'M' ? 1 : 0) + (NCS.symAt(2, stops[2], 1) === 'M' ? 1 : 0),
-      leftTopYama: order[0] === 0 && NCS.symAt(0, stops[0], 0) === 'M' };
+      leftTopYama: order[0] === 0 && NCS.symAt(0, stops[0], 0) === 'M',
+      leftBarAim: !!NCS.LEFT_BAR_AIM_STOPS && NCS.LEFT_BAR_AIM_STOPS.indexOf(stops[0]) >= 0 };
   };
 
   // 払い出し計算

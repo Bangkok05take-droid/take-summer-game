@@ -39,7 +39,7 @@
     return false;
   }
 
-  var SCORE = { small: 100, bonus: 50, modeReach: 80, offModeReach: -5, midLine: 3, barBottom: 1, yamaMid: -2, yamaTop: 3 };
+  var SCORE = { small: 100, bonus: 50, modeReach: 80, offModeReach: -5, midLine: 3, barBottom: 1, yamaMid: -2, yamaTop: 3, leftBarAim: 4 };
 
   function terminalScore(flag, mode, j, sc) {
     var i;
@@ -72,6 +72,8 @@
     // 左右の山は上段・下段を基本に。山小役は左BARが滑って左上段に山
     if (j.sideMidYama) s += (sc.yamaMid || 0) * j.sideMidYama;
     if (flag.small === 'YAMA' && j.leftTopYama) s += sc.yamaTop || 0;
+    // 左BAR狙いの基本停止形（16: 上リプレイ・中ブドウ・下BAR／3: 上BAR・中ブドウ・下リプレイ）。役の引き込み(+100)より弱い
+    if (j.leftBarAim) s += sc.leftBarAim || 0;
     return s;
   }
 
