@@ -239,7 +239,29 @@
     });
     Promise.all(luckyImgs).then(function () { cab.stage.classList.add('lucky-ready'); }, function () { /* 読込失敗時は映り込みなし */ });
 
-    var app = { cab: cab, view: view, game: game, effects: effects, auto: auto, dbx: dbx, sound: sound, bgm: bgm, data: data, menu: menu, chart: chart, aimMode: function () { return aimMode; }, debug: panel,
+    // ジャグ連チャンス専用パネル: BIG終了後に出現 → チャンス中のゲーム数を表示 → 当選でフラッシュ／3G非当選でロゴへ戻る
+    var jrPanel = new NCS.JugRenPanel(cab.stage), lampWas = false;
+    game.on('bonusEnd', function (rec) { if (rec.type === 'BIG' && game.jugren.active) jrPanel.show(1); else jrPanel.hide(); });
+    game.on('lever', function (e) {
+      var f = e.flag;
+      if (f.jugren >= 1 && f.jugren <= 3) jrPanel.show(f.jugren);
+      else if (!f.bonusGame && !f.jugren && jrPanel.mode === 'chance') jrPanel.hide();
+    });
+    game.on('result', function (e) { // 非当選なら次のゲーム数へ（3G目なら終了してロゴに戻す）。復活待ちの当選は非当選に見せる
+      var f = e.flag;
+      if (!f.jugren || f.jugren > 3 || f.bonus) return;
+      if (f.jugren < 3) jrPanel.show(f.jugren + 1); else jrPanel.hide();
+    });
+    // 当選の告知（LUCKY CHANCE 点灯）と同時にフラッシュ。BIGはジャグ連継続、REGは終了
+    function jrWatchLamp() {
+      var f = game.flag;
+      if (effects.lampOn && !lampWas && f && f.jugren && f.bonus) jrPanel.flash(f.bonus);
+      lampWas = effects.lampOn;
+      requestAnimationFrame(jrWatchLamp);
+    }
+    requestAnimationFrame(jrWatchLamp);
+
+    var app = { cab: cab, jrPanel: jrPanel, view: view, game: game, effects: effects, auto: auto, dbx: dbx, sound: sound, bgm: bgm, data: data, menu: menu, chart: chart, aimMode: function () { return aimMode; }, debug: panel,
       setShowBonusGot: function (on) { showBonusGot = on; } };
     NCS.app = app;
     return app;
