@@ -186,14 +186,14 @@
   /*
    * ボーナス持ち越し中（成立ゲームの次ゲーム以降 = flag.newBonus === false）の目押し保証。
    *
-   * 「正しい目押し」= ボーナス図柄（BIG 7・7・7 / REG 7・7・BAR）が中段の 1〜3コマ上にある時に押す
+   * 「正しい目押し」= ボーナス図柄（BIG 7・7・7 / REG 7・7・BAR）が中段の3コマ上〜中段にある時に押す
    *   （= 図柄が上段〜枠のすぐ上に見えている時に押す）。各リールをこの範囲で押せば、押し順・BET枚数に
    *   かかわらず必ず揃う（verify.js で総当たり確認）。
    * 揃い方は「残りリールを正しく目押しされた時に揃えられる確率」が最大になる位置を先読みで選ぶ。
    * 7の下にブドウが並ぶ配列のため、ブドウなど非成立役が同時に揃う停止は使わない。
    * 目押しされたボーナスは同時成立の小役より優先する。成立ゲームは従来どおりリーチ目優先の探索に任せる。
    */
-  NCS.CARRY_AIM = [-3, -1]; // 押下位置 − ボーナス図柄の位置（コマ）
+  NCS.CARRY_AIM = [-3, 0]; // 押下位置 − ボーナス図柄の位置（コマ）
 
   var carryTables = new Map();
   function carryTable(bonus, lines) {
@@ -260,7 +260,7 @@
     var f = this.flag;
     if (!f || !f.bonus || f.bonusGame) return null;
     var t = carryTable(f.bonus, f.lines);
-    // 成立ゲームはリーチ目優先。ただしボーナス図柄を狙って押した時（中段の1〜3コマ上）は揃える方向にサポート
+    // 成立ゲームはリーチ目優先。ただしボーナス図柄を狙って押した時（中段の3コマ上〜中段）は揃える方向にサポート
     var newGame = f.newBonus !== false;
     if (newGame && !t.aim[reel][p]) return null;
     var best = null, ns = this.stops.slice(), no = this.order.concat([reel]);

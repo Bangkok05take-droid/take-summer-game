@@ -55,7 +55,7 @@
       return v;
     }
 
-    // 持ち越し中の「正しい目押し」: ボーナス図柄が中段の1〜3コマ上にある時に押す（NCS.CARRY_AIM）
+    // 持ち越し中の「正しい目押し」: ボーナス図柄が中段の3コマ上〜中段にある時に押す（NCS.CARRY_AIM）
     var carry = flag.bonus && flag.newBonus === false;
     var aimable = [0, 1, 2].map(function (r) {
       var out = [];

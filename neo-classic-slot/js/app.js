@@ -115,13 +115,41 @@
       NCS.CONFIG.REEL_RPM = v;
       try { localStorage.setItem('ncs.rpm.v1', String(v)); } catch (e) { /* 保存不可 */ }
     });
-    // 目押しサポート: 左は15番のBAR、右は赤7が中段に来た瞬間に、リール窓両端のひし形が赤く光る
-    var aimAssist = true;
-    try { aimAssist = localStorage.getItem('ncs.aimAssist.v1') !== '0'; } catch (e) { /* 保存不可 */ }
-    menu.addToggle(function () { return '目押しサポート: ' + (aimAssist ? 'ON' : 'OFF'); }, function () {
-      aimAssist = !aimAssist;
-      try { localStorage.setItem('ncs.aimAssist.v1', aimAssist ? '1' : '0'); } catch (e) { /* 保存不可 */ }
+    // 目押しサポート（リール窓両端のひし形が赤く光る）
+    //   seq   順押し      … 左リールの15番BARが中段に来た瞬間に左が光る
+    //   rev   逆押し      … 右リールの赤7が中段に来た瞬間に右が光る
+    //   bonus ボーナス時  … 左→中→右の順に、まだ回っている一番左のリールの赤7が中段に来た瞬間に両側が光る
+    var AIM_MODES = ['off', 'seq', 'rev', 'bonus'];
+    var aimMode = 'seq';
+    try {
+      var savedAim = localStorage.getItem('ncs.aimAssist.v2');
+      if (AIM_MODES.indexOf(savedAim) >= 0) aimMode = savedAim;
+      else if (localStorage.getItem('ncs.aimAssist.v1') === '0') aimMode = 'off';
+    } catch (e) { /* 保存不可 */ }
+    menu.addChoice('目押しサポート', [
+      { value: 'off', label: 'OFF' },
+      { value: 'seq', label: '順押し', note: '左リール15番のBARで左が光る' },
+      { value: 'rev', label: '逆押し', note: '右リールの赤7で右が光る' },
+      { value: 'bonus', label: 'ボーナス時', note: '左→中→右の赤7で両側が光る' }
+    ], function () { return aimMode; }, function (v) {
+      aimMode = v;
+      try { localStorage.setItem('ncs.aimAssist.v2', v); } catch (e) { /* 保存不可 */ }
     });
+    var SEVENS = NCS.STRIPS.map(function (strip) { return strip.map(function (y, i) { return y === '7' ? i : -1; }).filter(function (i) { return i >= 0; }); });
+    function reelAt(i, positions) { // リール i が回転中で、positions のどれかが中段の前後0.5コマにある
+      var r = view.reels[i];
+      if (game.phase !== 'SPINNING' || r.phase !== 'SPIN' || game.control.stops[i] >= 0) return false;
+      return positions.some(function (x) { var d = (((r.pos - x) % NCS.REEL_SIZE) + NCS.REEL_SIZE) % NCS.REEL_SIZE; return d < 0.5 || d > NCS.REEL_SIZE - 0.5; });
+    }
+    function aimLamps() {
+      if (aimMode === 'seq') return [reelAt(0, [NCS.AIM_ASSIST_POS[0]]), false];
+      if (aimMode === 'rev') return [false, reelAt(2, [NCS.AIM_ASSIST_POS[2]])];
+      if (aimMode === 'bonus') {
+        for (var i = 0; i < 3; i++) if (game.control.stops[i] < 0) { var on = reelAt(i, SEVENS[i]); return [on, on]; }
+      }
+      return [false, false];
+    }
+
     menu.addItem('データ確認', function () { data.open(); });
     menu.addToggle(function () { return 'サウンド: ' + (sound.enabled ? 'ON' : 'OFF'); }, function () { sound.unlock(); sound.setEnabled(!sound.enabled); });
     var panel = null;
@@ -147,11 +175,9 @@
       cab.setState('lampReplay', game.replayNext ? 'on' : 'off');
       cab.setState('lampWait', idle && Date.now() - game.lastLeverAt < NCS.CONFIG.GAME_WAIT_MS ? 'on' : 'off');
       cab.setState('lampInsert', idle && !game.replayNext && game.bet === 0 ? 'on' : 'off');
-      [['aimMarkL', 0], ['aimMarkR', 2]].forEach(function (m) {
-        var r = view.reels[m[1]], d = (((r.pos - NCS.AIM_ASSIST_POS[m[1]]) % NCS.REEL_SIZE) + NCS.REEL_SIZE) % NCS.REEL_SIZE;
-        var on = aimAssist && game.phase === 'SPINNING' && r.phase === 'SPIN' && (d < 0.5 || d > NCS.REEL_SIZE - 0.5);
-        cab.setState(m[0], on ? 'on' : 'off');
-      });
+      var aim = aimLamps();
+      cab.setState('aimMarkL', aim[0] ? 'on' : 'off');
+      cab.setState('aimMarkR', aim[1] ? 'on' : 'off');
       cab.setDisplay('creditDisplay', s.credit);
       boxEl.querySelector('.box-counter span').textContent = '× ' + game.wallet.boxes() + ' BOX';
       cab.setDisplay('countDisplay', game.inBonus ? s.bonusPlayed : s.games); // ボーナス中は消化ゲーム数
@@ -162,7 +188,7 @@
       requestAnimationFrame(loop);
     });
 
-    var app = { cab: cab, view: view, game: game, effects: effects, auto: auto, dbx: dbx, sound: sound, bgm: bgm, data: data, menu: menu, chart: chart, aimAssist: function () { return aimAssist; }, debug: panel,
+    var app = { cab: cab, view: view, game: game, effects: effects, auto: auto, dbx: dbx, sound: sound, bgm: bgm, data: data, menu: menu, chart: chart, aimMode: function () { return aimMode; }, debug: panel,
       setShowBonusGot: function (on) { showBonusGot = on; } };
     NCS.app = app;
     return app;
