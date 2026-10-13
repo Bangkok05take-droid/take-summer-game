@@ -46,12 +46,14 @@
           if (c.sym(0, r[0]) === 'B' && c.sym(1, r[1]) === 'B' && c.sym(2, r[2]) === 'B') return true; }
         return false; } },
     // ---- 逆押し（右第1停止） ----
-    RIGHT_7_MID: { kind: 'chance', name: '逆押し右中段7', allow: BONUS, allowSmall: ['GRAPE'],
+    // 逆押しでブドウ・チェリー成立時は右リールが「上ブドウ・中段赤7・下BAR」で止まる（目押し時）
+    RIGHT_7_MID: { kind: 'chance', name: '逆押し右中段7', allow: BONUS, allowSmall: ['GRAPE', 'CHERRY'],
       test: function (c) { return c.order[0] === 2 && c.sym(2, 1) === '7'; } },
-    REV_GRAPE_MISS: { name: '逆押し右中段7・ブドウ否定', allow: BONUS,
-      test: function (c) { return c.order[0] === 2 && c.sym(2, 1) === '7' && !c.wins.some(function (w) { return w.role === 'GRAPE'; }); } },
-    // 中リール（第2停止）でブドウの成立ラインが全て消えた形 = 第2停止で確定
-    REV_GRAPE_MISS_2: { name: '逆押し右中段7・中でブドウ否定', allow: BONUS,
+    // チェリーでも右中段7が出るため、左にBARが見えている（左BAR狙いでチェリーも否定）時だけ確定
+    REV_GRAPE_MISS: { name: '逆押し右中段7・ブドウ否定（左BARでチェリー否定）', allow: BONUS,
+      test: function (c) { return c.order[0] === 2 && c.sym(2, 1) === '7' && leftHas(c, 'B') && !cherryWin(c) && !c.wins.some(function (w) { return w.role === 'GRAPE'; }); } },
+    // 中リール（第2停止）でブドウの成立ラインが全て消えた形。チェリー成立時も出るのでチャンス目（ボーナスかチェリー）
+    REV_GRAPE_MISS_2: { kind: 'chance', name: '逆押し右中段7・中でブドウ否定', allow: BONUS, allowSmall: ['CHERRY'],
       test: function (c) {
         if (c.order[0] !== 2 || c.order[1] !== 1 || c.sym(2, 1) !== '7') return false;
         for (var i = 0; i < NCS.LINES.length; i++) {

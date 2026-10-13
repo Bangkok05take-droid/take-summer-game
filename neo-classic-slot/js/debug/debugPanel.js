@@ -19,7 +19,7 @@
     { label: '谷(BIG)', role: 'BIG', mode: 'TANI', hint: '左中・中下・右中に山' },
     { label: '小山(REG寄り)', role: 'REG', mode: 'KOYAMA', hint: '左中・中上・右中に山' },
     { label: 'BAR一直線', role: 'RANDOM_BONUS', mode: 'BAR_LINE', hint: 'BARを各リール狙う' },
-    { label: '逆押し右中段7→2確', role: 'RANDOM_BONUS', mode: 'REV_GRAPE_MISS', hint: '右→中→左。右7狙い→中でブドウ否定' },
+    { label: '逆押し右中段7→2確', role: 'RANDOM_BONUS', mode: 'REV_GRAPE_MISS', hint: '右→中→左。右7狙い→中段7・BARで2確／左BAR狙いでブドウ・チェリー否定' },
     { label: '逆押し右上段7(REG)', role: 'REG', mode: 'REG_R7_TOP', hint: '右から。右7を上段付近で押す' },
     { label: 'ブドウ', role: 'GRAPE' },
     { label: 'ブドウ(右中段7)', role: 'GRAPE', mode: 'R7_MID', hint: '逆押し右7狙いで右中段7のチャンス目' },

@@ -39,6 +39,16 @@
     return false;
   }
 
+  function hasWinLine(j, role, line) {
+    for (var i = 0; i < j.wins.length; i++) if (j.wins[i].role === role && j.wins[i].line === line) return true;
+    return false;
+  }
+
+  // 逆押し（右第1停止）でブドウ・チェリー成立時は、右「上ブドウ・中段赤7・下BAR」に届くなら必ずそこへ止める。
+  // 取りこぼし保証(min)より優先させるため、min 側に加点する
+  var REV_SHAPE_ROLES = ['GRAPE', 'CHERRY'];
+  var REV_SHAPE_BONUS = 1000;
+
   var SCORE = { small: 100, bonus: 50, modeReach: 80, offModeReach: -5, midLine: 3, barBottom: 1, yamaMid: -2, yamaTop: 3, leftBarAim: 4 };
 
   function terminalScore(flag, mode, j, sc) {
@@ -74,6 +84,8 @@
     if (flag.small === 'YAMA' && j.leftTopYama) s += sc.yamaTop || 0;
     // 左BAR狙いの基本停止形（16: 上リプレイ・中ブドウ・下BAR／3: 上BAR・中ブドウ・下リプレイ）。役の引き込み(+100)より弱い
     if (j.leftBarAim) s += sc.leftBarAim || 0;
+    // 逆押しブドウは上段で揃う形を基本に
+    if (j.revG7B && flag.small === 'GRAPE' && hasWinLine(j, 'GRAPE', 1)) s += sc.midLine || 0;
     return s;
   }
 
@@ -104,6 +116,7 @@
       var soft = terminalScore(this.flag, this.mode, j, this.score);
       // min（最悪ケース）は「停止禁止」と「成立小役が揃うか」だけで評価。見た目の好みは avg のみに効かせる
       var hard = soft === FORBID ? FORBID : (this.flag.small && hasWin(j, this.flag.small) ? 100 : 0);
+      if (hard !== FORBID && j.revG7B && REV_SHAPE_ROLES.indexOf(this.flag.small) >= 0) hard += REV_SHAPE_BONUS;
       return { min: hard, avg: soft };
     }
     var key = stateKey(stops, order);
