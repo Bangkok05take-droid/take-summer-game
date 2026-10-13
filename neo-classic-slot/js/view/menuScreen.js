@@ -25,9 +25,8 @@
     this.title = el.querySelector('.menu-title');
     this.items = [];
     var self = this;
-    el.querySelector('.menu-close').addEventListener('click', function () {
-      if (!self.sub.hidden) self.back(); else self.close();
-    });
+    // 閉じる: 子画面からでもウィンドウを閉じてゲームに戻る（メニューへ戻るのは「メニューに戻る」ボタン）
+    el.querySelector('.menu-close').addEventListener('click', function () { self.close(); });
     // 開いた直後のタップが下のボタンに届かないように。背景タップで閉じる
     el.addEventListener('click', function (e) {
       if (Date.now() - self.openedAt < 400) { e.stopPropagation(); e.preventDefault(); return; }
