@@ -270,6 +270,8 @@
     // 成立ゲームはリーチ目優先。ただしボーナス図柄を狙って押した時（中段の3コマ上〜中段）は揃える方向にサポート
     var newGame = f.newBonus !== false;
     if (newGame && !t.aim[reel][p]) return null;
+    // 出目モードがリーチ目（V字・大山など）の成立ゲームはリーチ目を優先する。揃えのサポートは次ゲーム以降（持ち越し中）
+    if (newGame && f.mode && f.mode !== 'NORMAL') return null;
     var best = null, ns = this.stops.slice(), no = this.order.concat([reel]);
     for (var s = 0; s <= NCS.MAX_SLIDE; s++) {
       var pos = (p + s) % N;
