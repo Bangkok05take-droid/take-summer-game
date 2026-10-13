@@ -54,7 +54,13 @@
     var dbx = new NCS.DollarBoxView(game, sound);
     var boxEl = cab.el('boxCounter');
     boxEl.insertAdjacentHTML('beforeend', '<div class="box-counter"><canvas width="172" height="144"></canvas><span>× 0 BOX</span></div>');
-    NCS.drawDollarBox(boxEl.querySelector('canvas').getContext('2d'), 14, 34, 130, 1);
+    function drawBoxCounter() {
+      var cv = boxEl.querySelector('canvas'), c = cv.getContext('2d');
+      c.clearRect(0, 0, cv.width, cv.height);
+      NCS.drawDollarBox(c, 22, 26, 128, 1);
+    }
+    drawBoxCounter();
+    window.addEventListener('ncs-boximg', drawBoxCounter); // カチ盛り画像が読み込めたら描き直す
     cab.onTap('boxCounter', function () { dbx.openCollection(); });
 
     auto.on(function (e) {

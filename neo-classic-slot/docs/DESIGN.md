@@ -483,11 +483,19 @@ BIG[YAMA_HASAMI] 左山の停止位置: なし 50.0% / 下段 50.0%
 
 - 抽選仕様（既存実装 js/core/jugren.js・CONFIG.JUGREN と照合済み、変更なし）:
   BIG終了後のみ突入 / 1G目20%・2G目25%・3G目1/3（3G以内60%）/ 当選時 BIG 2/3・REG 1/3 / BIG当選→BIG後に再スタート、REG当選→終了、3G非当選→終了。
-- 上部の NEO CLASSIC ロゴの上に `NCS.JugRenPanel`（js/view/jugrenPanel.js、CSS `.jr-*`）を重ねる。通常時は非表示でロゴがそのまま見える。
-  - BIG終了後に「1st GAME / BONUS CHANCE 20%」で出現（フェードイン）。非当選の結果で 2nd GAME（25%）→ FINAL GAME（33.3%、③が赤点滅・縁が赤く脈打つ）。
+- 上部の NEO CLASSIC ロゴと上部ランプ域の上に `NCS.JugRenPanel`（js/view/jugrenPanel.js、CSS `.jr-*`）を重ねる（Ver.33でユーザー提供デザインに変更）。通常時は非表示でロゴがそのまま見える。
+  - タイトル（ピエロ・JUG REN CHANCE・ジャグ連チャンス）は提供画像から切り出し（assets/images/effects/jugren_title.webp）。
+    その下に「1G目／2G目／3G目 ボーナス期待度 20%／25%／約33.3%」の青・紫・赤の箱、振り分け（BIG 約66.7% | REG 約33.3%）、継続条件、電光掲示板。
+    スマホで読める大きさにするため、画像を貼るのではなく同じ構成をHTMLで再構成。
+  - BIG終了後に1G目の箱が点灯して出現（フェードイン）。非当選の結果で 2G目 → 3G目（赤点滅・LAST CHANCE!・縁が赤く脈打つ）。
   - 3G目非当選でフェードアウトしてロゴへ。
   - 当選の告知（LUCKY CHANCE 点灯）と同時に BIG: 金色フラッシュ「BIG BONUS! / JUG REN CONTINUES!」、REG: 赤フラッシュ「REG BONUS / JUG REN FINISHED」。
     ボーナス終了まで表示し、BIG後は1st GAMEへ、REG後はロゴへ。
   - 復活フリーズ（当選を隠す演出）は3G目非当選と同じく一度ロゴへ戻り、4G目の復活告知でBIGフラッシュ。
   - 振り分け表示「当選時の振り分け BIG 66.7% / REG 33.3%」、電光掲示板に6種類のメッセージを3.2秒ごとにスクロール表示。
   - 表示する確率は CONFIG.JUGREN から計算（抽選値を変えれば表示も追従）。
+
+## カチ盛りドル箱（Ver.33）
+
+- ユーザー提供デザイン（assets/design/dollar_box_design_src.jpg）から、斜めから見た赤い透明ケース＋メダル山盛りを切り抜き `assets/images/boxes/dollar_box.webp`（800×493、透過）。
+- BOXカウンター・完成演出・ドル箱コレクション（5段積み）・万枚演出のすべてでこの画像を使用。作りかけの箱はメダルの山を量に応じて上から隠して描く。

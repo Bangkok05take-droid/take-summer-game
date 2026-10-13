@@ -353,101 +353,106 @@
 .flag-view.is-bonus { border-color: #ff4d6d; }
 .flag-view.is-bonus b { color: #ff8fa3; }
 
-/* ---- ジャグ連チャンス専用パネル（NEO CLASSIC ロゴの上に重ねる。設計座標 1080×1920） ---- */
+/* ---- ジャグ連チャンス専用パネル（上部パネル＋上部ランプ域に重ねる。設計座標 1080×1920。BIG CHANCE の帯とリールにはかからない） ---- */
 .jr-panel {
-  position: absolute; left: 58px; top: 116px; width: 964px; height: 296px; z-index: 65; pointer-events: none;
-  opacity: 0; visibility: hidden; transform: scale(0.97);
+  position: absolute; left: 26px; top: 0; width: 1028px; height: 416px; z-index: 65; pointer-events: none;
+  opacity: 0; visibility: hidden; transform: scale(0.98);
   transition: opacity 0.8s ease, transform 0.8s ease, visibility 0s linear 0.8s;
-  font-family: "Arial Black", "Hiragino Kaku Gothic ProN", "Noto Sans JP", system-ui, sans-serif;
+  font-family: "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Arial Black", system-ui, sans-serif; font-weight: 900;
 }
 .jr-panel.show { opacity: 1; visibility: visible; transform: none; transition: opacity 0.6s ease, transform 0.6s ease; }
-/* 金属的なゴールドの縁＋紫のネオン */
 .jr-frame {
-  position: absolute; inset: 0; border-radius: 120px 120px 26px 26px / 70px 70px 26px 26px; padding: 9px;
-  background: linear-gradient(160deg, #fff6c8 0%, #d9a826 18%, #7a5208 38%, #ffe68a 55%, #b8860b 75%, #fff1b0 100%);
-  box-shadow: 0 0 26px 8px rgba(190, 80, 255, 0.85), 0 0 60px 18px rgba(140, 40, 255, 0.45), inset 0 0 0 2px rgba(255, 255, 255, 0.5);
-  overflow: hidden;
+  position: absolute; inset: 0; border-radius: 150px 150px 22px 22px / 110px 110px 22px 22px; overflow: hidden;
+  background: radial-gradient(ellipse at 50% 32%, #7a2bd0 0%, #3d0f86 38%, #1c0644 70%, #0d0322 100%);
+  border: 6px solid #e8b64a; box-shadow: 0 0 22px 6px rgba(200, 90, 255, 0.85), inset 0 0 0 3px #7a4a08, inset 0 0 30px 6px rgba(0, 0, 0, 0.6);
 }
-.jr-frame::before { /* 紫の盤面 */
-  content: ''; position: absolute; inset: 9px; border-radius: inherit;
-  background: radial-gradient(ellipse at 50% 30%, #6d1fb8 0%, #3a0a72 45%, #17032f 100%);
-  box-shadow: inset 0 0 30px 6px rgba(0, 0, 0, 0.7), inset 0 0 0 3px rgba(220, 150, 255, 0.55);
+.jr-frame::before { /* 放射状の光 */
+  content: ''; position: absolute; left: 50%; top: 120px; width: 1400px; height: 1400px; margin: -700px 0 0 -700px;
+  background: repeating-conic-gradient(rgba(255, 120, 255, 0.16) 0 6deg, rgba(0, 0, 0, 0) 6deg 18deg); border-radius: 50%;
+  animation: jr-spin 30s linear infinite;
 }
-.jr-frame::after { /* 虹色のネオンライン（流れる） */
-  content: ''; position: absolute; left: 60px; right: 60px; top: 126px; height: 5px; border-radius: 3px;
-  background: linear-gradient(90deg, #ff3b3b, #ffb13b, #fff23b, #3bff6a, #3bd5ff, #6a3bff, #ff3bd5, #ff3b3b);
-  background-size: 200% 100%; animation: jr-rainbow 2.4s linear infinite; box-shadow: 0 0 12px rgba(255, 255, 255, 0.7);
+@keyframes jr-spin { to { transform: rotate(360deg); } }
+.jr-title, .jr-games, .jr-info, .jr-board, .jr-star { position: absolute; z-index: 1; }
+.jr-title { left: 50%; top: 2px; width: 520px; height: 196px; margin-left: -260px;
+  background: url("../assets/images/effects/jugren_title.webp") center / contain no-repeat; filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.6)); }
+/* 1G目・2G目・3G目の箱 */
+.jr-games { left: 22px; right: 22px; top: 200px; height: 122px; display: flex; align-items: center; justify-content: space-between; }
+.jr-gbox {
+  position: relative; width: 300px; height: 114px; border-radius: 16px; border: 4px solid #f2cf6a;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1; color: #fff;
+  box-shadow: inset 0 3px 0 rgba(255, 255, 255, 0.35), inset 0 -6px 12px rgba(0, 0, 0, 0.4); opacity: 0.85; filter: saturate(0.75) brightness(0.8);
+  transition: opacity 0.3s, filter 0.3s, transform 0.3s;
 }
-@keyframes jr-rainbow { to { background-position: -200% 0; } }
-.jr-head, .jr-mid, .jr-board, .jr-star { position: relative; z-index: 1; }
-.jr-head { text-align: center; padding-top: 14px; line-height: 1; }
-.jr-title {
-  font-size: 62px; letter-spacing: 3px; font-weight: 900;
-  background: linear-gradient(90deg, #ff6b6b, #ffd36b, #fff68f, #7dff9a, #6be3ff, #b98bff, #ff7de0);
-  background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; color: transparent;
-  -webkit-text-stroke: 2px #fff3b8; filter: drop-shadow(0 3px 0 #5a2d00) drop-shadow(0 0 10px rgba(255, 210, 90, 0.8));
-  animation: jr-rainbow 3s linear infinite;
+.jr-gbox.g1 { background: linear-gradient(180deg, #3b7bff, #0b2fa8); }
+.jr-gbox.g2 { background: linear-gradient(180deg, #8a4dff, #3b0f9e); }
+.jr-gbox.g3 { background: linear-gradient(180deg, #ff3b5c, #8a0018); }
+.jr-gbox b { font-size: 36px; color: #ffe066; text-shadow: 0 3px 0 #6a3a00, 0 0 8px rgba(255, 200, 60, 0.7); }
+.jr-gbox b small { font-size: 28px; color: #fff; }
+.jr-gbox span { font-size: 23px; margin: 3px 0 3px; text-shadow: 0 2px 0 rgba(0, 0, 0, 0.6); }
+.jr-gbox em { font-style: normal; font-size: 44px; color: #ffe066; text-shadow: 0 3px 0 #6a3a00, 0 0 10px rgba(255, 210, 60, 0.8); }
+.jr-gbox em small { font-size: 28px; color: #fff; }
+.jr-num {
+  position: absolute; left: -6px; top: -14px; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  font-style: normal; font-size: 26px; color: #ddd; background: radial-gradient(circle at 40% 35%, #777, #222); border: 3px solid #bbb;
 }
-.jr-sub { margin-top: 6px; font-size: 28px; color: #ffe27a; letter-spacing: 6px; text-shadow: 0 2px 0 #3a1a00, 0 0 8px rgba(255, 200, 80, 0.8); }
-.jr-mid { display: flex; align-items: center; justify-content: space-between; padding: 22px 40px 0; height: 100px; }
-.jr-game { display: flex; flex-direction: column; gap: 4px; width: 400px; line-height: 1.05; white-space: nowrap; }
-.jr-gname { font-size: 44px; color: #ffd84a; text-shadow: 0 3px 0 #5a3500, 0 0 12px rgba(255, 200, 60, 0.9); }
-.jr-game span { font-size: 28px; color: #fff; text-shadow: 0 2px 0 #2a0050; }
-.jr-game em { font-style: normal; font-size: 38px; color: #fff68f; text-shadow: 0 0 10px #ffb400; }
-.jr-lamps { display: flex; gap: 14px; }
-.jr-lamps i {
-  width: 62px; height: 62px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-  font-style: normal; font-size: 32px; color: #8a6a3a; background: radial-gradient(circle at 40% 35%, #4b2b66, #1a0a2a);
-  border: 5px solid #b8862b; box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.8);
+.jr-gbox.done { opacity: 0.6; }
+.jr-gbox.cur { opacity: 1; filter: none; transform: scale(1.04); box-shadow: 0 0 22px 8px rgba(255, 220, 90, 0.9), inset 0 3px 0 rgba(255, 255, 255, 0.4); }
+.jr-gbox.cur .jr-num { color: #5a3000; border-color: #fff3b0; background: radial-gradient(circle at 40% 35%, #fffbe0, #ffd23a 45%, #c88a00); box-shadow: 0 0 16px 6px rgba(255, 210, 60, 0.9); }
+.jr-gbox.g3.cur { box-shadow: 0 0 26px 10px rgba(255, 40, 40, 0.95); animation: jr-blink 0.55s steps(2, jump-none) infinite; }
+.jr-gbox.g3.cur .jr-num { color: #fff; border-color: #ffd0d0; background: radial-gradient(circle at 40% 35%, #ffd0d0, #ff2a2a 45%, #9a0000); box-shadow: 0 0 16px 6px rgba(255, 40, 40, 0.95); }
+@keyframes jr-blink { 50% { filter: brightness(0.6); box-shadow: none; } }
+.jr-last {
+  position: absolute; right: -14px; top: -26px; font-size: 20px; line-height: 1; text-align: center; color: #ffe066; transform: rotate(12deg);
+  padding: 10px 8px; background: radial-gradient(circle, #ff5a00, #c40000 70%); border-radius: 50%; border: 3px solid #ffd84a;
+  text-shadow: 0 2px 0 #600; opacity: 0;
 }
-.jr-lamps i.done { color: #c9a24a; background: radial-gradient(circle at 40% 35%, #6a4a20, #2a1a08); }
-.jr-lamps i.on {
-  color: #5a3000; border-color: #fff3b0; background: radial-gradient(circle at 40% 35%, #fffbe0, #ffd23a 45%, #c88a00);
-  box-shadow: 0 0 22px 8px rgba(255, 210, 60, 0.9);
+.jr-gbox.g3.cur .jr-last { opacity: 1; animation: jr-pop 0.8s ease-in-out infinite alternate; }
+@keyframes jr-pop { to { transform: rotate(12deg) scale(1.15); } }
+.jr-arrow { font-style: normal; font-size: 26px; color: #ffd84a; text-shadow: 0 0 8px #ff9a00; }
+/* 振り分け・継続条件 */
+.jr-info { left: 22px; right: 22px; top: 326px; height: 48px; display: flex; gap: 12px; }
+.jr-share, .jr-rule {
+  flex: 1; border-radius: 10px; border: 3px solid #d9a826; background: linear-gradient(180deg, #2a0a50, #120328);
+  display: flex; align-items: center; justify-content: center; color: #fff; line-height: 1.05; white-space: nowrap;
 }
-.jr-lamps i.last {
-  color: #fff; border-color: #ffd0d0; background: radial-gradient(circle at 40% 35%, #ffd0d0, #ff2a2a 45%, #9a0000);
-  box-shadow: 0 0 24px 10px rgba(255, 40, 40, 0.95); animation: jr-blink 0.5s steps(2, jump-none) infinite;
-}
-@keyframes jr-blink { 50% { opacity: 0.25; box-shadow: none; } }
-.jr-share { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; width: 250px; line-height: 1.05; white-space: nowrap; }
-.jr-share small { font-size: 25px; color: #e6c8ff; }
-.jr-share span { font-size: 34px; text-shadow: 0 2px 0 #2a0050; }
-.jr-share .b { color: #ffd84a; }
-.jr-share .r { color: #8fd3ff; }
-/* 電光掲示板 */
+.jr-share { flex-direction: column; }
+.jr-share small { font-size: 18px; color: #f3e0ff; }
+.jr-share span { font-size: 26px; color: #ffe066; }
+.jr-share i { font-style: normal; color: #d9a826; margin: 0 8px; }
+.jr-share .tb, .jr-share .tr { color: #fff; font-size: 22px; padding: 1px 6px; border-radius: 5px; }
+.jr-share .tb { background: #e01b2a; } .jr-share .tr { background: #1b4fe0; }
+.jr-rule { font-size: 22px; gap: 8px; color: #ffd84a; }
+.jr-rule span { color: #ff9ad6; text-align: left; }
+.jr-rule .cb { color: #ff4040; } .jr-rule .cr { color: #4aa8ff; }
+/* 電光掲示板（デザインの下段バナー） */
 .jr-board {
-  margin: 10px 40px 0; height: 50px; border-radius: 10px; overflow: hidden; display: flex; align-items: center;
-  background: repeating-linear-gradient(90deg, #120018 0 3px, #1c0026 3px 6px); border: 3px solid #8a5a10;
-  box-shadow: inset 0 0 12px rgba(0, 0, 0, 0.9);
+  left: 22px; right: 22px; top: 378px; height: 36px; border-radius: 8px; overflow: hidden; display: flex; align-items: center;
+  background: linear-gradient(180deg, #3a0a6a, #1a0436); border: 2px solid #d9a826;
 }
-.jr-msg { display: block; width: 100%; text-align: center; white-space: nowrap; font-size: 32px; color: #ffcf3a; text-shadow: 0 0 8px #ff8a00, 0 0 2px #fff; }
+.jr-msg { display: block; width: 100%; text-align: center; white-space: nowrap; font-size: 26px; color: #ff9ad6; text-shadow: 0 0 6px #ff3bd5; }
 .jr-msg.in { animation: jr-scroll 0.7s cubic-bezier(.2, .8, .3, 1) both; }
 @keyframes jr-scroll { from { transform: translateX(100%); opacity: 0.3; } to { transform: none; opacity: 1; } }
 /* 光る星 */
-.jr-star { position: absolute; font-style: normal; color: #fff3b0; text-shadow: 0 0 10px #ffd84a, 0 0 20px #ff9a00; animation: jr-twinkle 1.6s ease-in-out infinite; }
-.jr-star.s1 { left: 70px; top: 40px; font-size: 36px; }
-.jr-star.s2 { right: 76px; top: 34px; font-size: 32px; animation-delay: 0.5s; }
-.jr-star.s3 { right: 120px; top: 70px; font-size: 24px; animation-delay: 1s; }
-.jr-star.s4 { left: 120px; top: 74px; font-size: 22px; animation-delay: 0.8s; }
+.jr-star { font-style: normal; color: #fff3b0; text-shadow: 0 0 10px #ffd84a, 0 0 20px #ff9a00; animation: jr-twinkle 1.6s ease-in-out infinite; }
+.jr-star.s1 { left: 90px; top: 150px; font-size: 40px; }
+.jr-star.s2 { right: 96px; top: 140px; font-size: 36px; animation-delay: 0.5s; }
+.jr-star.s3 { right: 170px; top: 60px; font-size: 30px; animation-delay: 1s; }
+.jr-star.s4 { left: 160px; top: 66px; font-size: 28px; animation-delay: 0.8s; }
 @keyframes jr-twinkle { 50% { opacity: 0.2; transform: scale(0.6) rotate(20deg); } }
-/* 3G目: LAST CHANCE の緊張感（縁が赤く脈打つ） */
+/* 3G目: 縁が赤く脈打つ */
 .jr-panel.is-final .jr-frame { animation: jr-final 0.9s ease-in-out infinite alternate; }
-@keyframes jr-final { to { box-shadow: 0 0 30px 10px rgba(255, 40, 60, 0.95), 0 0 70px 22px rgba(255, 0, 40, 0.5), inset 0 0 0 2px rgba(255, 255, 255, 0.5); } }
+@keyframes jr-final { to { box-shadow: 0 0 30px 10px rgba(255, 40, 60, 0.95), inset 0 0 0 3px #7a4a08, inset 0 0 30px 6px rgba(0, 0, 0, 0.6); } }
 /* BIG/REG 当選フラッシュ */
-.jr-flash {
-  position: absolute; inset: 9px; z-index: 2; border-radius: 110px 110px 18px 18px / 62px 62px 18px 18px;
-  display: none; flex-direction: column; align-items: center; justify-content: center; gap: 10px; line-height: 1;
-}
-.jr-flash b { font-size: 92px; letter-spacing: 2px; }
-.jr-flash span { font-size: 46px; letter-spacing: 2px; }
+.jr-flash { position: absolute; inset: 0; z-index: 2; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 14px; line-height: 1; }
+.jr-flash b { font-size: 100px; letter-spacing: 2px; }
+.jr-flash span { font-size: 50px; letter-spacing: 2px; }
 .jr-panel.flash-big .jr-flash, .jr-panel.flash-reg .jr-flash { display: flex; }
-.jr-panel.flash-big .jr-flash { background: radial-gradient(ellipse at center, #fff9d6, #ffd23a 45%, #a86d00); animation: jr-flash-big 0.18s steps(2, jump-none) 8; }
+.jr-panel.flash-big .jr-flash { background: radial-gradient(ellipse at center, #fff9d6, #ffd23a 45%, #a86d00); animation: jr-flash 0.18s steps(2, jump-none) 8; }
 .jr-panel.flash-big .jr-flash b { color: #b00000; text-shadow: 0 3px 0 #fff, 0 0 18px #fff; }
 .jr-panel.flash-big .jr-flash span { color: #5a1a90; text-shadow: 0 2px 0 #fff; }
-.jr-panel.flash-big .jr-frame { box-shadow: 0 0 40px 16px rgba(255, 215, 60, 0.95), 0 0 90px 30px rgba(255, 180, 0, 0.6); }
-.jr-panel.flash-reg .jr-flash { background: radial-gradient(ellipse at center, #ff9a9a, #d40000 50%, #4a0000); animation: jr-flash-big 0.18s steps(2, jump-none) 8; }
+.jr-panel.flash-big .jr-frame { box-shadow: 0 0 40px 16px rgba(255, 215, 60, 0.95); }
+.jr-panel.flash-reg .jr-flash { background: radial-gradient(ellipse at center, #ff9a9a, #d40000 50%, #4a0000); animation: jr-flash 0.18s steps(2, jump-none) 8; }
 .jr-panel.flash-reg .jr-flash b { color: #fff; text-shadow: 0 3px 0 #500, 0 0 14px #ff8a8a; }
 .jr-panel.flash-reg .jr-flash span { color: #ffe0e0; text-shadow: 0 2px 0 #500; }
-.jr-panel.flash-reg .jr-frame { box-shadow: 0 0 40px 16px rgba(255, 40, 40, 0.95), 0 0 90px 30px rgba(200, 0, 0, 0.6); }
-@keyframes jr-flash-big { 50% { filter: brightness(1.8) saturate(1.3); } }
+.jr-panel.flash-reg .jr-frame { box-shadow: 0 0 40px 16px rgba(255, 40, 40, 0.95); }
+@keyframes jr-flash { 50% { filter: brightness(1.8) saturate(1.3); } }

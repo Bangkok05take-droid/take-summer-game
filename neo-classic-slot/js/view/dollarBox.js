@@ -1,6 +1,7 @@
 /*
- * ドル箱の表示（完成演出・コレクション画面・万枚達成演出）
- * 画像素材（assets/images/boxes/）が無い間は canvas で描く仮グラフィックを使う。
+ * ドル箱の表示（完成演出・コレクション画面・万枚達成演出・BOXカウンター）
+ * 画像: assets/images/boxes/dollar_box.webp（カチ盛りデザイン。赤い透明ケースにメダル山盛り）。
+ * 作りかけの箱は同じ画像のメダルの山を量に応じて隠して描く。画像の読み込み前は canvas の仮グラフィック。
  *
  *   var dbx = new NCS.DollarBoxView(game, sound);
  *   dbx.openCollection();   // ドル箱専用画面
@@ -9,23 +10,35 @@
   var NCS = (g.NCS = g.NCS || {});
 
   var IMG = {
-    box: 'assets/images/boxes/dollar_box.png',          // 完成したドル箱（メダル山盛り）
-    boxEmpty: 'assets/images/boxes/dollar_box_partial.png' // 作りかけの箱
+    box: 'assets/images/boxes/dollar_box.webp'          // カチ盛りのドル箱（同梱素材）
   };
   var images = {};
+  var BOX_MOUND = 0.44;   // 画像の上から何割がメダルの山（箱のふちより上）か
+  var BOX_SCALE = 1.25;   // 仮グラフィックの幅 w に対する画像の幅
 
+  // 読み込んだら window に 'ncs-boximg' を通知（BOXカウンターなどを描き直す）
   function loadImages() {
-    if (!NCS.CONFIG.USE_IMAGE_ASSETS) return;
     Object.keys(IMG).forEach(function (k) {
       var im = new Image();
-      im.onload = function () { images[k] = im; };
+      im.onload = function () { images[k] = im; try { window.dispatchEvent(new Event('ncs-boximg')); } catch (e) { /* 古い環境 */ } };
       im.src = IMG[k];
     });
+  }
+  loadImages();
+
+  // 画像のドル箱。底辺の位置は仮グラフィック（高さ 0.9w）と同じ。fill < 1 はメダルの山を上から隠す
+  function drawBoxImage(c, x, y, w, fill) {
+    var im = images.box, iw = w * BOX_SCALE, ih = iw * im.height / im.width;
+    var ix = x + (w - iw) / 2, iy = y + w * 0.9 - ih;
+    var hide = (1 - Math.max(0, Math.min(1, fill))) * BOX_MOUND * 0.85; // 空でも箱の中のメダルは少し見える
+    if (hide <= 0) { c.drawImage(im, ix, iy, iw, ih); return; }
+    var sy = hide * im.height;
+    c.drawImage(im, 0, sy, im.width, im.height - sy, ix, iy + hide * ih, iw, ih - hide * ih);
   }
 
   // ---- 仮グラフィック: 斜め上から見た立体のドル箱（fill 0〜1 = メダルの量） ----
   function drawBox(c, x, y, w, fill) {
-    if (images.box && fill >= 1) { c.drawImage(images.box, x, y - w * 0.55, w, w * 1.1); return; }
+    if (images.box) { drawBoxImage(c, x, y, w, fill); return; }
     var h = w * 0.62, d = w * 0.28;           // 箱の高さ・奥行き
     var top = y, front = y + d;
     // 天面（奥）
@@ -66,7 +79,6 @@
   function DollarBoxView(game, sound) {
     this.game = game;
     this.sound = sound;
-    loadImages();
     this.buildOverlay();
     this.buildCollection();
     var self = this;
@@ -88,7 +100,8 @@
     var cv = el.querySelector('canvas'), c = cv.getContext('2d');
     c.clearRect(0, 0, cv.width, cv.height);
     var n = Math.min(e.added, 3);
-    for (var i = 0; i < n; i++) drawBox(c, 70 + (i - (n - 1) / 2) * 60 + i * 0, 70 - i * 10, 220, 1);
+    var bw = n > 1 ? 150 : 210; // 横に並べる（カチ盛り画像は幅 1.25倍で描かれる）
+    for (var i = 0; i < n; i++) drawBox(c, 180 + (i - (n - 1) / 2) * bw * 0.95 - bw / 2, 150 - bw * 0.9 + (n > 1 ? 40 : 0), bw, 1);
     el.querySelector('.dbx-sub').textContent = (e.added > 1 ? '+' + e.added + ' BOX  ' : '') + '× ' + e.boxes + ' BOX';
     el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
     clearTimeout(this.flashTimer);

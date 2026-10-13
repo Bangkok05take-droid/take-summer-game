@@ -2,7 +2,7 @@
  * ジャグ連チャンス専用パネル（上部の NEO CLASSIC ロゴパネルの上に重ねる）
  *
  *   var panel = new NCS.JugRenPanel(stage);
- *   panel.show(n)        … チャンス n ゲーム目（1〜3）の表示に切り替え（フェードイン）
+ *   panel.show(n)        … チャンス n ゲーム目（1〜3）の箱を点灯（フェードイン）。デザインはユーザー提供のジャグ連パネル画像を元に再構成
  *   panel.flash('BIG')   … BIG当選: 金色フラッシュ「BIG BONUS! / JUG REN CONTINUES!」
  *   panel.flash('REG')   … REG当選: 赤フラッシュ「REG BONUS / JUG REN FINISHED」
  *   panel.hide()         … フェードアウトして NEO CLASSIC ロゴに戻す
@@ -22,6 +22,7 @@
     var miss = J.rates.reduce(function (m, r) { return m * (1 - r); }, 1);
     this.total = pct(1 - miss);                            // 60%
     this.messages = [
+      '3ゲーム以内にボーナスが当たりやすい特別な状態です！',
       'ジャグ連中はボーナス高確率！',
       '1G目' + this.rates[0] + '・2G目' + this.rates[1] + '・3G目' + this.rates[2],
       '3G以内のボーナス期待度' + this.total + '！',
@@ -32,14 +33,20 @@
 
     var el = document.createElement('div');
     el.className = 'jr-panel';
+    var self = this;
+    var boxes = [1, 2, 3].map(function (n) {
+      return '<div class="jr-gbox g' + n + '"><i class="jr-num">' + n + '</i><b>' + n + '<small>G目</small></b>' +
+        '<span>ボーナス期待度</span><em>' + (n === 3 ? '<small>約</small>' : '') + self.rates[n - 1] + '</em>' +
+        (n === 3 ? '<strong class="jr-last">LAST<br>CHANCE!</strong>' : '') + '</div>';
+    });
     el.innerHTML =
       '<div class="jr-frame">' +
         '<i class="jr-star s1">★</i><i class="jr-star s2">✦</i><i class="jr-star s3">★</i><i class="jr-star s4">✦</i>' +
-        '<div class="jr-head"><div class="jr-title">JUG REN CHANCE</div><div class="jr-sub">ジャグ連チャンス</div></div>' +
-        '<div class="jr-mid">' +
-          '<div class="jr-game"><b class="jr-gname"></b><span>BONUS CHANCE <em class="jr-rate"></em></span></div>' +
-          '<div class="jr-lamps"><i>1</i><i>2</i><i>3</i></div>' +
-          '<div class="jr-share"><small>当選時の振り分け</small><span class="b">BIG ' + this.big + '</span><span class="r">REG ' + this.reg + '</span></div>' +
+        '<div class="jr-title" role="img" aria-label="JUG REN CHANCE ジャグ連チャンス"></div>' +
+        '<div class="jr-games">' + boxes.join('<i class="jr-arrow">▶</i>') + '</div>' +
+        '<div class="jr-info">' +
+          '<div class="jr-share"><small>ボーナス当選時の振り分け</small><span><b class="tb">BIG</b> 約' + this.big + '<i>|</i><b class="tr">REG</b> 約' + this.reg + '</span></div>' +
+          '<div class="jr-rule">★ <span><b class="cb">BIG</b>ならジャグ連継続！<br><b class="cr">REG</b>でジャグ連終了！</span></div>' +
         '</div>' +
         '<div class="jr-board"><span class="jr-msg"></span></div>' +
         '<div class="jr-flash"><b></b><span></span></div>' +
@@ -61,12 +68,12 @@
   };
 
   JugRenPanel.prototype.show = function (n) {
-    var names = ['1st GAME', '2nd GAME', 'FINAL GAME'];
     n = Math.max(1, Math.min(3, n));
-    this.el.querySelector('.jr-gname').textContent = names[n - 1];
-    this.el.querySelector('.jr-rate').textContent = this.rates[n - 1];
-    var lamps = this.el.querySelectorAll('.jr-lamps i');
-    for (var i = 0; i < lamps.length; i++) lamps[i].className = i + 1 === n ? (n === 3 ? 'last' : 'on') : (i + 1 < n ? 'done' : '');
+    var gb = this.el.querySelectorAll('.jr-gbox');
+    for (var i = 0; i < gb.length; i++) {
+      gb[i].classList.toggle('cur', i + 1 === n);
+      gb[i].classList.toggle('done', i + 1 < n);
+    }
     this.el.classList.toggle('is-final', n === 3);
     this.el.classList.remove('flash-big', 'flash-reg');
     this.game = n;
