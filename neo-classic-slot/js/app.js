@@ -115,24 +115,24 @@
       NCS.CONFIG.REEL_RPM = v;
       try { localStorage.setItem('ncs.rpm.v1', String(v)); } catch (e) { /* 保存不可 */ }
     });
-    // 目押しサポート（リール窓両端のひし形が赤く光る）
-    //   seq   順押し      … 左リールの15番BARが中段に来た瞬間に左が光る
-    //   rev   逆押し      … 右リールの赤7が中段に来た瞬間に右が光る
-    //   both  両方        … 順押しと逆押しを同時に（左は左リール15番BAR、右は右リール赤7）
-    //   bonus ボーナス時  … 左→中→右の順に、まだ回っている一番左のリールの赤7が中段に来た瞬間にリール枠全体が光る
-    var AIM_MODES = ['off', 'seq', 'rev', 'both', 'bonus'];
-    var aimMode = 'seq';
+    // 目押しサポート
+    //   normal 通常時   … 左リールの15番BARが中段に来た瞬間に左のひし形、右リールの赤7で右のひし形が赤く光る
+    //   bonus  ボーナス時 … 左→中→右の順に、まだ回っている一番左のリールの赤7が中段に来た瞬間にリール枠全体が光る
+    //   all    両方     … 通常時とボーナス時を同時に
+    var AIM_MODES = ['off', 'normal', 'bonus', 'all'];
+    var OLD_AIM = { seq: 'normal', rev: 'normal', both: 'normal' }; // Ver.21〜22 の保存値
+    var aimMode = 'normal';
     try {
       var savedAim = localStorage.getItem('ncs.aimAssist.v2');
+      if (OLD_AIM[savedAim]) savedAim = OLD_AIM[savedAim];
       if (AIM_MODES.indexOf(savedAim) >= 0) aimMode = savedAim;
       else if (localStorage.getItem('ncs.aimAssist.v1') === '0') aimMode = 'off';
     } catch (e) { /* 保存不可 */ }
     menu.addChoice('目押しサポート', [
       { value: 'off', label: 'OFF' },
-      { value: 'seq', label: '順押し', note: '左リール15番のBARで左が光る' },
-      { value: 'rev', label: '逆押し', note: '右リールの赤7で右が光る' },
-      { value: 'both', label: '両方', note: '左リール15番のBARで左、右リールの赤7で右が光る' },
-      { value: 'bonus', label: 'ボーナス時', note: '左→中→右の赤7でリール枠全体が光る' }
+      { value: 'normal', label: '通常時', note: '左リール15番のBARで左、右リールの赤7で右が光る' },
+      { value: 'bonus', label: 'ボーナス時', note: '左→中→右の赤7でリール枠全体が光る' },
+      { value: 'all', label: '両方', note: '通常時とボーナス時のサポートを同時に' }
     ], function () { return aimMode; }, function (v) {
       aimMode = v;
       try { localStorage.setItem('ncs.aimAssist.v2', v); } catch (e) { /* 保存不可 */ }
@@ -144,12 +144,11 @@
       return positions.some(function (x) { var d = (((r.pos - x) % NCS.REEL_SIZE) + NCS.REEL_SIZE) % NCS.REEL_SIZE; return d < 0.5 || d > NCS.REEL_SIZE - 0.5; });
     }
     function aimLamps() { // [左ひし形, 右ひし形, リール枠]
-      var L = (aimMode === 'seq' || aimMode === 'both') && reelAt(0, [NCS.AIM_ASSIST_POS[0]]);
-      var R = (aimMode === 'rev' || aimMode === 'both') && reelAt(2, [NCS.AIM_ASSIST_POS[2]]);
+      var normal = aimMode === 'normal' || aimMode === 'all', bonus = aimMode === 'bonus' || aimMode === 'all';
+      var L = normal && reelAt(0, [NCS.AIM_ASSIST_POS[0]]);
+      var R = normal && reelAt(2, [NCS.AIM_ASSIST_POS[2]]);
       var F = false;
-      if (aimMode === 'bonus') {
-        for (var i = 0; i < 3; i++) if (game.control.stops[i] < 0) { F = reelAt(i, SEVENS[i]); break; }
-      }
+      if (bonus) for (var i = 0; i < 3; i++) if (game.control.stops[i] < 0) { F = reelAt(i, SEVENS[i]); break; }
       return [L, R, F];
     }
 

@@ -58,7 +58,7 @@
       // ---- 目押しサポートランプ（リール窓の両端のひし形。狙う図柄が中段に来た瞬間に赤く光る） ----
       { id: 'aimMarkL', type: 'image', rect: [144, 727, 36, 50], z: 30, label: '◆', passThrough: true, aimReel: 0,
         states: { off: null, on: null } },
-      { id: 'aimFrame', type: 'image', rect: [150, 556, 780, 400], z: 25, label: '目押し枠', passThrough: true,
+      { id: 'aimFrame', type: 'image', rect: [140, 545, 800, 425], z: 25, label: '目押し枠', passThrough: true,
         states: { off: null, on: null } },
       { id: 'aimMarkR', type: 'image', rect: [901, 727, 36, 50], z: 30, label: '◆', passThrough: true, aimReel: 2,
         states: { off: null, on: null } },
