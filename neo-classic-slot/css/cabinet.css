@@ -248,26 +248,25 @@
 .skin-bg [data-part="luckyLamp"] { border-radius: 50% !important; }
 /* 背景画像そのものが消灯状態なので、通常時は何も重ねない */
 .skin-bg [data-part="luckyLamp"][data-state="off"] { background: none !important; box-shadow: none !important; }
-.skin-bg [data-part="luckyLamp"][data-state="on"] {
-  mix-blend-mode: screen;
-  background: radial-gradient(ellipse at center, rgba(200, 120, 255, 0.55), rgba(170, 70, 240, 0.45) 50%, rgba(120, 30, 210, 0.25) 64%, rgba(0, 0, 0, 0) 72%) !important;
-  box-shadow: 0 0 70px 24px rgba(190, 90, 255, 0.8) !important;
+/* 点灯時: 青紫の放射光＋白く光る文字の点灯画像を、内側の楕円に重ねる */
+.skin-bg [data-part="luckyLamp"][data-state="on"],
+.skin-bg [data-part="luckyLamp"][data-state="premium"] {
+  background: url("../assets/images/cabinet/lamps/lucky_on_skin.png") center / 100% 100% no-repeat !important;
+  box-shadow: 0 0 30px 4px rgba(150, 110, 255, 0.6) !important;
 }
 .skin-bg [data-part="luckyLamp"][data-state="premium"] {
-  mix-blend-mode: screen;
-  background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.6), rgba(160, 40, 255, 0.45) 55%, rgba(0, 0, 0, 0) 74%) !important;
-  box-shadow: 0 0 110px 40px rgba(170, 60, 255, 0.95) !important;
+  filter: brightness(1.25) saturate(1.3);
+  box-shadow: 0 0 90px 30px rgba(170, 60, 255, 0.95), inset 0 0 30px 8px rgba(230, 200, 255, 0.8) !important;
 }
-/* 点灯中だけ、下皿にランプの光が映り込む（消灯時は出さない） */
+/* 点灯中だけ、下皿にランプの光（文字が逆さに映る）が映り込む。消灯時は出さない */
 .skin-bg [data-part="luckyLamp"]::after {
   content: ''; position: absolute; pointer-events: none;
-  left: 6%; width: 88%; top: 112%; height: 46%;
-  border-radius: 50%; opacity: 0; transition: opacity 0.15s;
-  background: radial-gradient(ellipse at 50% 35%, rgba(230, 160, 255, 0.75), rgba(170, 70, 240, 0.4) 45%, rgba(0, 0, 0, 0) 72%);
-  filter: blur(6px);
+  left: 17px; top: 225px; width: 278px; height: 80px;
+  background: url("../assets/images/cabinet/lamps/lucky_reflect.png") center / 100% 100% no-repeat;
+  opacity: 0; transition: opacity 0.15s;
 }
-.skin-bg [data-part="luckyLamp"][data-state="on"]::after { opacity: 1; }
-.skin-bg [data-part="luckyLamp"][data-state="premium"]::after { opacity: 1; top: 108%; height: 55%; }
+.skin-bg [data-part="luckyLamp"][data-state="on"]::after { opacity: 0.9; }
+.skin-bg [data-part="luckyLamp"][data-state="premium"]::after { opacity: 1; }
 /* ボタン類: 押せない時は暗く、押せる時は縁が光る、押した瞬間は沈む */
 .skin-bg [data-part^="stop"], .skin-bg [data-part="leverOn"] { border-radius: 50% !important; }
 .skin-bg [data-part^="stop"][data-state="off"], .skin-bg [data-part="leverOn"][data-state="off"],
