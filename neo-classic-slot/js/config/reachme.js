@@ -24,6 +24,9 @@
     // 左リール第1停止で左上段に山（BAR狙いからBARが滑って山）の時のみチャンス目扱い
     LEFT_YAMA: { kind: 'chance', name: '左山出現（上段・下段）', allow: BONUS, allowSmall: ['YAMA'],
       test: function (c) { return c.order[0] === 0 && (c.sym(0, 0) === 'M' || c.sym(0, 2) === 'M'); } },
+    // 逆押し（右第1停止）で右に山 … 山小役かボーナスのみ（ハズレ・他の小役では滑って山を出さない）
+    RIGHT_YAMA: { kind: 'chance', name: '逆押し右山出現', allow: BONUS, allowSmall: ['YAMA'],
+      test: function (c) { return c.order[0] === 2 && rightHas(c, 'M'); } },
     // ---- 確定リーチ目 ----
     CHERRY_MISS: { name: 'チェリー外れ', allow: BONUS,
       test: function (c) { return leftHas(c, 'C') && !cherryWin(c); } },

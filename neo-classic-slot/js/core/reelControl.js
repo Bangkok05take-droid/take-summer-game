@@ -57,7 +57,7 @@
   var AIM_PRESS = { 0: [13, 14, 15, 16], 2: [18, 19, 20, 0] }; // 左=15番BAR狙い / 右=赤7狙い
   var AIM_WEIGHT = 6;
 
-  var SCORE = { small: 100, bonus: 50, modeReach: 80, offModeReach: -5, midLine: 3, barBottom: 1, yamaMid: -2, yamaTop: 3, leftBarAim: 4 };
+  var SCORE = { small: 100, bonus: 50, modeReach: 80, offModeReach: -5, midLine: 3, barBottom: 1, yamaMid: -2, noYama: -40, yamaTop: 3, leftBarAim: 4 };
 
   function terminalScore(flag, mode, j, sc) {
     var i;
@@ -90,6 +90,8 @@
     if (j.rightSevenBottom) s += sc.barBottom || 0; // 逆押しの基本形: 右7下段
     // 左右の山は上段・下段を基本に。山小役は左BARが滑って左上段に山
     if (j.sideMidYama) s += (sc.yamaMid || 0) * j.sideMidYama;
+    // 山小役・ボーナス以外では、左右のリールに山を見せない（滑って山を出さない）
+    if (!flag.bonus && flag.small !== 'YAMA' && j.sideYama) s += (sc.noYama || 0) * j.sideYama;
     if (flag.small === 'YAMA' && j.leftTopYama) s += sc.yamaTop || 0;
     // 左BAR狙いの基本停止形（16: 上リプレイ・中ブドウ・下BAR／3: 上BAR・中ブドウ・下リプレイ）。役の引き込み(+100)より弱い
     if (j.leftBarAim) s += sc.leftBarAim || 0;

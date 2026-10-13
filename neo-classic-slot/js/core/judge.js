@@ -47,6 +47,7 @@
     var wins = NCS.evalWins(stops, lines);
     return { wins: wins, reachMe: NCS.evalReachMe(stops, order, wins), leftBarBottom: NCS.symAt(0, stops[0], 2) === 'B', rightSevenBottom: order[0] === 2 && NCS.symAt(2, stops[2], 2) === '7',
       // 左右リールの山は上段・下段が基本形（中段は避ける）。左第1停止の左上段山は「BARが滑って山」の形
+      sideYama: [0, 2].reduce(function (n, r) { return n + ([0, 1, 2].some(function (row) { return NCS.symAt(r, stops[r], row) === 'M'; }) ? 1 : 0); }, 0),
       sideMidYama: (NCS.symAt(0, stops[0], 1) === 'M' ? 1 : 0) + (NCS.symAt(2, stops[2], 1) === 'M' ? 1 : 0),
       // 逆押しの右リール「上ブドウ・中段赤7・下BAR」（ブドウ・チェリー成立時の停止形）
       firstReel: order[0], firstPos: stops[order[0]],
