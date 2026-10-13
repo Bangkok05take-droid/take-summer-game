@@ -37,7 +37,9 @@
     this.lampOn = true;
     this.pending = false;
     this.lampTiming = timing;
-    this.ui.setLamp(true);
+    // BIG成立ゲームの 1/20 は「GOGO!」プレミアランプ（演出抽選は premium.pick）
+    var f = this.game.flag, gogo = !!(this.premium.current && this.premium.current.gogo && f && f.bonus === 'BIG');
+    this.ui.setLamp(gogo ? 'gogo' : true);
     this.sound.lamp();
     if (vibe || this.premium.wantsVibe()) NCS.vibrate([200, 80, 200, 80, 400]);
     else if (timing !== 'LEVER') NCS.vibrate([40]);

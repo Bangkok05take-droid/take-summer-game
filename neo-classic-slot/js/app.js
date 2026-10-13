@@ -29,7 +29,7 @@
 
     // Effects が呼ぶ表示インターフェースを筐体パーツへ割り当てるアダプタ
     var ui = {
-      setLamp: function (on) { cab.setState('luckyLamp', on ? 'on' : 'off'); },
+      setLamp: function (on) { cab.setState('luckyLamp', on === 'gogo' ? 'gogo' : (on ? 'on' : 'off')); }, // 'gogo' = GOGO!プレミアランプ
       setLampPremium: function () { cab.setState('luckyLamp', 'premium'); },  // プチュン: 紫に激しく発光
       lampRect: function () { return cab.el('luckyLamp').getBoundingClientRect(); },
       blackout: function (on) { cab.wrap.classList.toggle('blackout', on); },
@@ -192,7 +192,7 @@
     });
 
     // LUCKY CHANCE 点灯画像と下皿の映り込みを先に読み込む。初回点灯で映り込みだけ先に見えないよう、両方そろうまで映り込みは出さない
-    var luckyImgs = ['lucky_on_skin.png', 'lucky_reflect.png'].map(function (f) {
+    var luckyImgs = ['lucky_on_skin.png', 'lucky_reflect.png', 'lucky_gogo_skin.webp', 'lucky_gogo_reflect.webp'].map(function (f) {
       var img = new Image(); img.src = 'assets/images/cabinet/lamps/' + f;
       return img.decode ? img.decode() : new Promise(function (ok) { img.onload = ok; });
     });

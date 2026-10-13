@@ -435,3 +435,11 @@ BIG[YAMA_HASAMI] 左山の停止位置: なし 50.0% / 下段 50.0%
 - ボーナス成立ゲームの目押しサポート（carryChoice）は、出目モードが NORMAL の時だけ働く。
   V字・大山などのリーチ目モードでは、成立ゲームはリーチ目の形を優先し、揃えのサポートは次ゲーム以降（持ち越し中、目押しで100%揃う）。
 - 例: V字モード逆挟み（右赤7狙い→左15番BAR狙い→中）で左右の上段に山が必ず出る（Ver.24 BIG 11.9% → 47.6%。残りは中の山が届かない分）。
+
+## GOGO!プレミアランプ（Ver.26）
+
+- BIG成立ゲームのレバーONで演出抽選（premium.pick）。1/20（`CONFIG.PREMIUM.gogoLamp`）で、LUCKY CHANCE が「GOGO!」の専用絵柄で点灯する。
+  - 光るタイミングは通常と同じ（先ペカ・確定停止・第3停止ボタンを離した瞬間）。プチュンフリーズなど他のプレミアとも重複する。
+  - 金と紫の光が脈打ち、下皿にも専用の映り込み。持ち越し中は点灯したまま。
+- 素材: `assets/images/cabinet/lamps/lucky_gogo_skin.webp`（ランプ内側の楕円）・`lucky_gogo_reflect.webp`（映り込み）。元画像は `assets/design/premium_gogo_lamp_src.jpg`。
+- デバッグパネル「GOGO!ランプ」で次のBIG成立ゲームに強制発生。

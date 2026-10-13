@@ -46,13 +46,13 @@
   // 演出抽選（BIG成立ゲームのみ）。戻り値: 'freeze' | 'delay' | 'stop2' | null、vibe は別抽選
   Premium.prototype.pick = function (flag) {
     var P = NCS.CONFIG.PREMIUM, r = flag.jugren ? P.chance : P.normal;
-    var pick = { main: null, vibe: Math.random() < r.vibe };
+    var pick = { main: null, vibe: Math.random() < r.vibe, gogo: Math.random() < (P.gogoLamp || 0) };
     var x = Math.random();
     if (x < r.freeze) pick.main = 'freeze';
     else if (x < r.freeze + r.delay) pick.main = 'delay';
     else if (x < r.freeze + r.delay + r.stop2) pick.main = 'stop2';
     if (this.force) {
-      if (this.force === 'vibe') pick.vibe = true; else pick.main = this.force;
+      if (this.force === 'vibe') pick.vibe = true; else if (this.force === 'gogo') pick.gogo = true; else pick.main = this.force;
       this.force = null;
     }
     return pick;
