@@ -267,6 +267,18 @@
 }
 .skin-bg [data-part="luckyLamp"][data-state="on"]::after { opacity: 0.9; }
 .skin-bg [data-part="luckyLamp"][data-state="premium"]::after { opacity: 1; }
+/* 目押しサポート: 両端のひし形が赤く光る（消える時は少し残光） */
+.skin-bg [data-part^="aimMark"] { border-radius: 0 !important; overflow: visible; }
+.skin-bg [data-part^="aimMark"]::before, .skin-bg [data-part^="aimMark"]::after {
+  content: ''; position: absolute; pointer-events: none; opacity: 0; transition: opacity 0.18s ease-out;
+}
+.skin-bg [data-part^="aimMark"]::before { inset: -40px -42px; background: radial-gradient(ellipse at center, rgba(255, 60, 60, 1) 0%, rgba(255, 20, 20, 0.75) 25%, rgba(255, 0, 0, 0) 68%); }
+.skin-bg [data-part^="aimMark"]::after {
+  inset: 2px 3px; clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+  background: radial-gradient(circle at 50% 45%, #fff 0%, #ff6a6a 35%, #e00000 100%);
+}
+.skin-bg [data-part^="aimMark"][data-state="on"]::before,
+.skin-bg [data-part^="aimMark"][data-state="on"]::after { opacity: 1; transition: none; }
 /* ボタン類: 押せない時は暗く、押せる時は縁が光る、押した瞬間は沈む */
 .skin-bg [data-part^="stop"], .skin-bg [data-part="leverOn"] { border-radius: 50% !important; }
 .skin-bg [data-part^="stop"][data-state="off"], .skin-bg [data-part="leverOn"][data-state="off"],

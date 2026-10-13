@@ -401,3 +401,12 @@ BIG[YAMA_HASAMI] 左山の停止位置: なし 50.0% / 下段 50.0%
 - 第3段階: 実装済み（ジャグ連チャンス・先行抽選・無音先ペカ・復活フリーズ・プレミア演出）。到達時間は `node tools/simulate.js` で検証
 - 第4段階: BGM・正式サウンド（`Sound` の FILES）
 - 第5段階: 画像素材（`CONFIG.USE_IMAGE_ASSETS = true` ＋ `assets/images/`）
+
+## 目押しサポート（Ver.20）
+
+- リール窓の両端のひし形（skin.js `aimMarkL` / `aimMarkR`）が、狙う図柄が中段に来た瞬間に赤く光る。
+  - 左: 15番のBAR（`NCS.AIM_ASSIST_POS[0] = 15`）
+  - 右: 赤7（20番、`NCS.AIM_ASSIST_POS[2] = 20`）
+- 回転中（停止ボタンが押せる間）だけ光る。中段の前後0.5コマの間点灯し、消える時は0.18秒の残光。
+- メニュー「目押しサポート: ON/OFF」で切替（初期値ON、localStorage `ncs.aimAssist.v1` に保存）。
+- 光りに合わせて押すと、左は15番BAR狙い、右は赤7狙い（逆押しで「ブドウ・赤7・BAR」）になる。

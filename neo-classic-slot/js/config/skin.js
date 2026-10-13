@@ -55,6 +55,12 @@
       { id: 'lampInsert', type: 'image', rect: [935, 895, 100, 92], z: 30, label: 'INSERT',
         states: { off: 'lamps/insert_off.png', on: 'lamps/insert_on.png' } },
 
+      // ---- 目押しサポートランプ（リール窓の両端のひし形。狙う図柄が中段に来た瞬間に赤く光る） ----
+      { id: 'aimMarkL', type: 'image', rect: [144, 727, 36, 50], z: 30, label: '◆', passThrough: true, aimReel: 0,
+        states: { off: null, on: null } },
+      { id: 'aimMarkR', type: 'image', rect: [901, 727, 36, 50], z: 30, label: '◆', passThrough: true, aimReel: 2,
+        states: { off: null, on: null } },
+
       // ---- 上部ボーナス表示パネル（BIG/REG中に点灯） ----
       { id: 'bonusPanel', type: 'image', rect: [150, 420, 850, 112], z: 30, label: 'BONUSパネル',
         states: { off: 'lamps/bonus_panel_off.png', big: 'lamps/bonus_panel_big.png', reg: 'lamps/bonus_panel_reg.png' },

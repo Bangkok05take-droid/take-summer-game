@@ -115,6 +115,13 @@
       NCS.CONFIG.REEL_RPM = v;
       try { localStorage.setItem('ncs.rpm.v1', String(v)); } catch (e) { /* 保存不可 */ }
     });
+    // 目押しサポート: 左は15番のBAR、右は赤7が中段に来た瞬間に、リール窓両端のひし形が赤く光る
+    var aimAssist = true;
+    try { aimAssist = localStorage.getItem('ncs.aimAssist.v1') !== '0'; } catch (e) { /* 保存不可 */ }
+    menu.addToggle(function () { return '目押しサポート: ' + (aimAssist ? 'ON' : 'OFF'); }, function () {
+      aimAssist = !aimAssist;
+      try { localStorage.setItem('ncs.aimAssist.v1', aimAssist ? '1' : '0'); } catch (e) { /* 保存不可 */ }
+    });
     menu.addItem('データ確認', function () { data.open(); });
     menu.addToggle(function () { return 'サウンド: ' + (sound.enabled ? 'ON' : 'OFF'); }, function () { sound.unlock(); sound.setEnabled(!sound.enabled); });
     var panel = null;
@@ -140,6 +147,11 @@
       cab.setState('lampReplay', game.replayNext ? 'on' : 'off');
       cab.setState('lampWait', idle && Date.now() - game.lastLeverAt < NCS.CONFIG.GAME_WAIT_MS ? 'on' : 'off');
       cab.setState('lampInsert', idle && !game.replayNext && game.bet === 0 ? 'on' : 'off');
+      [['aimMarkL', 0], ['aimMarkR', 2]].forEach(function (m) {
+        var r = view.reels[m[1]], d = (((r.pos - NCS.AIM_ASSIST_POS[m[1]]) % NCS.REEL_SIZE) + NCS.REEL_SIZE) % NCS.REEL_SIZE;
+        var on = aimAssist && game.phase === 'SPINNING' && r.phase === 'SPIN' && (d < 0.5 || d > NCS.REEL_SIZE - 0.5);
+        cab.setState(m[0], on ? 'on' : 'off');
+      });
       cab.setDisplay('creditDisplay', s.credit);
       boxEl.querySelector('.box-counter span').textContent = '× ' + game.wallet.boxes() + ' BOX';
       cab.setDisplay('countDisplay', game.inBonus ? s.bonusPlayed : s.games); // ボーナス中は消化ゲーム数
@@ -150,7 +162,7 @@
       requestAnimationFrame(loop);
     });
 
-    var app = { cab: cab, view: view, game: game, effects: effects, auto: auto, dbx: dbx, sound: sound, bgm: bgm, data: data, menu: menu, chart: chart, debug: panel,
+    var app = { cab: cab, view: view, game: game, effects: effects, auto: auto, dbx: dbx, sound: sound, bgm: bgm, data: data, menu: menu, chart: chart, aimAssist: function () { return aimAssist; }, debug: panel,
       setShowBonusGot: function (on) { showBonusGot = on; } };
     NCS.app = app;
     return app;
