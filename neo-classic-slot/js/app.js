@@ -118,8 +118,9 @@
     // 目押しサポート（リール窓両端のひし形が赤く光る）
     //   seq   順押し      … 左リールの15番BARが中段に来た瞬間に左が光る
     //   rev   逆押し      … 右リールの赤7が中段に来た瞬間に右が光る
-    //   bonus ボーナス時  … 左→中→右の順に、まだ回っている一番左のリールの赤7が中段に来た瞬間に両側が光る
-    var AIM_MODES = ['off', 'seq', 'rev', 'bonus'];
+    //   both  両方        … 順押しと逆押しを同時に（左は左リール15番BAR、右は右リール赤7）
+    //   bonus ボーナス時  … 左→中→右の順に、まだ回っている一番左のリールの赤7が中段に来た瞬間にリール枠全体が光る
+    var AIM_MODES = ['off', 'seq', 'rev', 'both', 'bonus'];
     var aimMode = 'seq';
     try {
       var savedAim = localStorage.getItem('ncs.aimAssist.v2');
@@ -130,7 +131,8 @@
       { value: 'off', label: 'OFF' },
       { value: 'seq', label: '順押し', note: '左リール15番のBARで左が光る' },
       { value: 'rev', label: '逆押し', note: '右リールの赤7で右が光る' },
-      { value: 'bonus', label: 'ボーナス時', note: '左→中→右の赤7で両側が光る' }
+      { value: 'both', label: '両方', note: '左リール15番のBARで左、右リールの赤7で右が光る' },
+      { value: 'bonus', label: 'ボーナス時', note: '左→中→右の赤7でリール枠全体が光る' }
     ], function () { return aimMode; }, function (v) {
       aimMode = v;
       try { localStorage.setItem('ncs.aimAssist.v2', v); } catch (e) { /* 保存不可 */ }
@@ -141,13 +143,14 @@
       if (game.phase !== 'SPINNING' || r.phase !== 'SPIN' || game.control.stops[i] >= 0) return false;
       return positions.some(function (x) { var d = (((r.pos - x) % NCS.REEL_SIZE) + NCS.REEL_SIZE) % NCS.REEL_SIZE; return d < 0.5 || d > NCS.REEL_SIZE - 0.5; });
     }
-    function aimLamps() {
-      if (aimMode === 'seq') return [reelAt(0, [NCS.AIM_ASSIST_POS[0]]), false];
-      if (aimMode === 'rev') return [false, reelAt(2, [NCS.AIM_ASSIST_POS[2]])];
+    function aimLamps() { // [左ひし形, 右ひし形, リール枠]
+      var L = (aimMode === 'seq' || aimMode === 'both') && reelAt(0, [NCS.AIM_ASSIST_POS[0]]);
+      var R = (aimMode === 'rev' || aimMode === 'both') && reelAt(2, [NCS.AIM_ASSIST_POS[2]]);
+      var F = false;
       if (aimMode === 'bonus') {
-        for (var i = 0; i < 3; i++) if (game.control.stops[i] < 0) { var on = reelAt(i, SEVENS[i]); return [on, on]; }
+        for (var i = 0; i < 3; i++) if (game.control.stops[i] < 0) { F = reelAt(i, SEVENS[i]); break; }
       }
-      return [false, false];
+      return [L, R, F];
     }
 
     menu.addItem('データ確認', function () { data.open(); });
@@ -178,6 +181,7 @@
       var aim = aimLamps();
       cab.setState('aimMarkL', aim[0] ? 'on' : 'off');
       cab.setState('aimMarkR', aim[1] ? 'on' : 'off');
+      cab.setState('aimFrame', aim[2] ? 'on' : 'off');
       cab.setDisplay('creditDisplay', s.credit);
       boxEl.querySelector('.box-counter span').textContent = '× ' + game.wallet.boxes() + ' BOX';
       cab.setDisplay('countDisplay', game.inBonus ? s.bonusPlayed : s.games); // ボーナス中は消化ゲーム数

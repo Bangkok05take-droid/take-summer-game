@@ -279,6 +279,13 @@
 }
 .skin-bg [data-part^="aimMark"][data-state="on"]::before,
 .skin-bg [data-part^="aimMark"][data-state="on"]::after { opacity: 1; transition: none; }
+/* 目押しサポート（ボーナス時）: リール枠全体が赤く光る */
+.skin-bg [data-part="aimFrame"] {
+  border-radius: 10px !important; opacity: 0; transition: opacity 0.18s ease-out;
+  border: 6px solid rgba(255, 50, 50, 0.95) !important;
+  box-shadow: 0 0 34px 10px rgba(255, 20, 20, 0.85), inset 0 0 30px 6px rgba(255, 30, 30, 0.6) !important;
+}
+.skin-bg [data-part="aimFrame"][data-state="on"] { opacity: 1; transition: none; }
 /* ボタン類: 押せない時は暗く、押せる時は縁が光る、押した瞬間は沈む */
 .skin-bg [data-part^="stop"], .skin-bg [data-part="leverOn"] { border-radius: 50% !important; }
 .skin-bg [data-part^="stop"][data-state="off"], .skin-bg [data-part="leverOn"][data-state="off"],
