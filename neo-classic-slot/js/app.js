@@ -152,6 +152,47 @@
       return [L, R, F];
     }
 
+    // 当選役表示（確認用）: レバーON時の内部当選・出目モード・プレミア抽選を NEO CLASSIC パネルに表示
+    var flagView = false;
+    try { flagView = localStorage.getItem('ncs.flagView.v1') === '1'; } catch (e) { /* 保存不可 */ }
+    var flagEl = document.createElement('div');
+    flagEl.className = 'flag-view';
+    flagEl.hidden = true;
+    cab.stage.appendChild(flagEl);
+    var MODE_NAMES = { CHERRY_MISS_7: 'チェリー外れ系', YAMA_HASAMI: '左山＋右山なし', V_SHAPE: '山V字', OYAMA: '大山', TANI: '谷', KOYAMA: '小山',
+      BAR_LINE: 'BAR一直線', REV_GRAPE_MISS: '逆押しブドウ否定系', REG_R7_TOP: '逆押し右上段7', R7_MID: '逆押し右中段7' };
+    var PREMIUM_NAMES = { freeze: 'プチュンフリーズ', delay: '遅れ', stop2: '第2停止プレミア' };
+    function showFlag(e) {
+      var f = e.flag, main, sub = [];
+      if (f.bonusGame) main = f.bonusGame + ' 消化中';
+      else {
+        var parts = [];
+        if (f.bonus) parts.push(f.bonus + (f.newBonus === false ? '（持ち越し中）' : ''));
+        if (f.small) parts.push(NCS.ROLES[f.small].name);
+        main = parts.length ? parts.join(' ＋ ') : 'ハズレ';
+      }
+      if (f.mode && f.mode !== 'NORMAL' && MODE_NAMES[f.mode]) sub.push('出目: ' + MODE_NAMES[f.mode]);
+      var pm = effects.premium.current;
+      if (pm) {
+        if (pm.main) sub.push(PREMIUM_NAMES[pm.main] || pm.main);
+        if (pm.gogo) sub.push('GOGO!ランプ');
+        if (pm.vibe) sub.push('振動');
+      }
+      if (f.jugren) sub.push('ジャグ連チャンス' + f.jugren + 'G目');
+      if (f.revival) sub.push('復活フリーズ');
+      if (f.silentPeka) sub.push('無音先ペカ');
+      flagEl.innerHTML = '<b></b><small></small>';
+      flagEl.querySelector('b').textContent = main;
+      flagEl.querySelector('small').textContent = sub.join(' / ');
+      flagEl.classList.toggle('is-bonus', !!f.bonus);
+    }
+    game.on('lever', function (e) { if (flagView) { showFlag(e); flagEl.hidden = false; } });
+    menu.addToggle(function () { return '当選役表示（確認用）: ' + (flagView ? 'ON' : 'OFF'); }, function () {
+      flagView = !flagView;
+      if (!flagView) flagEl.hidden = true;
+      else if (game.flag && game.phase !== 'IDLE') { showFlag({ flag: game.flag }); flagEl.hidden = false; }
+      try { localStorage.setItem('ncs.flagView.v1', flagView ? '1' : '0'); } catch (e) { /* 保存不可 */ }
+    });
     menu.addItem('データ確認', function () { data.open(); });
     menu.addToggle(function () { return 'サウンド: ' + (sound.enabled ? 'ON' : 'OFF'); }, function () { sound.unlock(); sound.setEnabled(!sound.enabled); });
     var panel = null;

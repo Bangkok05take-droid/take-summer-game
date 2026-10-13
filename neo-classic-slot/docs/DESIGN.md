@@ -443,3 +443,10 @@ BIG[YAMA_HASAMI] 左山の停止位置: なし 50.0% / 下段 50.0%
   - 金と紫の光が脈打ち、下皿にも専用の映り込み。持ち越し中は点灯したまま。
 - 素材: `assets/images/cabinet/lamps/lucky_gogo_skin.webp`（ランプ内側の楕円）・`lucky_gogo_reflect.webp`（映り込み）。元画像は `assets/design/premium_gogo_lamp_src.jpg`。
 - デバッグパネル「GOGO!ランプ」で次のBIG成立ゲームに強制発生。
+
+## 当選役表示（確認用、Ver.27）
+
+- メニュー「当選役表示（確認用）: ON/OFF」（localStorage `ncs.flagView.v1`、初期値OFF）。
+- ONの間、レバーONごとに NEO CLASSIC ロゴパネルの上へ表示（app.js `showFlag`、CSS `.flag-view`）:
+  - 1行目: 内部当選（BIG/REG（持ち越し中）＋小役、ハズレ、ボーナス消化中）
+  - 2行目: 出目モード（山V字・大山など）、プレミア演出（プチュンフリーズ・遅れ・第2停止・GOGO!ランプ・振動）、ジャグ連・復活・無音先ペカ
