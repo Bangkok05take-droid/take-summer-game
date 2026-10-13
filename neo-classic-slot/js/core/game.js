@@ -65,7 +65,12 @@
 
 
   Game.prototype.on = function (ev, fn) { (this.listeners[ev] = this.listeners[ev] || []).push(fn); };
-  Game.prototype.emit = function (ev, data) { (this.listeners[ev] || []).forEach(function (fn) { fn(data); }); };
+  // 演出・表示側の不具合でゲーム進行（BET消費後のリール始動など）が止まらないよう、リスナーの例外はここで止める
+  Game.prototype.emit = function (ev, data) {
+    (this.listeners[ev] || []).forEach(function (fn) {
+      try { fn(data); } catch (err) { if (NCS.reportError) NCS.reportError(err, 'event:' + ev); else if (g.console) console.error(err); }
+    });
+  };
 
   // BET 1枚（最大 MAX_BET）。リプレイ中・回転中は不可
   Game.prototype.addBet = function () {

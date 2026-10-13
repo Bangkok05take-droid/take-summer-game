@@ -9,6 +9,23 @@
 (function () {
   var NCS = window.NCS;
 
+  // 不具合の表示（確認用）: 例外が起きてもゲームは続け、画面上部に短く表示する（スクショで報告できるように）
+  var errEl = null, errTimer = null, errCount = 0;
+  NCS.reportError = function (err, where) {
+    errCount++;
+    if (window.console) console.error('[NCS]', where, err);
+    if (!document.body) return;
+    if (!errEl) { errEl = document.createElement('div'); errEl.className = 'ncs-error'; document.body.appendChild(errEl); }
+    var msg = err && (err.message || String(err)) || '不明';
+    var at = err && err.stack ? String(err.stack).split('\n').filter(function (l) { return /\.js/.test(l); })[0] || '' : '';
+    errEl.textContent = '不具合が起きました（' + errCount + '）' + (where ? ' [' + where + ']' : '') + '：' + msg + (at ? '  ' + at.replace(/^\s*at\s*/, '').replace(/.*\/js\//, 'js/') : '');
+    errEl.classList.add('show');
+    clearTimeout(errTimer);
+    errTimer = setTimeout(function () { errEl.classList.remove('show'); }, 8000);
+  };
+  window.addEventListener('error', function (e) { NCS.reportError(e.error || e.message, 'window'); });
+  window.addEventListener('unhandledrejection', function (e) { NCS.reportError(e.reason, 'promise'); });
+
   NCS.startCabinetApp = function (host, opts) {
     opts = opts || {};
     // リール速度（メニューで選択・端末に保存）
@@ -75,12 +92,13 @@
       setTimeout(function () { cab.setState(id, back()); }, ms || 120);
     }
     function knob() { press('leverKnob', 'down', function () { return 'idle'; }, 180); }
-    function lever() { sound.unlock(); if (game.lever()) knob(); }
-    function leverMax() { sound.unlock(); if (game.leverMax()) knob(); }
-    function bet() { sound.unlock(); if (game.addBet()) { sound.bet(); press('betButton', 'pressed', function () { return 'off'; }, 120); } }
+    function unlock() { try { sound.unlock(); } catch (err) { NCS.reportError(err, 'sound'); } }
+    function lever() { unlock(); if (game.lever()) knob(); }
+    function leverMax() { unlock(); if (game.leverMax()) knob(); }
+    function bet() { unlock(); if (game.addBet()) { sound.bet(); press('betButton', 'pressed', function () { return 'off'; }, 120); } }
     // 第3停止のボタンを離した瞬間（LUCKY CHANCE の後ペカ）
     function thirdRelease(i) { if (game.stoppedCount === 3 && game.control.stops[i] >= 0 && game.control.order[2] === i) effects.onThirdRelease(); }
-    function stop(i) { sound.unlock(); if (game.stop(i)) press('stop' + i, 'pressed', function () { return 'off'; }, 150); }
+    function stop(i) { unlock(); if (game.stop(i)) press('stop' + i, 'pressed', function () { return 'off'; }, 150); }
 
     // 大きな LEVER ON: MAX BET＋レバーON / 左の物理レバー: 現在のBETでレバーON / BET: 1枚ずつ
     cab.onTap('leverOn', function () { cab.setState('leverOn', 'pressed'); leverMax(); });
@@ -209,6 +227,10 @@
 
     // 毎フレーム: ボタン・ランプ・数字表示をゲーム状態に同期
     requestAnimationFrame(function loop() {
+      try { frame(); } catch (err) { NCS.reportError(err, 'frame'); }
+      requestAnimationFrame(loop);
+    });
+    function frame() {
       var idle = game.phase === 'IDLE' && !auto.running, s = game.stats;
       if (cab.getState('leverOn') !== 'pressed' || !idle) cab.setState('leverOn', idle ? 'on' : 'off');
       [0, 1, 2].forEach(function (i) {
@@ -235,8 +257,7 @@
       cab.setVisible('bonusGotDisplay', showBonusGot);
       cab.setDisplay('bonusGotDisplay', s.bonusGot);
       if (opts.onFrame) opts.onFrame();
-      requestAnimationFrame(loop);
-    });
+    }
 
     // LUCKY CHANCE 点灯画像と下皿の映り込みを先に読み込む。初回点灯で映り込みだけ先に見えないよう、両方そろうまで映り込みは出さない
     var luckyImgs = ['lucky_on_skin.png', 'lucky_reflect.png', 'lucky_gogo_skin.webp', 'lucky_gogo_reflect.webp'].map(function (f) {
@@ -260,9 +281,11 @@
     });
     // 当選の告知（LUCKY CHANCE 点灯）と同時にフラッシュ。BIGはジャグ連継続、REGは終了
     function jrWatchLamp() {
-      var f = game.flag;
-      if (effects.lampOn && !lampWas && f && f.jugren && f.bonus) jrPanel.flash(f.bonus);
-      lampWas = effects.lampOn;
+      try {
+        var f = game.flag;
+        if (effects.lampOn && !lampWas && f && f.jugren && f.bonus) jrPanel.flash(f.bonus);
+        lampWas = effects.lampOn;
+      } catch (err) { NCS.reportError(err, 'jugren'); }
       requestAnimationFrame(jrWatchLamp);
     }
     requestAnimationFrame(jrWatchLamp);

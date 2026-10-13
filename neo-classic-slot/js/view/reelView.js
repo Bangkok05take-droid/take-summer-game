@@ -28,7 +28,10 @@
     this.resize();
     var self = this;
     window.addEventListener('resize', function () { self.resize(); });
-    requestAnimationFrame(function loop(t) { self.tick(t); requestAnimationFrame(loop); });
+    requestAnimationFrame(function loop(t) {
+      try { self.tick(t); } catch (err) { if (NCS.reportError) NCS.reportError(err, 'reel'); }
+      requestAnimationFrame(loop);
+    });
   }
 
   ReelView.prototype.resize = function () {
