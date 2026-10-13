@@ -258,6 +258,16 @@
   background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.6), rgba(160, 40, 255, 0.45) 55%, rgba(0, 0, 0, 0) 74%) !important;
   box-shadow: 0 0 110px 40px rgba(170, 60, 255, 0.95) !important;
 }
+/* 点灯中だけ、下皿にランプの光が映り込む（消灯時は出さない） */
+.skin-bg [data-part="luckyLamp"]::after {
+  content: ''; position: absolute; pointer-events: none;
+  left: 6%; width: 88%; top: 112%; height: 46%;
+  border-radius: 50%; opacity: 0; transition: opacity 0.15s;
+  background: radial-gradient(ellipse at 50% 35%, rgba(230, 160, 255, 0.75), rgba(170, 70, 240, 0.4) 45%, rgba(0, 0, 0, 0) 72%);
+  filter: blur(6px);
+}
+.skin-bg [data-part="luckyLamp"][data-state="on"]::after { opacity: 1; }
+.skin-bg [data-part="luckyLamp"][data-state="premium"]::after { opacity: 1; top: 108%; height: 55%; }
 /* ボタン類: 押せない時は暗く、押せる時は縁が光る、押した瞬間は沈む */
 .skin-bg [data-part^="stop"], .skin-bg [data-part="leverOn"] { border-radius: 50% !important; }
 .skin-bg [data-part^="stop"][data-state="off"], .skin-bg [data-part="leverOn"][data-state="off"],
