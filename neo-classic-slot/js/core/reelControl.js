@@ -80,6 +80,7 @@
       else if (NCS.REACHME[j.reachMe[i]].kind !== 'chance') s += sc.offModeReach;
     }
     s += hit * sc.modeReach;
+    if (flag.bonus && j.revG7B && NCS.MODE_REV_SHAPE && NCS.MODE_REV_SHAPE[mode]) s += NCS.MODE_REV_SHAPE[mode] * sc.modeReach;
     // 見た目の基本形: 小役は中段ライン優先 / 左BARは下段停止優先
     if (flag.small) for (i = 0; i < j.wins.length; i++) if (j.wins[i].role === flag.small && j.wins[i].line === 0) { s += sc.midLine || 0; break; }
     if (j.leftBarBottom) s += sc.barBottom || 0;

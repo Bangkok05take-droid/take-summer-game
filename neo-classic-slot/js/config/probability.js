@@ -51,6 +51,9 @@
     REV_GRAPE_MISS: { REV_7BAR_2K: 1, REV_GRAPE_MISS: 1, REV_GRAPE_MISS_2: 0.5, RIGHT_7_MID: 0.2 }, REG_R7_TOP: { REG_R7_TOP: 1 },
     R7_MID: { RIGHT_7_MID: 1 }
   };
+  // 逆押しで右「上ブドウ・中段赤7・下BAR」（チェリー・ブドウと同じ形）を見せる出目モード（重み 0〜1）
+  // チェリー外れ系: 右がチェリーの形で止まり、左にチェリーが出ないのでボーナス、という期待感
+  NCS.MODE_REV_SHAPE = { CHERRY_MISS_7: 1 };
 
   // ペカリ（GOGOランプ）タイミング: ボーナス成立ゲームでの先ペカ（レバーON告知）率
   NCS.LAMP = {
