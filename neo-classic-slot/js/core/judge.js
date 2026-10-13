@@ -49,6 +49,7 @@
       // 左右リールの山は上段・下段が基本形（中段は避ける）。左第1停止の左上段山は「BARが滑って山」の形
       sideMidYama: (NCS.symAt(0, stops[0], 1) === 'M' ? 1 : 0) + (NCS.symAt(2, stops[2], 1) === 'M' ? 1 : 0),
       // 逆押しの右リール「上ブドウ・中段赤7・下BAR」（ブドウ・チェリー成立時の停止形）
+      firstReel: order[0], firstPos: stops[order[0]],
       revG7B: order[0] === 2 && NCS.symAt(2, stops[2], 0) === 'G' && NCS.symAt(2, stops[2], 1) === '7' && NCS.symAt(2, stops[2], 2) === 'B',
       leftTopYama: order[0] === 0 && NCS.symAt(0, stops[0], 0) === 'M',
       leftBarAim: !!NCS.LEFT_BAR_AIM_STOPS && NCS.LEFT_BAR_AIM_STOPS.indexOf(stops[0]) >= 0 };

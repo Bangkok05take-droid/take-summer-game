@@ -44,10 +44,13 @@
     return false;
   }
 
-  // 逆押し（右第1停止）でブドウ・チェリー成立時は、右「上ブドウ・中段赤7・下BAR」に届くなら必ずそこへ止める。
+  // 当選役ごとの第1停止の形（reels.js NCS.FIRST_STOP_SHAPES）に届くなら必ずそこへ止める。
   // 取りこぼし保証(min)より優先させるため、min 側に加点する
-  var REV_SHAPE_ROLES = ['GRAPE', 'CHERRY'];
-  var REV_SHAPE_BONUS = 1000;
+  var FIRST_SHAPE_BONUS = 1000;
+  function firstShapeHit(table, key, j) {
+    var t = table && table[key], pos = t && t[j.firstReel];
+    return !!(pos && pos.indexOf(j.firstPos) >= 0);
+  }
 
   // プレイヤーがよく押す位置（目押しサポートの光るタイミング前後）。avg（見た目・引き込みの期待値）で重く見て、
   // 狙って押した時にレア役が揃いやすい停止形を選ぶ。min（停止禁止・取りこぼし保証）は全位置で評価したまま
@@ -80,7 +83,7 @@
       else if (NCS.REACHME[j.reachMe[i]].kind !== 'chance') s += sc.offModeReach;
     }
     s += hit * sc.modeReach;
-    if (flag.bonus && j.revG7B && NCS.MODE_REV_SHAPE && NCS.MODE_REV_SHAPE[mode]) s += NCS.MODE_REV_SHAPE[mode] * sc.modeReach;
+    if (flag.bonus && firstShapeHit(NCS.MODE_FIRST_STOP, mode, j)) s += sc.modeReach;
     // 見た目の基本形: 小役は中段ライン優先 / 左BARは下段停止優先
     if (flag.small) for (i = 0; i < j.wins.length; i++) if (j.wins[i].role === flag.small && j.wins[i].line === 0) { s += sc.midLine || 0; break; }
     if (j.leftBarBottom) s += sc.barBottom || 0;
@@ -122,7 +125,7 @@
       var soft = terminalScore(this.flag, this.mode, j, this.score);
       // min（最悪ケース）は「停止禁止」と「成立小役が揃うか」だけで評価。見た目の好みは avg のみに効かせる
       var hard = soft === FORBID ? FORBID : (this.flag.small && hasWin(j, this.flag.small) ? 100 : 0);
-      if (hard !== FORBID && j.revG7B && REV_SHAPE_ROLES.indexOf(this.flag.small) >= 0) hard += REV_SHAPE_BONUS;
+      if (hard !== FORBID && this.flag.small && firstShapeHit(NCS.FIRST_STOP_SHAPES, this.flag.small, j)) hard += FIRST_SHAPE_BONUS;
       return { min: hard, avg: soft };
     }
     var key = stateKey(stops, order);
