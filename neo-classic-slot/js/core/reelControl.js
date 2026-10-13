@@ -49,6 +49,11 @@
   var REV_SHAPE_ROLES = ['GRAPE', 'CHERRY'];
   var REV_SHAPE_BONUS = 1000;
 
+  // プレイヤーがよく押す位置（目押しサポートの光るタイミング前後）。avg（見た目・引き込みの期待値）で重く見て、
+  // 狙って押した時にレア役が揃いやすい停止形を選ぶ。min（停止禁止・取りこぼし保証）は全位置で評価したまま
+  var AIM_PRESS = { 0: [13, 14, 15, 16], 2: [18, 19, 20, 0] }; // 左=15番BAR狙い / 右=赤7狙い
+  var AIM_WEIGHT = 6;
+
   var SCORE = { small: 100, bonus: 50, modeReach: 80, offModeReach: -5, midLine: 3, barBottom: 1, yamaMid: -2, yamaTop: 3, leftBarAim: 4 };
 
   function terminalScore(flag, mode, j, sc) {
@@ -127,11 +132,13 @@
       if (stops[r] >= 0) continue;
       // 小役の取りこぼし保証（min）は左・右から止めた時が対象。中押しは停止禁止だけを見る
       var centerFirst = order.length === 0 && r === 1;
+      var aim = AIM_PRESS[r];
       for (var p = 0; p < N; p++) {
         var c = this.choose(stops, order, r, p);
         if (c.v.min < min && (!centerFirst || c.v.min === FORBID)) min = c.v.min;
-        sum += c.v.avg;
-        n++;
+        var w = aim && aim.indexOf(p) >= 0 ? AIM_WEIGHT : 1;
+        sum += c.v.avg * w;
+        n += w;
       }
     }
     v = { min: min, avg: sum / n };

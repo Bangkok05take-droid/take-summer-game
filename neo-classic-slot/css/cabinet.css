@@ -265,8 +265,8 @@
   background: url("../assets/images/cabinet/lamps/lucky_reflect.png") center / 100% 100% no-repeat;
   opacity: 0; transition: opacity 0.15s;
 }
-.skin-bg [data-part="luckyLamp"][data-state="on"]::after { opacity: 0.9; }
-.skin-bg [data-part="luckyLamp"][data-state="premium"]::after { opacity: 1; }
+.skin-bg.lucky-ready [data-part="luckyLamp"][data-state="on"]::after { opacity: 0.9; }
+.skin-bg.lucky-ready [data-part="luckyLamp"][data-state="premium"]::after { opacity: 1; }
 /* 目押しサポート: 両端のひし形が赤く光る（消える時は少し残光） */
 .skin-bg [data-part^="aimMark"] { border-radius: 0 !important; overflow: visible; }
 .skin-bg [data-part^="aimMark"]::before, .skin-bg [data-part^="aimMark"]::after {

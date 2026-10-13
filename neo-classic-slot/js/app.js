@@ -191,6 +191,13 @@
       requestAnimationFrame(loop);
     });
 
+    // LUCKY CHANCE 点灯画像と下皿の映り込みを先に読み込む。初回点灯で映り込みだけ先に見えないよう、両方そろうまで映り込みは出さない
+    var luckyImgs = ['lucky_on_skin.png', 'lucky_reflect.png'].map(function (f) {
+      var img = new Image(); img.src = 'assets/images/cabinet/lamps/' + f;
+      return img.decode ? img.decode() : new Promise(function (ok) { img.onload = ok; });
+    });
+    Promise.all(luckyImgs).then(function () { cab.stage.classList.add('lucky-ready'); }, function () { /* 読込失敗時は映り込みなし */ });
+
     var app = { cab: cab, view: view, game: game, effects: effects, auto: auto, dbx: dbx, sound: sound, bgm: bgm, data: data, menu: menu, chart: chart, aimMode: function () { return aimMode; }, debug: panel,
       setShowBonusGot: function (on) { showBonusGot = on; } };
     NCS.app = app;
