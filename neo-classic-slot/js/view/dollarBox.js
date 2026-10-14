@@ -157,13 +157,13 @@
   DollarBoxView.prototype.closeCollection = function () { this.collectionOpen = false; this.coll.hidden = true; };
 
   DollarBoxView.prototype.renderCollection = function () {
-    var w = this.game.wallet, boxes = w.boxes(), partial = (w.boxMedals % w.boxSize) / w.boxSize;
+    var w = this.game.wallet, boxes = w.boxes();
     var el = this.coll;
     el.querySelector('.dbx-count').innerHTML = '<span class="n">' + boxes + '</span> BOX' +
       (boxes >= NCS.CONFIG.LEGEND_BOXES ? '<div class="legend">🏆 10,000 MEDALS — LEGENDARY WIN!</div>' : '');
     var cv = el.querySelector('canvas');
     var cssW = el.querySelector('.dbx-panel').clientWidth - 24;
-    var perCol = 5, total = boxes + (partial > 0 ? 1 : 0);
+    var perCol = 5, total = boxes; // 完成した箱だけ積む（端数は下の表の「ドル箱内の枚数」で確認。絵にすると箱の数と合わなく見えるため）
     var cols = Math.max(2, Math.ceil(Math.max(total, 1) / perCol));
     var bw = Math.min(110, (cssW - 20) / cols / 1.05);
     var cssH = Math.max(perCol, Math.min(total, perCol)) * bw * 0.72 + bw * 0.6;
@@ -181,7 +181,7 @@
     // 下から積み上げる（列ごとに5箱）
     for (var i = 0; i < total; i++) {
       var col = Math.floor(i / perCol), row = i % perCol;
-      var fill = i < boxes ? 1 : partial;
+      var fill = 1;
       drawBox(c, x0 + col * bw * 1.05, cssH - (row + 1) * bw * 0.72 - bw * 0.3, bw, fill);
     }
     if (total === 0) {
