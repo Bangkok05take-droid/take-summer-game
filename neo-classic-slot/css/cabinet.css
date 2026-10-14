@@ -167,7 +167,8 @@
 .dbx-count { text-align: center; margin: 10px 0 4px; font: 900 22px "Arial Black", Impact, sans-serif; color: #f2c94c; text-shadow: 0 2px 6px #000, 0 0 14px rgba(0, 0, 0, 0.8); }
 .dbx-count .n { font-size: 64px; text-shadow: 0 0 16px rgba(255, 190, 40, 0.7); }
 .dbx-count .legend { font-size: 18px; color: #fff3a0; margin-top: 4px; text-shadow: 0 0 10px #ff9a00; }
-.dbx-stack { display: block; margin: 6px auto; }
+.dbx-count { background: rgba(10, 2, 6, 0.72); border-radius: 10px; padding: 6px 0 8px; }
+.dbx-stack { display: block; margin: 8px auto; background: rgba(10, 2, 6, 0.72); border-radius: 10px; }
 .dbx-stats { background: rgba(10, 2, 6, 0.72); border-radius: 10px; padding: 6px 10px 10px; }
 .dbx-stats table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
 .dbx-stats th, .dbx-stats td { padding: 6px 4px; border-bottom: 1px solid #3a2410; }
@@ -359,108 +360,40 @@
 .flag-view.is-bonus { border-color: #ff4d6d; }
 .flag-view.is-bonus b { color: #ff8fa3; }
 
-/* ---- ジャグ連チャンス専用パネル（上部パネル＋上部ランプ域に重ねる。設計座標 1080×1920。BIG CHANCE の帯とリールにはかからない） ---- */
+/* ---- ジャグ連チャンス専用パネル（提供画像を上部パネルにはめ込む。設計座標 1080×1920、BIG CHANCE の帯より上だけ） ---- */
 .jr-panel {
-  position: absolute; left: 26px; top: 0; width: 1028px; height: 416px; z-index: 65; pointer-events: none;
-  opacity: 0; visibility: hidden; transform: scale(0.98);
-  transition: opacity 0.8s ease, transform 0.8s ease, visibility 0s linear 0.8s;
+  position: absolute; left: 0; top: 12px; width: 1080px; height: 391px; z-index: 65; pointer-events: none;
+  opacity: 0; visibility: hidden; transition: opacity 0.8s ease, visibility 0s linear 0.8s;
   font-family: "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Arial Black", system-ui, sans-serif; font-weight: 900;
 }
-.jr-panel.show { opacity: 1; visibility: visible; transform: none; transition: opacity 0.6s ease, transform 0.6s ease; }
-.jr-frame {
-  position: absolute; inset: 0; border-radius: 150px 150px 22px 22px / 110px 110px 22px 22px; overflow: hidden;
-  background: radial-gradient(ellipse at 50% 32%, #7a2bd0 0%, #3d0f86 38%, #1c0644 70%, #0d0322 100%);
-  border: 6px solid #e8b64a; box-shadow: 0 0 22px 6px rgba(200, 90, 255, 0.85), inset 0 0 0 3px #7a4a08, inset 0 0 30px 6px rgba(0, 0, 0, 0.6);
-}
-.jr-frame::before { /* 放射状の光 */
-  content: ''; position: absolute; left: 50%; top: 120px; width: 1400px; height: 1400px; margin: -700px 0 0 -700px;
-  background: repeating-conic-gradient(rgba(255, 120, 255, 0.16) 0 6deg, rgba(0, 0, 0, 0) 6deg 18deg); border-radius: 50%;
-  animation: jr-spin 30s linear infinite;
-}
-@keyframes jr-spin { to { transform: rotate(360deg); } }
-.jr-title, .jr-games, .jr-info, .jr-board, .jr-star { position: absolute; z-index: 1; }
-.jr-title { left: 50%; top: 2px; width: 520px; height: 196px; margin-left: -260px;
-  background: url("../assets/images/effects/jugren_title.webp") center / contain no-repeat; filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.6)); }
-/* 1G目・2G目・3G目の箱 */
-.jr-games { left: 22px; right: 22px; top: 200px; height: 122px; display: flex; align-items: center; justify-content: space-between; }
-.jr-gbox {
-  position: relative; width: 300px; height: 114px; border-radius: 16px; border: 4px solid #f2cf6a;
-  display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1; color: #fff;
-  box-shadow: inset 0 3px 0 rgba(255, 255, 255, 0.35), inset 0 -6px 12px rgba(0, 0, 0, 0.4); opacity: 0.85; filter: saturate(0.75) brightness(0.8);
-  transition: opacity 0.3s, filter 0.3s, transform 0.3s;
-}
-.jr-gbox.g1 { background: linear-gradient(180deg, #3b7bff, #0b2fa8); }
-.jr-gbox.g2 { background: linear-gradient(180deg, #8a4dff, #3b0f9e); }
-.jr-gbox.g3 { background: linear-gradient(180deg, #ff3b5c, #8a0018); }
-.jr-gbox b { font-size: 36px; color: #ffe066; text-shadow: 0 3px 0 #6a3a00, 0 0 8px rgba(255, 200, 60, 0.7); }
-.jr-gbox b small { font-size: 28px; color: #fff; }
-.jr-gbox span { font-size: 23px; margin: 3px 0 3px; text-shadow: 0 2px 0 rgba(0, 0, 0, 0.6); }
-.jr-gbox em { font-style: normal; font-size: 44px; color: #ffe066; text-shadow: 0 3px 0 #6a3a00, 0 0 10px rgba(255, 210, 60, 0.8); }
-.jr-gbox em small { font-size: 28px; color: #fff; }
-.jr-num {
-  position: absolute; left: -6px; top: -14px; width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-  font-style: normal; font-size: 26px; color: #ddd; background: radial-gradient(circle at 40% 35%, #777, #222); border: 3px solid #bbb;
-}
-.jr-gbox.done { opacity: 0.6; }
-.jr-gbox.cur { opacity: 1; filter: none; transform: scale(1.04); box-shadow: 0 0 22px 8px rgba(255, 220, 90, 0.9), inset 0 3px 0 rgba(255, 255, 255, 0.4); }
-.jr-gbox.cur .jr-num { color: #5a3000; border-color: #fff3b0; background: radial-gradient(circle at 40% 35%, #fffbe0, #ffd23a 45%, #c88a00); box-shadow: 0 0 16px 6px rgba(255, 210, 60, 0.9); }
-.jr-gbox.g3.cur { box-shadow: 0 0 26px 10px rgba(255, 40, 40, 0.95); animation: jr-blink 0.55s steps(2, jump-none) infinite; }
-.jr-gbox.g3.cur .jr-num { color: #fff; border-color: #ffd0d0; background: radial-gradient(circle at 40% 35%, #ffd0d0, #ff2a2a 45%, #9a0000); box-shadow: 0 0 16px 6px rgba(255, 40, 40, 0.95); }
-@keyframes jr-blink { 50% { filter: brightness(0.6); box-shadow: none; } }
-.jr-last {
-  position: absolute; right: -14px; top: -26px; font-size: 20px; line-height: 1; text-align: center; color: #ffe066; transform: rotate(12deg);
-  padding: 10px 8px; background: radial-gradient(circle, #ff5a00, #c40000 70%); border-radius: 50%; border: 3px solid #ffd84a;
-  text-shadow: 0 2px 0 #600; opacity: 0;
-}
-.jr-gbox.g3.cur .jr-last { opacity: 1; animation: jr-pop 0.8s ease-in-out infinite alternate; }
-@keyframes jr-pop { to { transform: rotate(12deg) scale(1.15); } }
-.jr-arrow { font-style: normal; font-size: 26px; color: #ffd84a; text-shadow: 0 0 8px #ff9a00; }
-/* 振り分け・継続条件 */
-.jr-info { left: 22px; right: 22px; top: 326px; height: 48px; display: flex; gap: 12px; }
-.jr-share, .jr-rule {
-  flex: 1; border-radius: 10px; border: 3px solid #d9a826; background: linear-gradient(180deg, #2a0a50, #120328);
-  display: flex; align-items: center; justify-content: center; color: #fff; line-height: 1.05; white-space: nowrap;
-}
-.jr-share { flex-direction: column; }
-.jr-share small { font-size: 18px; color: #f3e0ff; }
-.jr-share span { font-size: 26px; color: #ffe066; }
-.jr-share i { font-style: normal; color: #d9a826; margin: 0 8px; }
-.jr-share .tb, .jr-share .tr { color: #fff; font-size: 22px; padding: 1px 6px; border-radius: 5px; }
-.jr-share .tb { background: #e01b2a; } .jr-share .tr { background: #1b4fe0; }
-.jr-rule { font-size: 22px; gap: 8px; color: #ffd84a; }
-.jr-rule span { color: #ff9ad6; text-align: left; }
-.jr-rule .cb { color: #ff4040; } .jr-rule .cr { color: #4aa8ff; }
-/* 電光掲示板（デザインの下段バナー） */
-.jr-board {
-  left: 22px; right: 22px; top: 378px; height: 36px; border-radius: 8px; overflow: hidden; display: flex; align-items: center;
-  background: linear-gradient(180deg, #3a0a6a, #1a0436); border: 2px solid #d9a826;
-}
-.jr-msg { display: block; width: 100%; text-align: center; white-space: nowrap; font-size: 26px; color: #ff9ad6; text-shadow: 0 0 6px #ff3bd5; }
-.jr-msg.in { animation: jr-scroll 0.7s cubic-bezier(.2, .8, .3, 1) both; }
-@keyframes jr-scroll { from { transform: translateX(100%); opacity: 0.3; } to { transform: none; opacity: 1; } }
-/* 光る星 */
-.jr-star { font-style: normal; color: #fff3b0; text-shadow: 0 0 10px #ffd84a, 0 0 20px #ff9a00; animation: jr-twinkle 1.6s ease-in-out infinite; }
-.jr-star.s1 { left: 90px; top: 150px; font-size: 40px; }
-.jr-star.s2 { right: 96px; top: 140px; font-size: 36px; animation-delay: 0.5s; }
-.jr-star.s3 { right: 170px; top: 60px; font-size: 30px; animation-delay: 1s; }
-.jr-star.s4 { left: 160px; top: 66px; font-size: 28px; animation-delay: 0.8s; }
-@keyframes jr-twinkle { 50% { opacity: 0.2; transform: scale(0.6) rotate(20deg); } }
-/* 3G目: 縁が赤く脈打つ */
-.jr-panel.is-final .jr-frame { animation: jr-final 0.9s ease-in-out infinite alternate; }
-@keyframes jr-final { to { box-shadow: 0 0 30px 10px rgba(255, 40, 60, 0.95), inset 0 0 0 3px #7a4a08, inset 0 0 30px 6px rgba(0, 0, 0, 0.6); } }
-/* BIG/REG 当選フラッシュ */
-.jr-flash { position: absolute; inset: 0; z-index: 2; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 14px; line-height: 1; }
+.jr-panel.show { opacity: 1; visibility: visible; transition: opacity 0.6s ease; }
+.jr-art { position: absolute; inset: 0; background: url("../assets/images/effects/jugren_panel.webp") center / 100% 100% no-repeat; }
+/* 1回目・2回目・3回目の箱（画像上の位置）: 現在のゲームは光、それ以外は暗く */
+.jr-box { position: absolute; top: 216px; height: 134px; border-radius: 20px; transition: background 0.3s, box-shadow 0.3s; }
+.jr-box.b1 { left: 72px; width: 196px; }
+.jr-box.b2 { left: 268px; width: 226px; }
+.jr-box.b3 { left: 535px; width: 232px; }
+.jr-box { background: rgba(0, 0, 0, 0.5); }
+.jr-box.done { background: rgba(0, 0, 0, 0.62); }
+.jr-box.cur { background: rgba(255, 255, 255, 0.06); box-shadow: 0 0 0 4px rgba(255, 236, 140, 0.95), 0 0 28px 10px rgba(255, 210, 60, 0.85); animation: jr-glow 1s ease-in-out infinite alternate; }
+@keyframes jr-glow { to { box-shadow: 0 0 0 4px rgba(255, 246, 190, 1), 0 0 40px 16px rgba(255, 220, 80, 0.95); } }
+.jr-box.b3.cur { box-shadow: 0 0 0 4px rgba(255, 120, 120, 1), 0 0 34px 12px rgba(255, 30, 30, 0.95); animation: jr-blink 0.55s steps(2, jump-none) infinite; }
+@keyframes jr-blink { 50% { background: rgba(255, 0, 0, 0.18); box-shadow: 0 0 0 4px rgba(255, 60, 60, 0.4), 0 0 8px 2px rgba(255, 0, 0, 0.3); } }
+/* 3回目: パネル全体の縁も赤く脈打つ */
+.jr-panel.is-final .jr-art { animation: jr-final 0.9s ease-in-out infinite alternate; }
+@keyframes jr-final { to { filter: drop-shadow(0 0 14px rgba(255, 40, 60, 0.9)) brightness(1.08); } }
+/* BIG/REG 当選フラッシュ（パネル全体を覆う） */
+.jr-flash { position: absolute; left: 30px; right: 30px; top: 70px; bottom: 6px; z-index: 2; border-radius: 120px 120px 22px 22px / 80px 80px 22px 22px;
+  display: none; flex-direction: column; align-items: center; justify-content: center; gap: 14px; line-height: 1; }
 .jr-flash b { font-size: 100px; letter-spacing: 2px; }
 .jr-flash span { font-size: 50px; letter-spacing: 2px; }
 .jr-panel.flash-big .jr-flash, .jr-panel.flash-reg .jr-flash { display: flex; }
-.jr-panel.flash-big .jr-flash { background: radial-gradient(ellipse at center, #fff9d6, #ffd23a 45%, #a86d00); animation: jr-flash 0.18s steps(2, jump-none) 8; }
+.jr-panel.flash-big .jr-flash { background: radial-gradient(ellipse at center, #fff9d6, #ffd23a 45%, #a86d00); box-shadow: 0 0 40px 16px rgba(255, 215, 60, 0.95); animation: jr-flash 0.18s steps(2, jump-none) 8; }
 .jr-panel.flash-big .jr-flash b { color: #b00000; text-shadow: 0 3px 0 #fff, 0 0 18px #fff; }
 .jr-panel.flash-big .jr-flash span { color: #5a1a90; text-shadow: 0 2px 0 #fff; }
-.jr-panel.flash-big .jr-frame { box-shadow: 0 0 40px 16px rgba(255, 215, 60, 0.95); }
-.jr-panel.flash-reg .jr-flash { background: radial-gradient(ellipse at center, #ff9a9a, #d40000 50%, #4a0000); animation: jr-flash 0.18s steps(2, jump-none) 8; }
+.jr-panel.flash-reg .jr-flash { background: radial-gradient(ellipse at center, #ff9a9a, #d40000 50%, #4a0000); box-shadow: 0 0 40px 16px rgba(255, 40, 40, 0.95); animation: jr-flash 0.18s steps(2, jump-none) 8; }
 .jr-panel.flash-reg .jr-flash b { color: #fff; text-shadow: 0 3px 0 #500, 0 0 14px #ff8a8a; }
 .jr-panel.flash-reg .jr-flash span { color: #ffe0e0; text-shadow: 0 2px 0 #500; }
-.jr-panel.flash-reg .jr-frame { box-shadow: 0 0 40px 16px rgba(255, 40, 40, 0.95); }
 @keyframes jr-flash { 50% { filter: brightness(1.8) saturate(1.3); } }
 
 /* 不具合の表示（確認用） */
