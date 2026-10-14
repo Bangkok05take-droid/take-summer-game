@@ -29,7 +29,8 @@
 
   ProbTable.prototype.render = function () {
     var C = NCS.CONFIG, T = NCS.LOTTERY_TABLES.NORMAL, R = NCS.ROLES, html = '';
-    var w = {}; T.forEach(function (e) { w[e.role] = e.weight; });
+    var w = {}, wc = {}; // w: 役ごとの合計（重複込み） / wc: チェリー重複分
+    T.forEach(function (e) { w[e.role] = (w[e.role] || 0) + e.weight; if (e.with) wc[e.role] = (wc[e.role] || 0) + e.weight; });
     var used = T.reduce(function (s, e) { return s + e.weight; }, 0);
     var pay = function (id) { var r = R[id]; return r.replay ? '再遊技' : r.bonus ? (C.BONUS_MAX_PAY ? C.BONUS_MAX_PAY[id] + '枚' : '—') : r.pay + '枚'; };
     var sym = { BIG: '赤7・赤7・赤7', REG: '赤7・赤7・BAR', GRAPE: 'ブドウ×3', CHERRY: '左・中チェリー', BELL: 'ベル×3', YAMA: '山×3', REPLAY: 'リプレイ×3' };
@@ -38,6 +39,8 @@
     var rows = [];
     ['BIG', 'REG'].forEach(function (id) { rows.push(row([id === 'BIG' ? 'BIG' : 'REG', oneIn(w[id]), pay(id), sym[id]], 'pt-bonus')); });
     rows.push(row(['ボーナス合算', oneIn((w.BIG || 0) + (w.REG || 0)), '', ''], 'pt-sum'));
+    ['BIG', 'REG'].forEach(function (id) { if (wc[id]) rows.push(row(['└ ' + id + '＋チェリー', oneIn(wc[id]), '', 'チェリーと重複当選（' + id + 'の内数）'], 'pt-bonus')); });
+    if (wc.BIG || wc.REG) rows.push(row(['チェリー重複合算', oneIn((wc.BIG || 0) + (wc.REG || 0)), '', 'チェリー出現時のボーナス期待度 ' + pct(((wc.BIG || 0) + (wc.REG || 0)) / ((w.CHERRY || 0) + (wc.BIG || 0) + (wc.REG || 0)))], 'pt-sum'));
     ['GRAPE', 'CHERRY', 'BELL', 'YAMA', 'REPLAY'].forEach(function (id) { if (w[id]) rows.push(row([R[id].name, oneIn(w[id]), pay(id), sym[id]])); });
     rows.push(row(['ハズレ', oneIn(NCS.LOTTERY_DENOM - used), '', ''], 'pt-sum'));
     html += '<h3>通常時（内部抽選）</h3>' + table(['役', '確率', '払い出し', '図柄'], rows) +

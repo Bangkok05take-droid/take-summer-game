@@ -10,8 +10,11 @@
   NCS.LOTTERY_TABLES = {
     // 通常時
     NORMAL: [
-      { role: 'BIG',    weight: 655 },   // 1/100.05
-      { role: 'REG',    weight: 655 },   // 1/100.05  （合算 1/50.03）
+      // ボーナスの一部はチェリーと重複当選（with）。BIG・REGそれぞれの合計確率は従来と同じ 1/100.05
+      { role: 'BIG',    weight: 535 },                  // 単独 1/122.5
+      { role: 'BIG',    weight: 120, with: 'CHERRY' },  // チェリー重複 1/546.1
+      { role: 'REG',    weight: 455 },                  // 単独 1/144.0
+      { role: 'REG',    weight: 200, with: 'CHERRY' },  // チェリー重複 1/327.7  （合算 1/50.03・チェリー重複 1/204.8）
       { role: 'CHERRY', weight: 2185 },  // 1/30.0
       { role: 'GRAPE',  weight: 10923 }, // 1/6.0
       { role: 'BELL',   weight: 64 },    // 1/1024

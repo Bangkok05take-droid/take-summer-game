@@ -11,6 +11,8 @@
   var FORCE_ITEMS = [
     { label: 'BIG', role: 'BIG' },
     { label: 'REG', role: 'REG' },
+    { label: 'BIG+チェリー', role: 'BIG', with: 'CHERRY', hint: 'チェリー重複のBIG' },
+    { label: 'REG+チェリー', role: 'REG', with: 'CHERRY', hint: 'チェリー重複のREG' },
     { label: '先ペカ', role: 'RANDOM_BONUS', leverLamp: true },
     { label: 'チェリー外れ(2確)', role: 'RANDOM_BONUS', mode: 'CHERRY_MISS_7', hint: '順押し・左BAR狙い→中で外れて2確（中段7は約半分）' },
     { label: '挟み打ち山否定', role: 'RANDOM_BONUS', mode: 'YAMA_HASAMI', hint: '左→右→中。左BAR中段付近を押して山を下段へ' },
@@ -125,7 +127,7 @@
       role = Math.random() < 0.5 ? 'BIG' : 'REG';
       if (it.mode && !NCS.REACHME_MODE_WEIGHTS[role][it.mode]) role = role === 'BIG' ? 'REG' : 'BIG';
     }
-    this.game.lottery.forced = { role: role, mode: it.mode || null };
+    this.game.lottery.forced = { role: role, mode: it.mode || null, with: it.with || null };
     if (it.leverLamp) this.effects.forceLeverLamp = true;
     var label = it.label + (it.role === 'RANDOM_BONUS' ? '（' + role + '）' : '') + (it.hint ? ' … ' + it.hint : '');
     this.root.querySelector('#dbg-forced').textContent = '→ ' + label;

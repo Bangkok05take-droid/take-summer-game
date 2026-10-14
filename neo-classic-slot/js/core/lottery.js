@@ -15,8 +15,9 @@
   Lottery.prototype.draw = function (tableName) {
     var table = NCS.LOTTERY_TABLES[tableName];
     var r = Math.floor(this.rng() * NCS.LOTTERY_DENOM);
+    this.drawnWith = null;
     for (var i = 0; i < table.length; i++) {
-      if (r < table[i].weight) return table[i].role;
+      if (r < table[i].weight) { this.drawnWith = table[i].with || null; return table[i].role; } // with: 重複当選の小役
       r -= table[i].weight;
     }
     return null; // ハズレ
@@ -40,26 +41,30 @@
    */
   Lottery.prototype.lever = function (carriedBonus, jr) {
     var flag = { bonus: carriedBonus || null, small: null, mode: 'NORMAL', newBonus: false };
-    var role, forcedMode = null, smallOnly = !!carriedBonus || !!jr;
+    var role, forcedMode = null, smallOnly = !!carriedBonus || !!jr, withSmall = null;
 
     if (this.forced) {
       role = this.forced.role;
       forcedMode = this.forced.mode || null;
+      withSmall = this.forced.with || null;
       this.forced = null;
       if (smallOnly && NCS.ROLES[role] && NCS.ROLES[role].bonus) role = null; // 持ち越し中・チャンス中は小役のみ
     } else {
       role = this.draw(smallOnly ? 'CARRY' : 'NORMAL');
+      withSmall = this.drawnWith;
     }
     if (jr && jr.bonus) { flag.bonus = jr.bonus; flag.newBonus = true; }
 
     if (role && NCS.ROLES[role].bonus) {
       flag.bonus = role;
       flag.newBonus = true;
+      if (withSmall) flag.small = withSmall; // チェリー重複: 出目は小役優先の通常モード
     } else if (role) {
       flag.small = role;
     }
     // 出目モード: 強制モードはそのフラグで有効な場合のみ採用（例: REG専用モードをBIGに適用しない）
     var w = flag.bonus ? NCS.REACHME_MODE_WEIGHTS[flag.bonus] : (flag.small && NCS.SMALL_MODE_WEIGHTS && NCS.SMALL_MODE_WEIGHTS[flag.small]);
+    if (flag.bonus && flag.small && flag.newBonus) w = null;
     if (w) flag.mode = (forcedMode && w[forcedMode] > 0) ? forcedMode : this.pickMode(w);
     return flag;
   };
@@ -72,16 +77,18 @@
     var counts = {}, i, role;
     for (i = 0; i < n; i++) {
       role = lot.draw('NORMAL') || 'HAZURE';
+      if (lot.drawnWith) role += '+' + lot.drawnWith;
       counts[role] = (counts[role] || 0) + 1;
     }
     var rows = [], used = 0, bonusW = 0;
     NCS.LOTTERY_TABLES.NORMAL.forEach(function (e) {
       used += e.weight;
       if (NCS.ROLES[e.role].bonus) bonusW += e.weight;
-      rows.push({ role: e.role, expected: NCS.LOTTERY_DENOM / e.weight, observed: n / (counts[e.role] || NaN), count: counts[e.role] || 0 });
+      var key = e.role + (e.with ? '+' + e.with : '');
+      rows.push({ role: key, expected: NCS.LOTTERY_DENOM / e.weight, observed: n / (counts[key] || NaN), count: counts[key] || 0 });
     });
     rows.push({ role: 'HAZURE', expected: NCS.LOTTERY_DENOM / (NCS.LOTTERY_DENOM - used), observed: n / (counts.HAZURE || NaN), count: counts.HAZURE || 0 });
-    var bonus = (counts.BIG || 0) + (counts.REG || 0);
+    var bonus = (counts.BIG || 0) + (counts.REG || 0) + (counts['BIG+CHERRY'] || 0) + (counts['REG+CHERRY'] || 0);
     rows.push({ role: 'BONUS合算', expected: NCS.LOTTERY_DENOM / bonusW, observed: n / bonus, count: bonus });
     return rows;
   };
