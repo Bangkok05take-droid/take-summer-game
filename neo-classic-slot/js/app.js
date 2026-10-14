@@ -173,10 +173,13 @@
       try { localStorage.setItem('ncs.aimAssist.v2', v); } catch (e) { /* 保存不可 */ }
     });
     var SEVENS = NCS.STRIPS.map(function (strip) { return strip.map(function (y, i) { return y === '7' ? i : -1; }).filter(function (i) { return i >= 0; }); });
-    function reelAt(i, positions) { // リール i が回転中で、positions のどれかが中段の前後0.5コマにある
-      var r = view.reels[i];
+    // リール i が回転中で、いま押せば positions の図柄がちょうど押下位置になる間（＝光った瞬間に押せば狙いどおり）
+    // 押下位置は表示・タッチの遅れ（STOP_LAG_MS）を差し引いて決まる（reelView.press）ので、ランプも同じ基準で光らせる
+    function reelAt(i, positions) {
+      var r = view.reels[i], N = NCS.REEL_SIZE;
       if (game.phase !== 'SPINNING' || r.phase !== 'SPIN' || game.control.stops[i] >= 0) return false;
-      return positions.some(function (x) { var d = (((r.pos - x) % NCS.REEL_SIZE) + NCS.REEL_SIZE) % NCS.REEL_SIZE; return d < 0.5 || d > NCS.REEL_SIZE - 0.5; });
+      var seen = r.pos - r.speed * (NCS.CONFIG.STOP_LAG_MS || 0) / 1000;
+      return positions.some(function (x) { var d = (((seen - x) % N) + N) % N; return d === 0 || d > N - 1; });
     }
     function aimLamps() { // [左ひし形, 右ひし形, リール枠]
       var normal = aimMode === 'normal' || aimMode === 'all', bonus = aimMode === 'bonus' || aimMode === 'all';
