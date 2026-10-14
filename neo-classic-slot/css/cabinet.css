@@ -468,3 +468,14 @@
   padding: 8px 10px; border-radius: 8px; background: rgba(120, 0, 0, 0.92); color: #fff; font: 12px/1.4 system-ui, sans-serif; word-break: break-all;
 }
 .ncs-error.show { display: block; }
+
+/* 確率一覧 */
+.prob-table h3 { margin: 16px 0 6px; font-size: 16px; color: #f2c94c; border-left: 4px solid #c9a23a; padding-left: 8px; }
+.pt-table { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
+.pt-table thead th { color: #f2c94c; font-size: 12px; font-weight: normal; border-bottom: 2px solid #c9a23a; padding: 4px; text-align: left; }
+.pt-table tbody th, .pt-table td { padding: 7px 4px; border-bottom: 1px solid #2c2540; text-align: left; }
+.pt-table tbody th { color: #fff; white-space: nowrap; }
+.pt-table td:nth-child(2) { color: #ffe27a; font-weight: bold; white-space: nowrap; }
+.pt-table td:last-child { color: #b9b3d6; font-size: 12px; }
+.pt-table tr.pt-bonus th { color: #ff7a8a; }
+.pt-table tr.pt-sum th, .pt-table tr.pt-sum td { background: rgba(201, 162, 58, 0.12); }

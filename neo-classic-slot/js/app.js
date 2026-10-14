@@ -133,6 +133,8 @@
     var chart = new NCS.ReelChart();
     var menu = new NCS.MenuScreen();
     menu.addItem('リール配列を確認', function () { chart.open(); });
+    var probs = new NCS.ProbTable();
+    menu.addItem('確率一覧', function () { probs.open(); });
     menu.addChoice('リール速度', RPM_CHOICES.map(function (v) {
       return { value: v, label: v + '回転', note: v === 45 ? '標準' : (v < 45 ? 'ゆっくり（目押ししやすい）' : '速い') };
     }), function () { return NCS.CONFIG.REEL_RPM; }, function (v) {

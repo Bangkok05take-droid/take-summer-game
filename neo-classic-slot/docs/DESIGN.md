@@ -512,3 +512,8 @@ BIG[YAMA_HASAMI] 左山の停止位置: なし 50.0% / 下段 50.0%
   上限に達したら終了（BIG 24G・REG 20G。BIGの最後の1ゲームは端数5枚）。
 - ドル箱コレクション画面: 背景をカジノのホール画像（assets/images/boxes/collection_bg.jpg、パネル部分は暗くぼかし済み）、
   タイトルを「DOLLAR BOX COLLECTION」バナー画像（collection_title.webp）に。元画像は assets/design/dollar_box_collection_src.jpg。
+
+## 確率一覧（Ver.36）
+
+- メニュー「確率一覧」（js/view/probTable.js）。probability.js・roles.js・game.js の実データから表を作る（数値を変えると自動で追従）。
+  通常時の内部抽選（BIG/REG/合算/小役/ハズレ・払い出し・図柄）、ボーナス（獲得枚数・ゲーム数）、ジャグ連（各G・3G以内・振り分け）、プレミア演出の発生率。
