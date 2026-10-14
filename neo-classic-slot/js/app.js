@@ -98,7 +98,12 @@
     function bet() { unlock(); if (game.addBet()) { sound.bet(); press('betButton', 'pressed', function () { return 'off'; }, 120); } }
     // 第3停止のボタンを離した瞬間（LUCKY CHANCE の後ペカ）
     function thirdRelease(i) { if (game.stoppedCount === 3 && game.control.stops[i] >= 0 && game.control.order[2] === i) effects.onThirdRelease(); }
-    function stop(i) { unlock(); if (game.stop(i)) press('stop' + i, 'pressed', function () { return 'off'; }, 150); }
+    function stop(i) {
+      unlock();
+      if (!game.stop(i)) return;
+      press('stop' + i, 'pressed', function () { return 'off'; }, 150);
+      if (game.stoppedCount === 3) effects.holding3 = true; // 第3停止ボタンを押している間は後ペカを待つ（離した瞬間に光る）
+    }
 
     // 大きな LEVER ON: MAX BET＋レバーON / 左の物理レバー: 現在のBETでレバーON / BET: 1枚ずつ
     cab.onTap('leverOn', function () { cab.setState('leverOn', 'pressed'); leverMax(); });
@@ -125,6 +130,10 @@
     document.addEventListener('keyup', function (e) {
       var k = e.key.toLowerCase(), i = { '1': 0, j: 0, '2': 1, k: 1, '3': 2, l: 2 }[k];
       if (i !== undefined) thirdRelease(i);
+    });
+    // 押したまま指がボタンの外へずれても、離した瞬間を取りこぼさない
+    window.addEventListener('blur', function () { if (effects.holding3) effects.onThirdRelease(); });
+    document.addEventListener('visibilitychange', function () { if (document.hidden && effects.holding3) effects.onThirdRelease(); 
     });
     document.addEventListener('contextmenu', function (e) { e.preventDefault(); });
 

@@ -530,3 +530,5 @@ BIG[YAMA_HASAMI] 左山の停止位置: なし 50.0% / 下段 50.0%
 - Ver.40: ジャグ連中REG当選時の演出も提供画像（assets/images/effects/jugren_reg.webp、元画像 assets/design/jugren_reg_src.jpg）に変更（パネル基準 left 5・top 16・幅1110、上端ぼかし）。
 - Ver.41: ジャグ連中の BIG/REG 画像は「ボーナス図柄が揃った時」（Game 'bonus' イベント、bonusFromJugren）に表示。
   LUCKY CHANCE 点灯時点ではパネルは変えない（どちらが成立したか分からないように）。揃えるまでの持ち越し中もパネルはそのまま。
+- Ver.42: 後ペカは第3停止ボタンを押している間は待ち、離した瞬間に光と音（effects.holding3）。押しっぱなしで自動点灯しない。
+  ボタンの外で指を離しても受け取る（setPointerCapture）。画面が隠れた・フォーカスが外れた時は離した扱い。離す操作が無い時（オートなど）は従来どおり少し後に点灯。

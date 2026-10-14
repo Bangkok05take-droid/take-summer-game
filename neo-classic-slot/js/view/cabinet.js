@@ -151,6 +151,8 @@
   Cabinet.prototype.onRelease = function (id, fn) {
     var el = this.el(id);
     if (!el) return;
+    // 押した指をボタンに捕まえておき、ボタンの外で離しても pointerup を受け取る
+    el.addEventListener('pointerdown', function (e) { try { el.setPointerCapture(e.pointerId); } catch (err) { /* 未対応 */ } });
     el.addEventListener('pointerup', function (e) { fn(e); });
     el.addEventListener('pointercancel', function (e) { fn(e); });
   };

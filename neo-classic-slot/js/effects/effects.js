@@ -55,6 +55,7 @@
 
   Effects.prototype.onLever = function (e) {
     this.released3 = false;
+    this.holding3 = false;
     var handled = this.premium.onLever(e, this.game);
     if (!this.autoRunning && !this.premium.silent) this.sound.lever();
     var f = e.flag;
@@ -77,6 +78,7 @@
   // 後ペカ: 第3停止ボタンを離した瞬間に点灯（離す操作が無い時は結果表示から少し後に点灯）
   Effects.prototype.onThirdRelease = function () {
     this.released3 = true;
+    this.holding3 = false;
     if (this.pending) this.light('AFTER');
   };
 
@@ -84,7 +86,8 @@
     var self = this;
     if (this.pending) {
       if (this.released3 || this.autoRunning) this.light('AFTER');
-      else setTimeout(function () { if (self.pending) self.light('AFTER'); }, 1200);
+      // 押しっぱなしの間は光らせない（離した瞬間に onThirdRelease で点灯）。離す操作が無い時だけ少し後に点灯
+      else if (!this.holding3) setTimeout(function () { if (self.pending && !self.holding3) self.light('AFTER'); }, 1200);
     }
     this.ui.showResult(e);
     if (e.pay) this.sound.payout(e.pay, this.autoRunning);
