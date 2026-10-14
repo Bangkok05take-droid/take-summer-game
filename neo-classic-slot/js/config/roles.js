@@ -12,7 +12,7 @@
     GRAPE:  { name: 'ブドウ',         pattern: ['G', 'G', 'G'], pay: 8 },
     CHERRY: { name: 'チェリー',       pattern: ['C', 'C', null], pay: 2 },
     BELL:   { name: 'ベル',           pattern: ['L', 'L', 'L'], pay: 14 },
-    YAMA:   { name: '山',             pattern: ['M', 'M', 'M'], pay: 3, lines: [0, 3, 4] }, // 成立は中リール中段を通る3ラインのみ
+    YAMA:   { name: '山',             pattern: ['M', 'M', 'M'], pay: 3 }, // Ver.47: 全5ライン（上段・下段の横並びも成立）
     REPLAY: { name: 'リプレイ',       pattern: ['R', 'R', 'R'], pay: 0, replay: true }
   };
 

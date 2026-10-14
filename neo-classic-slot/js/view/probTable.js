@@ -32,7 +32,7 @@
     var w = {}; T.forEach(function (e) { w[e.role] = e.weight; });
     var used = T.reduce(function (s, e) { return s + e.weight; }, 0);
     var pay = function (id) { var r = R[id]; return r.replay ? '再遊技' : r.bonus ? (C.BONUS_MAX_PAY ? C.BONUS_MAX_PAY[id] + '枚' : '—') : r.pay + '枚'; };
-    var sym = { BIG: '赤7・赤7・赤7', REG: '赤7・赤7・BAR', GRAPE: 'ブドウ×3', CHERRY: '左・中チェリー', BELL: 'ベル×3', YAMA: '山×3（中段を通る3ライン）', REPLAY: 'リプレイ×3' };
+    var sym = { BIG: '赤7・赤7・赤7', REG: '赤7・赤7・BAR', GRAPE: 'ブドウ×3', CHERRY: '左・中チェリー', BELL: 'ベル×3', YAMA: '山×3', REPLAY: 'リプレイ×3' };
 
     // 通常時
     var rows = [];
