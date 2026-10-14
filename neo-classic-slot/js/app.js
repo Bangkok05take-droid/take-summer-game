@@ -197,32 +197,50 @@
     flagEl.className = 'flag-view';
     flagEl.hidden = true;
     cab.stage.appendChild(flagEl);
-    var MODE_NAMES = { CHERRY_MISS_7: 'チェリー外れ系', YAMA_HASAMI: '左山＋右山なし', V_SHAPE: '山V字', OYAMA: '大山', TANI: '谷', KOYAMA: '小山',
-      BAR_LINE: 'BAR一直線', REV_GRAPE_MISS: '逆押しブドウ否定系', REG_R7_TOP: '逆押し右上段7', R7_MID: '逆押し右中段7' };
-    var PREMIUM_NAMES = { freeze: 'プチュンフリーズ', delay: '遅れ', stop2: '第2停止プレミア' };
+    // 成立役の文字（出目モード・演出は出さない）
+    function flagText(f) {
+      if (f.bonusGame) return f.bonusGame + ' 消化中';
+      var parts = [];
+      if (f.bonus) parts.push(f.bonus + (f.newBonus === false ? '（持ち越し中）' : ''));
+      if (f.hiddenBonus) parts.push(f.hiddenBonus + '（復活待ち）');
+      if (f.small) parts.push(NCS.ROLES[f.small].name);
+      return parts.length ? parts.join(' ＋ ') : 'ハズレ';
+    }
     function showFlag(e) {
-      var f = e.flag, main, sub = [];
-      if (f.bonusGame) main = f.bonusGame + ' 消化中';
-      else {
-        var parts = [];
-        if (f.bonus) parts.push(f.bonus + (f.newBonus === false ? '（持ち越し中）' : ''));
-        if (f.small) parts.push(NCS.ROLES[f.small].name);
-        main = parts.length ? parts.join(' ＋ ') : 'ハズレ';
-      }
-      if (f.mode && f.mode !== 'NORMAL' && MODE_NAMES[f.mode]) sub.push('出目: ' + MODE_NAMES[f.mode]);
-      var pm = effects.premium.current;
-      if (pm) {
-        if (pm.main) sub.push(PREMIUM_NAMES[pm.main] || pm.main);
-        if (pm.gogo) sub.push('GOGO!ランプ');
-        if (pm.vibe) sub.push('振動');
-      }
-      if (f.jugren) sub.push('ジャグ連チャンス' + f.jugren + 'G目');
-      if (f.revival) sub.push('復活フリーズ');
-      if (f.silentPeka) sub.push('無音先ペカ');
-      flagEl.innerHTML = '<b></b><small></small>';
-      flagEl.querySelector('b').textContent = main;
-      flagEl.querySelector('small').textContent = sub.join(' / ');
-      flagEl.classList.toggle('is-bonus', !!f.bonus);
+      flagEl.innerHTML = '<b></b>';
+      flagEl.querySelector('b').textContent = flagText(e.flag);
+      flagEl.classList.toggle('is-bonus', !!e.flag.bonus);
+    }
+    // 成立履歴（過去5ゲーム）: レバーONで成立役を記録し、停止後に入賞結果を付ける
+    var flagHist = [];
+    game.on('lever', function (e) {
+      flagHist.unshift({ no: game.stats.totalGames, flag: flagText(e.flag), bonus: !!e.flag.bonus, result: '回転中' });
+      if (flagHist.length > 5) flagHist.pop();
+    });
+    game.on('result', function (e) {
+      if (!flagHist.length) return;
+      var names = e.wins.map(function (w) { return NCS.ROLES[w.role].name.replace(' BONUS', '').replace('REGULAR', 'REG'); });
+      var f = e.flag, missed = f.small && !e.wins.some(function (w) { return w.role === f.small; });
+      flagHist[0].result = names.length ? names.join('・') + ' 入賞' : (missed ? '取りこぼし' : 'なし');
+    });
+    var histEl = document.createElement('div');
+    histEl.className = 'reel-chart prob-table';
+    histEl.hidden = true;
+    histEl.innerHTML = '<div class="rc-box"><div class="data-head"><b>成立履歴（過去5ゲーム）</b><button type="button">閉じる</button></div><div class="pt-body"></div></div>';
+    document.body.appendChild(histEl);
+    var histOpenedAt = 0;
+    histEl.querySelector('.data-head button').addEventListener('click', function () { histEl.hidden = true; });
+    histEl.addEventListener('click', function (ev) { if (Date.now() - histOpenedAt < 400) { ev.stopPropagation(); ev.preventDefault(); } }, true);
+    function openHist() {
+      var rows = flagHist.map(function (h, i) {
+        return '<tr' + (h.bonus ? ' class="pt-bonus"' : '') + '><th>' + (i === 0 ? '直前' : i + 'G前') + '</th><td>' + h.flag + '</td><td>' + h.result + '</td></tr>';
+      });
+      histEl.querySelector('.pt-body').innerHTML = rows.length
+        ? '<table class="pt-table"><thead><tr><th>ゲーム</th><th>成立</th><th>結果</th></tr></thead><tbody>' + rows.join('') + '</tbody></table>' +
+          '<p class="rc-note">上ほど新しいゲーム。ボーナス消化中のゲームも含みます。</p>'
+        : '<p class="rc-note">まだ記録がありません（レバーONから記録します）。</p>';
+      histOpenedAt = Date.now();
+      histEl.hidden = false;
     }
     game.on('lever', function (e) { if (flagView) { showFlag(e); flagEl.hidden = false; } });
     menu.addToggle(function () { return '当選役表示（確認用）: ' + (flagView ? 'ON' : 'OFF'); }, function () {
@@ -231,6 +249,7 @@
       else if (game.flag && game.phase !== 'IDLE') { showFlag({ flag: game.flag }); flagEl.hidden = false; }
       try { localStorage.setItem('ncs.flagView.v1', flagView ? '1' : '0'); } catch (e) { /* 保存不可 */ }
     });
+    menu.addItem('成立履歴（過去5ゲーム）', openHist);
     menu.addItem('データ確認', function () { data.open(); });
     menu.addToggle(function () { return 'サウンド: ' + (sound.enabled ? 'ON' : 'OFF'); }, function () { sound.unlock(); sound.setEnabled(!sound.enabled); });
     var panel = null;
