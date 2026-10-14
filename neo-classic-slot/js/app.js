@@ -211,11 +211,11 @@
       flagEl.querySelector('b').textContent = flagText(e.flag);
       flagEl.classList.toggle('is-bonus', !!e.flag.bonus);
     }
-    // 成立履歴（過去5ゲーム）: レバーONで成立役を記録し、停止後に入賞結果を付ける
-    var flagHist = [];
+    // 成立履歴（過去10ゲーム）: レバーONで成立役を記録し、停止後に入賞結果を付ける
+    var flagHist = [], HIST_MAX = 10;
     game.on('lever', function (e) {
       flagHist.unshift({ no: game.stats.totalGames, flag: flagText(e.flag), bonus: !!e.flag.bonus, result: '回転中' });
-      if (flagHist.length > 5) flagHist.pop();
+      if (flagHist.length > HIST_MAX) flagHist.pop();
     });
     game.on('result', function (e) {
       if (!flagHist.length) return;
@@ -226,7 +226,7 @@
     var histEl = document.createElement('div');
     histEl.className = 'reel-chart prob-table';
     histEl.hidden = true;
-    histEl.innerHTML = '<div class="rc-box"><div class="data-head"><b>成立履歴（過去5ゲーム）</b><button type="button">閉じる</button></div><div class="pt-body"></div></div>';
+    histEl.innerHTML = '<div class="rc-box"><div class="data-head"><b>成立履歴（過去10ゲーム）</b><button type="button">閉じる</button></div><div class="pt-body"></div></div>';
     document.body.appendChild(histEl);
     var histOpenedAt = 0;
     histEl.querySelector('.data-head button').addEventListener('click', function () { histEl.hidden = true; });
@@ -249,7 +249,7 @@
       else if (game.flag && game.phase !== 'IDLE') { showFlag({ flag: game.flag }); flagEl.hidden = false; }
       try { localStorage.setItem('ncs.flagView.v1', flagView ? '1' : '0'); } catch (e) { /* 保存不可 */ }
     });
-    menu.addItem('成立履歴（過去5ゲーム）', openHist);
+    menu.addItem('成立履歴（過去10ゲーム）', openHist);
     menu.addItem('データ確認', function () { data.open(); });
     menu.addToggle(function () { return 'サウンド: ' + (sound.enabled ? 'ON' : 'OFF'); }, function () { sound.unlock(); sound.setEnabled(!sound.enabled); });
     var panel = null;
