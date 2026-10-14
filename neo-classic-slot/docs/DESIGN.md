@@ -528,3 +528,5 @@ BIG[YAMA_HASAMI] 左山の停止位置: なし 50.0% / 下段 50.0%
 - Ver.39: ジャグ連中BIG当選時のフラッシュを提供画像（assets/images/effects/jugren_big.webp、元画像 assets/design/jugren_big_src.jpg）に変更。
   BIG CHANCE の帯で位置合わせ（パネル基準 left 19・top 36・幅1090）、上端はぼかしてパネル画像とつなぐ。出現時に拡大しながら光り、その後点滅。REGは従来の赤フラッシュ。
 - Ver.40: ジャグ連中REG当選時の演出も提供画像（assets/images/effects/jugren_reg.webp、元画像 assets/design/jugren_reg_src.jpg）に変更（パネル基準 left 5・top 16・幅1110、上端ぼかし）。
+- Ver.41: ジャグ連中の BIG/REG 画像は「ボーナス図柄が揃った時」（Game 'bonus' イベント、bonusFromJugren）に表示。
+  LUCKY CHANCE 点灯時点ではパネルは変えない（どちらが成立したか分からないように）。揃えるまでの持ち越し中もパネルはそのまま。
