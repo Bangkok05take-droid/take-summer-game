@@ -29,8 +29,9 @@
       revivalMs: 3800        // 復活フリーズ
     },
     PAYOUT_ACCUMULATE_IN_BONUS: true, // ボーナス消化中は PAYOUT 表示を加算表示にする
-    BONUS_GAMES: { BIG: 30, REG: 30 },   // ボーナスのゲーム数
-    BONUS_PAY: { BIG: 15, REG: 5 },      // ボーナス中1ゲームの払い出し（仮）
+    BONUS_MAX_PAY: { BIG: 350, REG: 100 }, // ボーナスの獲得枚数（払い出し合計）。ここに達したら終了（最後のゲームは端数のみ払い出し）
+    BONUS_PAY: { BIG: 15, REG: 5 },        // ボーナス中1ゲームの払い出し
+    BONUS_GAMES: { BIG: 24, REG: 20 },     // ボーナスのゲーム数 = 獲得枚数 ÷ 1ゲームの払い出し（切り上げ）
     AUTO_SPEED: 2.5,         // オート消化時のリール速度倍率
     AUTO_LEVER_DELAY_MS: 250, // オート: 結果表示からレバーONまで
     AUTO_STOP_INTERVAL_MS: 90, // オート: 停止ボタンの間隔

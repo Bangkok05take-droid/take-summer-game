@@ -505,3 +505,10 @@ BIG[YAMA_HASAMI] 左山の停止位置: なし 50.0% / 下段 50.0%
 - Game.emit はリスナーごとに例外を止める（演出・音・表示の不具合で、BET消費後にリールが回らず止まる事態を防ぐ）。
 - リール描画・毎フレーム処理・ジャグ連ランプ監視のループも例外で止まらない。操作時の音の初期化失敗でもレバー・STOPは効く。
 - 例外は `NCS.reportError` で画面上部に8秒表示（「不具合が起きました（回数）[場所]：内容 ファイル:行」）。スクショで報告してもらう用。
+
+## ボーナス獲得枚数・ドル箱画面の背景（Ver.35）
+
+- ボーナスの獲得枚数: BIG 350枚・REG 100枚（`CONFIG.BONUS_MAX_PAY`）。1ゲームの払い出しは BIG 15枚・REG 5枚のまま、
+  上限に達したら終了（BIG 24G・REG 20G。BIGの最後の1ゲームは端数5枚）。
+- ドル箱コレクション画面: 背景をカジノのホール画像（assets/images/boxes/collection_bg.jpg、パネル部分は暗くぼかし済み）、
+  タイトルを「DOLLAR BOX COLLECTION」バナー画像（collection_title.webp）に。元画像は assets/design/dollar_box_collection_src.jpg。

@@ -25,8 +25,8 @@
  *   stats.totalGames… 総ゲーム数（通常ゲームのみ。データ画面）
  *   stats.bonusPlayed… 消化中ボーナスの消化ゲーム数
  *
- * ボーナス中（inBonus）は内部抽選を行わず、ブドウ揃いで BONUS_PAY 枚の固定払い出し（仮仕様）。
- * BONUS_GAMES ゲーム消化で終了。
+ * ボーナス中（inBonus）は内部抽選を行わず、ブドウ揃いで BONUS_PAY 枚の固定払い出し。
+ * 獲得枚数が BONUS_MAX_PAY（BIG 350枚・REG 100枚）に達したら終了（BONUS_GAMES はその消化ゲーム数）。
  */
 (function (g) {
   var NCS = (g.NCS = g.NCS || {});
@@ -165,7 +165,10 @@
     var j = NCS.judge(this.control.stops, this.control.order, this.flag.lines);
     var pay = NCS.payout(j.wins);
     var st = this.stats;
-    if (this.flag.bonusGame) pay = { pay: NCS.CONFIG.BONUS_PAY[this.flag.bonusGame], replay: false };
+    if (this.flag.bonusGame) { // 獲得枚数の上限（BONUS_MAX_PAY）を超えない分だけ払い出す
+      var bt = this.flag.bonusGame, max = NCS.CONFIG.BONUS_MAX_PAY ? NCS.CONFIG.BONUS_MAX_PAY[bt] : Infinity;
+      pay = { pay: Math.max(0, Math.min(NCS.CONFIG.BONUS_PAY[bt], max - st.bonusGot)), replay: false };
+    }
     this.wallet.add(pay.pay);
     st.out += pay.pay;
     st.lastPay = pay.pay;
@@ -185,7 +188,7 @@
       st.bonusPlayed++;
       var left = NCS.CONFIG.BONUS_GAMES[st.bonusType] - st.bonusPlayed;
       this.emit('bonusGame', { type: st.bonusType, played: st.bonusPlayed, left: left, pay: pay.pay });
-      if (left <= 0) this.endBonus();
+      if (left <= 0 || (NCS.CONFIG.BONUS_MAX_PAY && st.bonusGot >= NCS.CONFIG.BONUS_MAX_PAY[st.bonusType])) this.endBonus();
     } else if (bonusAligned) {
       this.startBonus(bonusAligned);
     }
