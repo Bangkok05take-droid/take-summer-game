@@ -387,10 +387,13 @@
   display: none; flex-direction: column; align-items: center; justify-content: center; gap: 14px; line-height: 1; }
 .jr-flash b { font-size: 100px; letter-spacing: 2px; }
 .jr-flash span { font-size: 50px; letter-spacing: 2px; }
-.jr-panel.flash-big .jr-flash, .jr-panel.flash-reg .jr-flash { display: flex; }
-.jr-panel.flash-big .jr-flash { background: radial-gradient(ellipse at center, #fff9d6, #ffd23a 45%, #a86d00); box-shadow: 0 0 40px 16px rgba(255, 215, 60, 0.95); animation: jr-flash 0.18s steps(2, jump-none) 8; }
-.jr-panel.flash-big .jr-flash b { color: #b00000; text-shadow: 0 3px 0 #fff, 0 0 18px #fff; }
-.jr-panel.flash-big .jr-flash span { color: #5a1a90; text-shadow: 0 2px 0 #fff; }
+/* BIG: 提供画像（BIG CHANCE の帯の位置で照合。パネル基準 left 19・top 36・幅1090） */
+.jr-big { position: absolute; left: 19px; top: 36px; width: 1090px; height: 377px; z-index: 2; display: none;
+  background: url("../assets/images/effects/jugren_big.webp") center / 100% 100% no-repeat;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 44px); mask-image: linear-gradient(180deg, transparent 0, #000 44px); } /* 上端の継ぎ目をぼかす */
+.jr-panel.flash-big .jr-big { display: block; animation: jr-big-in 0.5s cubic-bezier(.2, 1.4, .4, 1) both, jr-flash 0.18s steps(2, jump-none) 0.5s 8; }
+@keyframes jr-big-in { from { opacity: 0; transform: scale(1.15); filter: brightness(2.2); } to { opacity: 1; transform: none; filter: none; } }
+.jr-panel.flash-reg .jr-flash { display: flex; }
 .jr-panel.flash-reg .jr-flash { background: radial-gradient(ellipse at center, #ff9a9a, #d40000 50%, #4a0000); box-shadow: 0 0 40px 16px rgba(255, 40, 40, 0.95); animation: jr-flash 0.18s steps(2, jump-none) 8; }
 .jr-panel.flash-reg .jr-flash b { color: #fff; text-shadow: 0 3px 0 #500, 0 0 14px #ff8a8a; }
 .jr-panel.flash-reg .jr-flash span { color: #ffe0e0; text-shadow: 0 2px 0 #500; }

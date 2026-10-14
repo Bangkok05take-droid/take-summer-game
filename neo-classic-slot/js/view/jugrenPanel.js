@@ -3,7 +3,7 @@
  *
  *   var panel = new NCS.JugRenPanel(stage);
  *   panel.show(n)        … チャンス n ゲーム目（1〜3）の箱を点灯（フェードイン）
- *   panel.flash('BIG')   … BIG当選: 金色フラッシュ「BIG BONUS! / JUG REN CONTINUES!」
+ *   panel.flash('BIG')   … BIG当選: 提供画像「BIG BONUS! / JUG REN CONTINUES!」（jugren_big.webp）がフラッシュして出る
  *   panel.flash('REG')   … REG当選: 赤フラッシュ「REG BONUS / JUG REN FINISHED」
  *   panel.hide()         … フェードアウトして NEO CLASSIC ロゴに戻す
  *
@@ -19,6 +19,7 @@
     el.innerHTML =
       '<div class="jr-art" role="img" aria-label="JUG REN CHANCE ジャグ連チャンス 1回目1/5 2回目1/4 3回目1/3"></div>' +
       '<i class="jr-box b1"></i><i class="jr-box b2"></i><i class="jr-box b3"></i>' +
+      '<div class="jr-big" role="img" aria-label="BIG BONUS! JUG REN CONTINUES!"></div>' +
       '<div class="jr-flash"><b></b><span></span></div>';
     stage.appendChild(el);
     this.el = el;
