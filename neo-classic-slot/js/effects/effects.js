@@ -41,7 +41,8 @@
     var f = this.game.flag, gogo = !!(this.premium.current && this.premium.current.gogo && f && f.bonus === 'BIG');
     this.ui.setLamp(gogo ? 'gogo' : true);
     this.sound.lamp();
-    if (vibe || this.premium.wantsVibe()) NCS.vibrate([200, 80, 200, 80, 400]);
+    var cur = this.premium.current;
+    if ((vibe || this.premium.wantsVibe()) && !(cur && cur.vibeDone)) NCS.vibrate([200, 80, 200, 80, 400]);
     else if (timing !== 'LEVER') NCS.vibrate([40]);
   };
 
@@ -71,7 +72,9 @@
   Effects.prototype.onStopped = function (e) {
     if (!this.autoRunning || e.nth === 3) this.sound.reelStop();
     if (this.premium.onStopped(e)) return;
-    var stop2Wait = this.premium.current && this.premium.current.main === 'stop2' && e.nth < 2;
+    var cur = this.premium.current;
+    var stop2Wait = cur && cur.main === 'stop2' && e.nth < 2;
+    if (cur && cur.vibe && !cur.main) return; // 振動プレミア: 確定目でも離した瞬間まで光らせない
     if (this.pending && e.determined && !stop2Wait) this.light('STOP' + e.nth);
   };
 

@@ -39,7 +39,7 @@
     { label: '遅れ', premium: 'delay', hint: '次ゲームBIG成立＋リール始動遅れ' },
     { label: '第2停止プレミア', premium: 'stop2', hint: '次ゲームBIG成立＋第2停止で特殊告知' },
     { label: 'GOGO!ランプ', premium: 'gogo', hint: '次ゲームBIG成立＋LUCKY CHANCEがGOGO!プレミア絵柄で点灯' },
-    { label: 'スマホ振動', premium: 'vibe', hint: '次ゲームBIG成立＋告知時に長い振動' },
+    { label: 'スマホ振動', premium: 'vibe', hint: '次ゲームBIG成立＋レバーONで長い振動→第3停止を離した瞬間に点灯' },
     { label: 'ジャグ連1G目当選', jugren: { at: 1, type: 'BIG' }, hint: '次のBIG開始時の先行抽選で1G目BIG（BIGを引いて消化）' },
     { label: 'ジャグ連2G目当選', jugren: { at: 2, type: 'BIG' }, hint: 'BIG後チャンス2G目でBIG' },
     { label: 'ジャグ連3G目当選', jugren: { at: 3, type: 'BIG' }, hint: 'BIG後チャンス3G目でBIG' },

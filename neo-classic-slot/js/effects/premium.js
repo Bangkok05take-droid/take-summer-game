@@ -89,6 +89,12 @@
     if (f.bonus !== 'BIG' || !f.newBonus) return false;
     var pick = this.pick(f);
     this.current = pick;
+    // スマホ振動プレミア: レバーONで長く震え、ランプは第3停止ボタンを離した瞬間に点灯（先ペカ・確定停止の点灯はしない）
+    if (pick.vibe) {
+      NCS.vibrate([200, 80, 200, 80, 400]);
+      pick.vibeDone = true;
+      if (!pick.main) return true;
+    }
     if (pick.main === 'freeze') {
       this.puchun(game, pick);
       return true;
