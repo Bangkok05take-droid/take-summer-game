@@ -165,7 +165,7 @@
     } catch (e) { /* 保存不可 */ }
     menu.addChoice('目押しサポート', [
       { value: 'off', label: 'OFF' },
-      { value: 'normal', label: '通常時', note: '左リール15番のBARで左、右リールの赤7で右が光る' },
+      { value: 'normal', label: '通常時', note: '左リール15番のBARで左、右リールの赤7で右が光る。左右を止めた後は中リールのBAR（上段）で両側が光る' },
       { value: 'bonus', label: 'ボーナス時', note: '左→中→右の赤7でリール枠全体が光る' },
       { value: 'all', label: '両方', note: '通常時とボーナス時のサポートを同時に' }
     ], function () { return aimMode; }, function (v) {
@@ -185,6 +185,8 @@
       var normal = aimMode === 'normal' || aimMode === 'all', bonus = aimMode === 'bonus' || aimMode === 'all';
       var L = normal && reelAt(0, [NCS.AIM_ASSIST_POS[0]]);
       var R = normal && reelAt(2, [NCS.AIM_ASSIST_POS[2]]);
+      // 左右を止めた後の中リール: BARが上段に来た瞬間に両側のひし形（BARの1つ上が山。山がどの段のラインでも届く押し位置）
+      if (normal && game.control.stops[0] >= 0 && game.control.stops[2] >= 0 && reelAt(1, NCS.AIM_ASSIST_CENTER)) { L = true; R = true; }
       var F = false;
       if (bonus) for (var i = 0; i < 3; i++) if (game.control.stops[i] < 0) { F = reelAt(i, SEVENS[i]); break; }
       return [L, R, F];
