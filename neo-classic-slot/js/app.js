@@ -244,11 +244,17 @@
       histOpenedAt = Date.now();
       histEl.hidden = false;
     }
-    game.on('lever', function (e) { if (flagView) { showFlag(e); flagEl.hidden = false; } });
+    // 打つまで分からない: レバーONでは隠し、第3停止後（ボタンを押している間は離した瞬間）に表示
+    var flagPending = null;
+    function revealFlag() { if (flagPending && flagView) { showFlag({ flag: flagPending }); flagEl.hidden = false; } flagPending = null; }
+    game.on('lever', function (e) { flagPending = e.flag; flagEl.hidden = true; });
+    game.on('result', function () { if (!effects.holding3) revealFlag(); });
+    var origRelease = effects.onThirdRelease;
+    effects.onThirdRelease = function () { origRelease.apply(effects, arguments); if (game.phase === 'IDLE') revealFlag(); };
     menu.addToggle(function () { return '当選役表示（確認用）: ' + (flagView ? 'ON' : 'OFF'); }, function () {
       flagView = !flagView;
       if (!flagView) flagEl.hidden = true;
-      else if (game.flag && game.phase !== 'IDLE') { showFlag({ flag: game.flag }); flagEl.hidden = false; }
+      else if (game.flag && game.phase === 'IDLE' && !flagPending) { showFlag({ flag: game.flag }); flagEl.hidden = false; }
       try { localStorage.setItem('ncs.flagView.v1', flagView ? '1' : '0'); } catch (e) { /* 保存不可 */ }
     });
     menu.addItem('成立履歴（過去10ゲーム）', openHist);
