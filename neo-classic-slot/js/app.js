@@ -141,6 +141,8 @@
     // メニュー画面（MENU ボタン）: リール配列確認・速度設定・データ確認・サウンド。今後の設定もここに追加
     var chart = new NCS.ReelChart();
     var menu = new NCS.MenuScreen();
+    var guide = new NCS.Guide();
+    menu.addItem('遊び方ガイド', function () { guide.open(); });
     menu.addItem('リール配列を確認', function () { chart.open(); });
     var probs = new NCS.ProbTable();
     menu.addItem('確率一覧', function () { probs.open(); });
