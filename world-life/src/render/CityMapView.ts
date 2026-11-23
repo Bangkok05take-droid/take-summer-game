@@ -419,6 +419,19 @@ export class CityMapView {
     }
   }
 
+  /** 買収演出 */
+  fxBuyout(nodeId: string, color: number, price: number): void {
+    if (!this.ready) return;
+    const n = this.ctx.map.nodes[nodeId];
+    const v = this.nodes.get(nodeId);
+    if (v) v.ringAnim = 1;
+    this.fx.ripple(n.pos.x, n.pos.y, 0xff3355, NODE_R, NODE_R * 3, 12, 700);
+    this.fx.ripple(n.pos.x, n.pos.y, color, NODE_R, NODE_R * 2.4, 8, 900);
+    this.fx.burst(n.pos.x, n.pos.y, color, 30, { speed: 10 });
+    this.fx.floatText(n.pos.x, n.pos.y - 80, '買収！', 0xff6b80, 40, 1600);
+    this.fx.floatText(n.pos.x, n.pos.y - 40, `$${Math.round(price / 1000)}K`, 0xf5d77a, 26, 1600);
+  }
+
   /** 収益演出（駒の上に +$） */
   fxIncome(playerId: string, amount: number): void {
     const t = this.tokens.get(playerId);

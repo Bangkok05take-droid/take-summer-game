@@ -30,16 +30,20 @@ export function deserializeGame(json: string): GameState | null {
 function migrate(raw: unknown): GameState | null {
   if (!raw || typeof raw !== 'object') return null;
   const data = raw as GameState & { saveVersion: number };
-  if (data.saveVersion === 1) {
-    return {
-      ...data,
+  let d = data;
+  if (d.saveVersion === 1) {
+    d = {
+      ...d,
       saveVersion: 2,
-      players: data.players.map((p) => ({ ...p, debt: p.debt ?? 0 })),
+      players: d.players.map((p) => ({ ...p, debt: p.debt ?? 0 })),
       pendingEvent: null,
       eventResult: null,
     };
   }
-  return data;
+  if (d.saveVersion === 2) {
+    d = { ...d, saveVersion: 3, history: d.history ?? [] };
+  }
+  return d;
 }
 
 export function saveGame(storage: KeyValueStorage, state: GameState): boolean {

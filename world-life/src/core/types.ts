@@ -57,6 +57,10 @@ export interface EconomyRules {
   areaMonopolyMultiplier: number;
   /** 独占ボーナスが成立するエリア内物件数の下限（1件のみのエリアは独占扱いしない） */
   monopolyMinProperties: number;
+  /** 買収価格 = 購入価格 × この倍率（代金は元の所有者へ） */
+  buyoutMultiplier: number;
+  /** 所有者がエリア独占中の物件の買収倍率 */
+  monopolyBuyoutMultiplier: number;
   /** 負債上限 = 所有物件評価額 × この割合 + debtLimitBase */
   debtLimitPropertyRatio: number;
   debtLimitBase: number;
@@ -204,6 +208,8 @@ export interface GameState {
   eventResult: EventResult | null;
   /** 最後に収益精算を行ったターン（二重精算防止） */
   lastSettledTurn: number;
+  /** 各ターン終了時の純資産（history[0] は開始時、プレイヤー順） */
+  history: number[][];
   /** 通算の行動確定数（セーブ整合性チェック用） */
   actionCount: number;
   log: string[];

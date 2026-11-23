@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { bangkokContext, BASE_RULES } from '../../src/data/config';
 import { aiChooseBranch, aiWantsToBuy } from '../../src/core/ai/simpleAi';
 import { aiChooseEventChoice, resolveChoice } from '../../src/core/events';
-import { computeIncome, netWorth } from '../../src/core/economy';
+import { buyoutPrice, canBuy, canBuyout, computeIncome, netWorth } from '../../src/core/economy';
 import {
   buyProperty,
   chooseBranch,
@@ -30,7 +30,11 @@ const ids = Array.from({ length: 16 }, (_, i) => `bkk_${String(i).padStart(2, '0
 function playOneAction(s: GameState, opts: { roll?: number; branch?: 0 | 1; buy?: boolean } = {}): GameState {
   let st = opts.roll ? moveByRoll(s, ctx, opts.roll).state : rollDice(s, ctx).state;
   while (st.phase === 'awaitBranch') st = chooseBranch(st, ctx, st.branchOptions[opts.branch ?? 0]).state;
-  if (st.phase === 'awaitPurchase') return opts.buy ? buyProperty(st, ctx) : skipPurchase(st, ctx);
+  if (st.phase === 'awaitPurchase') {
+    const pid = ctx.map.nodes[currentPlayer(st).position].propertyId;
+    const affordable = st.ownership[pid!] ? canBuyout(st, ctx, currentPlayer(st).id, pid).ok : canBuy(st, ctx, currentPlayer(st).id, pid).ok;
+    return opts.buy && affordable ? buyProperty(st, ctx) : skipPurchase(st, ctx);
+  }
   return endAction(st, ctx);
 }
 
@@ -225,22 +229,52 @@ describe('物件と収益', () => {
     expect(after.players[0].money).toBe(1_000_000 - 150_000);
   });
 
-  it('物件の二重購入を防止する', () => {
+  it('物件の二重購入を防止する（他人の物件は通常購入にならず買収扱い）', () => {
     let s = createGame(ctx, { seed: 14 });
     s = buyProperty(moveByRoll(s, ctx, 1).state, ctx); // p1 が購入
+    expect(canBuy(s, ctx, 'p2', 'prop_bkk_01')).toEqual({ ok: false, reason: 'owned' });
     const p2 = moveByRoll(s, ctx, 1).state; // p2 が同じ物件へ
-    expect(p2.phase).toBe('landed');
+    expect(p2.phase).toBe('awaitPurchase');
     expect(p2.landing?.kind).toBe('property-owned-other');
-    // 強制的に購入フェーズにしても拒否される
-    expect(() => buyProperty({ ...p2, phase: 'awaitPurchase' }, ctx)).toThrow(GameRuleError);
     expect(p2.ownership.prop_bkk_01).toBe('p1');
+    // 自分の物件に止まっても購入できない
+    const own = moveByRoll(placeCurrent({ ...s, currentPlayerIndex: 0, phase: 'awaitRoll' }, 'bkk_00'), ctx, 1).state;
+    expect(own.landing?.kind).toBe('property-owned-self');
+    expect(own.phase).toBe('landed');
+    expect(() => buyProperty({ ...own, phase: 'awaitPurchase' }, ctx)).toThrow(GameRuleError);
+  });
+
+  it('買収：購入価格の1.5倍を元の所有者に支払い、所有者が移る', () => {
+    let s = createGame(ctx, { seed: 40 });
+    s = buyProperty(moveByRoll(s, ctx, 1).state, ctx); // p1 がホテル $150K
+    const p2 = moveByRoll(s, ctx, 1).state;
+    expect(buyoutPrice(p2, ctx, 'prop_bkk_01')).toBe(225_000);
+    const after = buyProperty(p2, ctx);
+    expect(after.ownership.prop_bkk_01).toBe('p2');
+    expect(after.players[1].money).toBe(1_000_000 - 225_000);
+    expect(after.players[0].money).toBe(1_000_000 - 150_000 + 225_000);
+  });
+
+  it('買収：所有者がエリア独占中なら2倍', () => {
+    const s = { ...createGame(ctx), ownership: { prop_bkk_01: 'p1', prop_bkk_03: 'p1' } };
+    expect(buyoutPrice(s, ctx, 'prop_bkk_01')).toBe(300_000);
+  });
+
+  it('買収：資金不足なら買収できず、見送りは可能', () => {
+    let s = createGame(ctx, { seed: 41 });
+    s = buyProperty(moveByRoll(s, ctx, 1).state, ctx);
+    let p2 = moveByRoll(s, ctx, 1).state;
+    p2 = { ...p2, players: p2.players.map((p, i) => (i === 1 ? { ...p, money: 200_000 } : p)) };
+    expect(canBuyout(p2, ctx, 'p2', 'prop_bkk_01').ok).toBe(false);
+    expect(() => buyProperty(p2, ctx)).toThrow(GameRuleError);
+    expect(skipPurchase(p2, ctx).ownership.prop_bkk_01).toBe('p1');
   });
 
   it('他人の物件に止まっても通行料は発生しない', () => {
     let s = createGame(ctx, { seed: 15 });
     s = buyProperty(moveByRoll(s, ctx, 1).state, ctx);
     const before = s.players[1].money;
-    const p2 = endAction(moveByRoll(s, ctx, 1).state, ctx);
+    const p2 = skipPurchase(moveByRoll(s, ctx, 1).state, ctx);
     expect(p2.players[1].money).toBe(before);
   });
 
@@ -334,7 +368,8 @@ describe('セーブ・ロード', () => {
       eventResult: undefined,
     };
     const loaded = deserializeGame(JSON.stringify(v1))!;
-    expect(loaded.saveVersion).toBe(2);
+    expect(loaded.saveVersion).toBe(3);
+    expect(Array.isArray(loaded.history)).toBe(true);
     expect(loaded.players.every((p) => p.debt === 0)).toBe(true);
     expect(loaded.pendingEvent).toBeNull();
   });

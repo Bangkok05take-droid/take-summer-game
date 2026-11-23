@@ -1145,3 +1145,299 @@ body,
   object-fit: cover;
   opacity: 0.6;
 }
+
+/* ======================================================
+   No.005 ガイド・順位・祝福・セリフ
+   ====================================================== */
+.guide-bar {
+  position: absolute;
+  left: 8px;
+  right: 56px;
+  top: 8px;
+  z-index: 3;
+  padding: 7px 10px;
+  border-radius: 12px;
+  background: rgba(10, 8, 20, 0.86);
+  border: 1px solid var(--line);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  pointer-events: none;
+  animation: apIn 0.3s both;
+}
+.guide-bar.tone-good { border-color: rgba(125, 255, 176, 0.6); }
+.guide-bar.tone-tip { border-color: rgba(0, 229, 255, 0.55); }
+.guide-bar.tone-warn { border-color: rgba(255, 138, 138, 0.6); }
+.gb-main {
+  font-size: 14px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.gb-icon { flex: none; }
+.gb-sub {
+  font-size: 11px;
+  color: #d8d2ea;
+  margin-top: 2px;
+}
+.gb-goal {
+  font-size: 10px;
+  color: var(--gold-hi);
+  margin-top: 3px;
+  opacity: 0.9;
+}
+
+/* 順位バッジとスパークライン */
+.pcard { position: relative; }
+.prank {
+  position: absolute;
+  right: 4px;
+  top: 3px;
+  font-size: 9px;
+  font-weight: 900;
+  color: var(--muted);
+}
+.prank.r1 { color: var(--gold-hi); text-shadow: 0 0 6px rgba(212, 175, 55, 0.8); }
+.prank em { font-style: normal; margin-left: 2px; }
+.prank .up { color: #7dffb0; }
+.prank .down { color: #ff8a8a; }
+.pname { padding-right: 22px; }
+.spark {
+  display: block;
+  width: 100%;
+  height: 12px;
+  margin: 1px 0;
+}
+
+.rank-toast {
+  position: absolute;
+  left: 50%;
+  top: 62%;
+  transform: translateX(-50%);
+  z-index: 6;
+  padding: 6px 16px;
+  border-radius: 99px;
+  font-weight: 900;
+  font-size: 15px;
+  white-space: nowrap;
+  pointer-events: none;
+  animation: popIn 0.4s cubic-bezier(0.2, 1.6, 0.4, 1) both;
+  background: rgba(20, 16, 34, 0.92);
+  border: 1px solid var(--line);
+}
+.rank-toast.up { color: #0b2a18; background: linear-gradient(180deg, #b6ffd3, #4fd88a); box-shadow: 0 0 20px rgba(79, 216, 138, 0.7); }
+.rank-toast.down { color: #fff; background: linear-gradient(180deg, #ff7a8a, #b8243a); }
+
+/* 物件GET */
+.celebrate {
+  position: absolute;
+  inset: 0;
+  z-index: 7;
+  display: grid;
+  place-items: center;
+}
+.cel-burst {
+  position: absolute;
+  left: 50%;
+  top: 45%;
+  width: 140vmax;
+  height: 140vmax;
+  margin: -70vmax 0 0 -70vmax;
+  background: repeating-conic-gradient(rgba(245, 215, 122, 0.22) 0deg 8deg, transparent 8deg 20deg);
+  mask-image: radial-gradient(circle, #000 0%, transparent 40%);
+  -webkit-mask-image: radial-gradient(circle, #000 0%, transparent 40%);
+  animation: ecSpin 10s linear infinite, ecFade 0.3s both;
+}
+.cel-card {
+  position: relative;
+  text-align: center;
+  padding: 16px 22px;
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(40, 28, 8, 0.95), rgba(14, 10, 4, 0.96));
+  border: 2px solid var(--gold);
+  box-shadow: 0 0 40px rgba(212, 175, 55, 0.6);
+  animation: celIn 0.55s cubic-bezier(0.2, 1.5, 0.4, 1) both;
+  min-width: 70%;
+}
+@keyframes celIn {
+  0% { transform: scale(0.3) rotate(-6deg); opacity: 0; }
+  100% { transform: none; opacity: 1; }
+}
+.cel-title {
+  font-size: 30px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  background: linear-gradient(180deg, #fff6d0, var(--gold) 60%, #8a6a12);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.7));
+}
+.cel-name {
+  font-size: 15px;
+  font-weight: 800;
+  margin: 2px 0 8px;
+}
+.cel-line {
+  font-size: 13px;
+  color: #7dffb0;
+  font-weight: 700;
+}
+.cel-badge {
+  margin-top: 8px;
+  display: inline-block;
+  padding: 3px 12px;
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 900;
+  color: #001a1e;
+  background: linear-gradient(180deg, #b8f9ff, var(--cyan));
+  box-shadow: 0 0 16px rgba(0, 229, 255, 0.7);
+  animation: popIn 0.4s 0.4s both;
+}
+
+/* AIのセリフ */
+.talks {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 10px;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  pointer-events: none;
+}
+.talk {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  max-width: 88%;
+  animation: talkIn 0.35s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+}
+@keyframes talkIn {
+  from { opacity: 0; transform: translateX(-20px); }
+}
+.talk-body {
+  background: rgba(250, 246, 238, 0.96);
+  color: #1a1426;
+  border-radius: 4px 14px 14px 14px;
+  padding: 6px 10px;
+  font-size: 13px;
+  font-weight: 700;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+}
+.talk-name {
+  font-size: 10px;
+  color: #6b5c8a;
+  font-weight: 800;
+}
+.talk-name small {
+  margin-left: 6px;
+  font-weight: 600;
+}
+.ap-prop.buyout .ap-title { color: #ff9cab; }
+
+/* ---------- チュートリアル ---------- */
+.tutorial {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding: 8px;
+}
+.tutorial.blocking {
+  pointer-events: auto;
+  justify-content: center;
+}
+.tut-dim {
+  position: absolute;
+  inset: 0;
+  background: rgba(3, 2, 8, 0.6);
+  animation: ecFade 0.3s both;
+}
+.tut-card {
+  position: relative;
+  pointer-events: auto;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 12px;
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(30, 22, 6, 0.96), rgba(12, 9, 4, 0.97));
+  border: 1px solid var(--gold);
+  box-shadow: 0 0 28px rgba(212, 175, 55, 0.45);
+  animation: celIn 0.45s cubic-bezier(0.2, 1.3, 0.4, 1) both;
+}
+.tut-face {
+  flex: none;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: top;
+  border: 2px solid var(--gold);
+  background: #1a1306;
+}
+.tut-face.ph {
+  display: grid;
+  place-items: center;
+  font-size: 34px;
+}
+.tut-body {
+  flex: 1;
+  min-width: 0;
+}
+.tut-step {
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+}
+.tut-title {
+  font-size: 17px;
+  font-weight: 900;
+  color: var(--gold-hi);
+  margin: 1px 0 4px;
+}
+.tut-text {
+  font-size: 13px;
+  line-height: 1.6;
+  color: #f3efe6;
+}
+.tut-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+  gap: 8px;
+}
+.tut-skip {
+  background: none;
+  border: 0;
+  color: var(--muted);
+  font-size: 12px;
+  text-decoration: underline;
+  padding: 8px 4px;
+}
+.tut-next {
+  min-height: 40px;
+  padding: 8px 20px;
+}
+/* 操作対象の強調 */
+body[data-tut='dice'] .roll-btn,
+body[data-tut='buy'] .buy-btn {
+  animation: tutPulse 0.9s ease-in-out infinite;
+  outline: 3px solid var(--cyan);
+  outline-offset: 3px;
+}
+@keyframes tutPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(0, 229, 255, 0.7); }
+  50% { box-shadow: 0 0 0 10px rgba(0, 229, 255, 0); }
+}
+.title-buttons .btn.ghost + .btn.ghost {
+  font-size: 14px;
+}

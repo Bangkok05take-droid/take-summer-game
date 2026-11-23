@@ -23,6 +23,7 @@ export function MapCanvas() {
     const offFx = fxBus.on((e) => {
       if (e.type === 'land') view.fxLand(e.nodeId);
       else if (e.type === 'purchase') view.fxPurchase(e.nodeId, e.color, e.price, e.monopoly);
+      else if (e.type === 'buyout') view.fxBuyout(e.nodeId, e.color, e.price);
       else if (e.type === 'income') view.fxIncome(e.playerId, e.amount);
       else if (e.type === 'eventResult') view.fxEffect(e.playerId, e.applied, e.good);
       else if (e.type === 'insolvency') view.fxInsolvency(e.playerId, e.soldNodeIds);

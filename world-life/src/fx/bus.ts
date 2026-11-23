@@ -12,6 +12,9 @@ export type FxEvent =
   | { type: 'yourTurn' }
   | { type: 'gameOver' }
   | { type: 'eventOpen'; eventId: string; human: boolean }
+  | { type: 'buyout'; buyerId: string; ownerId: string; nodeId: string; price: number; color: number }
+  | { type: 'aiTalk'; playerId: string; text: string }
+  | { type: 'rank'; change: number; rank: number }
   | { type: 'insolvency'; playerId: string; soldNodeIds: string[]; restructured: boolean }
   | { type: 'eventResult'; playerId: string; good: boolean; applied: { money: number; debt: number; fame: number; network: number; happiness: number } };
 

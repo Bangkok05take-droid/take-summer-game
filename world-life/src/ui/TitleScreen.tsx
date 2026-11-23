@@ -1,11 +1,12 @@
-import { useState } from 'react';
 import { TITLE_BG_URL } from '../assets/manifest';
+import { useImageAvailable } from '../assets/useImage';
 import { fxBus } from '../fx/bus';
+import { tutorialDone, useTutorial } from '../store/tutorialStore';
 import { useGame } from '../store/gameStore';
 
 function TitleBg() {
-  const [ok, setOk] = useState(true);
-  return ok ? <img className="title-bg" src={TITLE_BG_URL} alt="" onError={() => setOk(false)} draggable={false} /> : null;
+  const ok = useImageAvailable(TITLE_BG_URL);
+  return ok ? <img className="title-bg" src={TITLE_BG_URL} alt="" draggable={false} /> : null;
 }
 
 export function TitleScreen() {
@@ -24,7 +25,9 @@ export function TitleScreen() {
       <div className="title-buttons">
         <button className="btn gold" onClick={() => {
             fxBus.emit({ type: 'tap' });
+            if (hasSave && !window.confirm('新しく始めると、保存中のゲームは上書きされます。よろしいですか？')) return;
             newGame();
+            if (!tutorialDone()) useTutorial.getState().start();
           }}>
           新しく始める
         </button>
@@ -36,6 +39,17 @@ export function TitleScreen() {
             続きから
           </button>
         )}
+        <button
+          className="btn ghost"
+          onClick={() => {
+            fxBus.emit({ type: 'tap' });
+            if (hasSave && !window.confirm('チュートリアル用の新しいゲームを始めます。保存中のゲームは上書きされます。よろしいですか？')) return;
+            newGame();
+            useTutorial.getState().start();
+          }}
+        >
+          遊び方（チュートリアル）
+        </button>
       </div>
       <p className="note">1人 + AI 3人 ／ 20ターン ／ 初期資金 $1,000,000</p>
     </div>

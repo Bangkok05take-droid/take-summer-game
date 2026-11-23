@@ -1,5 +1,5 @@
-import { useState } from 'react';
 import { characterCutinUrl, eventBgUrl } from '../assets/manifest';
+import { useImageAvailable } from '../assets/useImage';
 import { canChoose } from '../core/events';
 import type { InsolvencyReport } from '../core/types';
 import { currentPlayer } from '../core/game';
@@ -11,11 +11,10 @@ import { hex, money } from './format';
 
 /** 画像が無ければ仮のシルエットを出す */
 function Portrait({ characterId, color }: { characterId?: string; color: string }) {
-  const [failed, setFailed] = useState(false);
   const ch = characterId ? CHARACTERS[characterId] : undefined;
-  if (ch && !failed) {
-    return <img className="ec-portrait-img" src={characterCutinUrl(ch.id)} alt="" onError={() => setFailed(true)} draggable={false} />;
-  }
+  const ok = useImageAvailable(characterCutinUrl(ch?.id ?? '_none'));
+  if (ch && ok) return <img className="ec-portrait-img" src={characterCutinUrl(ch.id)} alt="" draggable={false} />;
+  if (ch && ok === null) return null;
   return (
     <div className="ec-portrait-ph" style={{ ['--cc' as string]: ch ? hex(ch.color) : color }}>
       <svg viewBox="0 0 200 300" preserveAspectRatio="xMidYMin meet" aria-hidden="true">
@@ -37,9 +36,8 @@ function Portrait({ characterId, color }: { characterId?: string; color: string 
 }
 
 function EventBg({ category }: { category: string }) {
-  const [failed, setFailed] = useState(false);
-  if (failed) return null;
-  return <img className="ec-bg-img" src={eventBgUrl(category)} alt="" onError={() => setFailed(true)} draggable={false} />;
+  const ok = useImageAvailable(eventBgUrl(category));
+  return ok ? <img className="ec-bg-img" src={eventBgUrl(category)} alt="" draggable={false} /> : null;
 }
 
 function Chips({ a }: { a: { money: number; debt: number; fame: number; network: number; happiness: number } }) {

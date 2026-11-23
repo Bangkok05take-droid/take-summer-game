@@ -1,13 +1,13 @@
 // ゲーム進行（純粋関数）。各関数は新しい GameState を返し、不正な操作は GameRuleError を投げる。
 import { BASE_RULES, PLAYER_PRESETS } from '../data/config';
-import { canBuy, computeIncome } from './economy';
+import { canBuy, canBuyout, computeIncome, netWorth } from './economy';
 import { categoryForNode, drawEvent } from './events';
 import { walk } from './movement';
 import { nextInt } from './rng';
 import type { GameContext, GameState, LandingInfo, Player } from './types';
 import { GameRuleError } from './types';
 
-export const SAVE_VERSION = 2;
+export const SAVE_VERSION = 3;
 const LOG_LIMIT = 40;
 
 export interface NewGameOptions {
@@ -48,6 +48,7 @@ export function createGame(ctx: GameContext, opts: NewGameOptions = {}): GameSta
     pendingEvent: null,
     eventResult: null,
     lastSettledTurn: 0,
+    history: [players.map((p) => p.money)],
     actionCount: 0,
     log: ['ゲーム開始：バンコク'],
   };
@@ -148,7 +149,8 @@ function afterWalk(state: GameState, ctx: GameContext, remaining: number, option
   }
   return {
     ...state,
-    phase: landing.kind === 'property-available' ? 'awaitPurchase' : 'landed',
+    // 空き物件は購入、他人の物件は買収の判断へ
+    phase: landing.kind === 'property-available' || landing.kind === 'property-owned-other' ? 'awaitPurchase' : 'landed',
     stepsRemaining: 0,
     branchOptions: [],
     landing,
@@ -161,6 +163,7 @@ export function buyProperty(state: GameState, ctx: GameContext): GameState {
   requirePhase(state, 'awaitPurchase');
   const player = currentPlayer(state);
   const propertyId = ctx.map.nodes[player.position].propertyId;
+  if (propertyId && state.ownership[propertyId] && state.ownership[propertyId] !== player.id) return buyoutProperty(state, ctx);
   const check = canBuy(state, ctx, player.id, propertyId);
   if (!check.ok) {
     throw new GameRuleError(check.reason === 'funds' ? '資金が不足しています' : check.reason === 'owned' ? 'すでに所有者がいます' : '物件ではありません');
@@ -173,6 +176,27 @@ export function buyProperty(state: GameState, ctx: GameContext): GameState {
     log: pushLog(state, `${player.name} は ${prop.name} を $${prop.price.toLocaleString()} で購入`),
   };
   return endAction(bought, ctx);
+}
+
+/** 他人の物件を買収して手番終了（代金は元の所有者へ） */
+export function buyoutProperty(state: GameState, ctx: GameContext): GameState {
+  requirePhase(state, 'awaitPurchase');
+  const player = currentPlayer(state);
+  const propertyId = ctx.map.nodes[player.position].propertyId;
+  const check = canBuyout(state, ctx, player.id, propertyId);
+  if (!check.ok) throw new GameRuleError(check.reason === 'funds' ? '買収資金が不足しています' : '買収できない物件です');
+  const prop = ctx.properties[propertyId!];
+  const ownerId = state.ownership[prop.id];
+  const owner = state.players.find((p) => p.id === ownerId)!;
+  const done: GameState = {
+    ...state,
+    ownership: { ...state.ownership, [prop.id]: player.id },
+    players: state.players.map((p) =>
+      p.id === player.id ? { ...p, money: p.money - check.price } : p.id === ownerId ? { ...p, money: p.money + check.price } : p,
+    ),
+    log: pushLog(state, `${player.name} が ${owner.name} から ${prop.name} を $${check.price.toLocaleString()} で買収！`),
+  };
+  return endAction(done, ctx);
 }
 
 /** 購入を見送って手番終了 */
@@ -219,5 +243,7 @@ export function settleIncome(state: GameState, ctx: GameContext, turn: number): 
     if (income > 0) log = [...log, `${p.name} 物件収益 +$${income.toLocaleString()}`].slice(-LOG_LIMIT);
     return income > 0 ? { ...p, money: p.money + income } : p;
   });
-  return { ...state, players, lastSettledTurn: turn, log };
+  const settled = { ...state, players, lastSettledTurn: turn, log };
+  const snapshot = settled.players.map((p) => netWorth(settled, ctx, p.id));
+  return { ...settled, history: [...(state.history ?? []).slice(0, turn), snapshot] };
 }

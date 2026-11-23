@@ -35,7 +35,6 @@ export function Dice3D() {
   const face = useGame((s) => s.diceFace);
   const rollId = useGame((s) => s.diceRollId);
   const rolling = useGame((s) => s.diceRolling);
-  const fast = useGame((s) => s.fastForward);
   const spins = useRef({ x: -20, y: 25 });
   const [rot, setRot] = useState({ x: -20, y: 25, dur: 0 });
   const [landed, setLanded] = useState(false);
@@ -51,7 +50,7 @@ export function Dice3D() {
     const next = { x: baseX + fx, y: baseY + fy };
     spins.current = next;
     setLanded(false);
-    setRot({ ...next, dur: fast ? 110 : 900 });
+    setRot({ ...next, dur: useGame.getState().diceDuration });
   }, [rollId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {

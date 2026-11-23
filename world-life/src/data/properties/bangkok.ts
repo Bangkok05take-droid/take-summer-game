@@ -16,6 +16,9 @@ export const bangkokProperties: Record<string, PropertyDef> = Object.fromEntries
 export const defaultEconomy: EconomyRules = {
   areaMonopolyMultiplier: 1.2,
   monopolyMinProperties: 2,
+  // 買収（暫定値）: 購入価格の1.5倍、独占エリアは2倍。代金は元の所有者に支払う
+  buyoutMultiplier: 1.5,
+  monopolyBuyoutMultiplier: 2,
   // 負債上限 = 総物件評価額の50% + $200,000（指令 No.004）
   debtLimitPropertyRatio: 0.5,
   debtLimitBase: 200_000,

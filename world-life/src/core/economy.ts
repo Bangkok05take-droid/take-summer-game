@@ -26,6 +26,26 @@ export function computeIncome(state: GameState, ctx: GameContext, playerId: stri
   return Math.round(total);
 }
 
+/** 買収価格（他人の物件を買い取る価格） */
+export function buyoutPrice(state: GameState, ctx: GameContext, propertyId: string): number {
+  const prop = ctx.properties[propertyId];
+  const owner = state.ownership[propertyId];
+  if (!prop || !owner) return 0;
+  const mult = ownsWholeArea(state, ctx, owner, prop.area) ? ctx.economy.monopolyBuyoutMultiplier : ctx.economy.buyoutMultiplier;
+  return Math.round(prop.price * mult);
+}
+
+export type BuyoutCheck = { ok: true; price: number } | { ok: false; reason: 'not-owned' | 'own' | 'funds'; price: number };
+
+export function canBuyout(state: GameState, ctx: GameContext, playerId: string, propertyId: string | undefined): BuyoutCheck {
+  if (!propertyId || !state.ownership[propertyId]) return { ok: false, reason: 'not-owned', price: 0 };
+  const price = buyoutPrice(state, ctx, propertyId);
+  if (state.ownership[propertyId] === playerId) return { ok: false, reason: 'own', price };
+  const player = state.players.find((p) => p.id === playerId);
+  if (!player || player.money < price) return { ok: false, reason: 'funds', price };
+  return { ok: true, price };
+}
+
 export type PurchaseCheck = { ok: true } | { ok: false; reason: 'owned' | 'funds' | 'not-property' };
 
 export function canBuy(state: GameState, ctx: GameContext, playerId: string, propertyId: string | undefined): PurchaseCheck {

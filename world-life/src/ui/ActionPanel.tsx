@@ -1,4 +1,4 @@
-import { canBuy, ownsWholeArea } from '../core/economy';
+import { canBuy, canBuyout, ownsWholeArea } from '../core/economy';
 import { currentPlayer } from '../core/game';
 import { ctx, useGame } from '../store/gameStore';
 import { fxBus } from '../fx/bus';
@@ -63,6 +63,34 @@ export function ActionPanel() {
         </div>
       </div>
     );
+  } else if (game.phase === 'awaitPurchase' && game.ownership[node.propertyId!]) {
+    // 買収の判断
+    const prop = ctx.properties[node.propertyId!];
+    const owner = game.players.find((p) => p.id === game.ownership[prop.id])!;
+    const check = canBuyout(game, ctx, player.id, prop.id);
+    body = (
+      <div className="ap-prop buyout">
+        <div className="ap-title">
+          ⚔ 買収チャンス <span className="area-chip">{prop.name}</span>
+        </div>
+        <div className="ap-kv">
+          <span>
+            所有者 <b style={{ color: hex(owner.color) }}>{owner.name}</b>
+          </span>
+          <span>
+            買収額 <b>{money(check.price)}</b>
+          </span>
+        </div>
+        <div className="ap-row">
+          <button className="btn neon" disabled={!check.ok} onClick={buy}>
+            {check.ok ? '買収する' : '資金不足'}
+          </button>
+          <button className="btn ghost" onClick={tap(skip)}>
+            見送る
+          </button>
+        </div>
+      </div>
+    );
   } else if (game.phase === 'awaitPurchase') {
     const prop = ctx.properties[node.propertyId!];
     const check = canBuy(game, ctx, player.id, prop.id);
@@ -78,7 +106,7 @@ export function ActionPanel() {
         </div>
         {monopoly && <div className="ap-hint">購入するとエリア独占！ 収益+20%</div>}
         <div className="ap-row">
-          <button className="btn gold" disabled={!check.ok} onClick={buy}>
+          <button className="btn gold buy-btn" disabled={!check.ok} onClick={buy}>
             {check.ok ? '購入する' : '資金不足'}
           </button>
           <button className="btn ghost" onClick={tap(skip)}>
@@ -93,7 +121,7 @@ export function ActionPanel() {
     if (l.kind === 'property-owned-self') text = '自分の物件です。';
     else if (l.kind === 'property-owned-other') {
       const owner = game.players.find((p) => p.id === l.ownerId);
-      text = `${owner?.name} の物件です（通行料なし）。`;
+      text = `${owner?.name} の物件です。`;
     } else if (l.kind === 'start') text = '空港に到着。';
     else text = 'イベントは次フェーズで実装予定です。';
     body = (

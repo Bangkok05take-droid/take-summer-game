@@ -16,7 +16,11 @@ export type SfxId =
   | 'eventOpen'
   | 'eventGood'
   | 'eventBad'
-  | 'insolvency';
+  | 'insolvency'
+  | 'buyout'
+  | 'rankUp'
+  | 'rankDown'
+  | 'talk';
 
 const MUTE_KEY = 'worldlife.muted';
 
@@ -69,7 +73,7 @@ export function unlockAudio(): void {
 }
 
 async function loadFiles(): Promise<void> {
-  const ids: SfxId[] = ['tap', 'diceRoll', 'diceResult', 'step', 'land', 'branch', 'purchase', 'income', 'turnStart', 'yourTurn', 'gameOver', 'eventOpen', 'eventGood', 'eventBad', 'insolvency'];
+  const ids: SfxId[] = ['tap', 'diceRoll', 'diceResult', 'step', 'land', 'branch', 'purchase', 'income', 'turnStart', 'yourTurn', 'gameOver', 'eventOpen', 'eventGood', 'eventBad', 'insolvency', 'buyout', 'rankUp', 'rankDown', 'talk'];
   await Promise.all(
     ids.map(async (id) => {
       try {
@@ -212,6 +216,23 @@ export function play(id: SfxId, param = 0): void {
     case 'eventGood':
       [783.99, 987.77, 1174.66, 1567.98].forEach((f, i) => tone(f, t + i * 0.07, 0.5, { type: 'triangle', vol: 0.1 }));
       break;
+    case 'buyout':
+      // 重い一撃＋きらめき
+      tone(73.4, t, 0.5, { type: 'sawtooth', vol: 0.12, glideTo: 55 });
+      noise(t, 0.25, { vol: 0.25, freq: 600, q: 0.8 });
+      [1046.5, 1318.5, 1567.98, 2093].forEach((f, i) => tone(f, t + 0.12 + i * 0.05, 0.4, { type: 'triangle', vol: 0.08 }));
+      break;
+    case 'rankUp':
+      [659.25, 880, 1174.66].forEach((f, i) => tone(f, t + i * 0.06, 0.3, { type: 'square', vol: 0.04 }));
+      tone(1760, t + 0.2, 0.4, { type: 'sine', vol: 0.06 });
+      break;
+    case 'rankDown':
+      tone(523.25, t, 0.2, { type: 'triangle', vol: 0.07, glideTo: 392 });
+      tone(349.23, t + 0.16, 0.3, { type: 'triangle', vol: 0.07, glideTo: 293.66 });
+      break;
+    case 'talk':
+      for (let i = 0; i < 4; i++) tone(600 + Math.random() * 500, t + i * 0.05, 0.04, { type: 'square', vol: 0.025 });
+      break;
     case 'insolvency':
       // 警報音
       for (let i = 0; i < 3; i++) {
@@ -286,6 +307,17 @@ export function initSfx(): () => void {
         break;
       case 'eventOpen':
         play('eventOpen');
+        break;
+      case 'buyout':
+        play('buyout');
+        vibrate([40, 30, 60]);
+        break;
+      case 'rank':
+        if (e.change > 0) play('rankUp');
+        else if (e.change < 0) play('rankDown');
+        break;
+      case 'aiTalk':
+        play('talk');
         break;
       case 'insolvency':
         play('insolvency');
