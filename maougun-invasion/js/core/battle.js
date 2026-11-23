@@ -1,26 +1,24 @@
 /* 戦闘のロジック（描画・DOM に依存しない）
  *
- * - 位置は横方向の1次元（x）。魔王軍は左（祠）から右へ、人間軍は右（拠点）から左へ進む。
- * - 1手 = STEP 秒の固定ステップ。同じシード・同じ操作なら同じ結果になる。
+ * - 位置は横方向の1次元（x）。**人間軍の拠点が左、魔王軍の封印の祠が右**。
+ *   魔物は右から左へ（dir = -1）、人間軍は左から右へ（dir = +1）進む。
+ * - 1手 = STEP 秒の固定ステップ。乱数はシード付き。同じシード・同じ操作なら同じ結果になる。
  * - 操作は queue() で積み、次の手のはじめに反映する（リプレイ・テストのため）。
  * - 描画用の出来事は events に積む（描画側が取り出して消す）。
+ *
+ * ユニットの定義（js/data/units.js・humans.js）で使う項目
+ *   hp atk range speed interval windup kb attack('single'|'area') projectile size
+ *   hits / hitGap         1回の攻撃で何回当てるか（2連撃など）
+ *   heal { every, ratio, radius }          一定時間ごとに周りの味方を回復
+ *   gamble { strong, fail, strongMult, strongRadius, failStun }   特殊魔法（確率で強い魔法・失敗）
+ *   skills [{ id, every, windup, ... }]    特技（勇者・幹部）。下の useSkill を参照
  */
 import { makeRng } from './rng.js';
-import { resolveUnit, resolveMana } from '../data/progress.js';
 
 export const STEP = 1 / 30;
 
-export const REASONS = {
-  mana: '魔力不足',
-  cooldown: '再召喚待ち',
-  cap: '出撃上限',
-  alive: '出撃中',
-  ended: '戦闘終了',
-  locked: '未編成',
-};
-
 export class Battle {
-  constructor({ stage, unitDefs, humanDefs, config, seed = 1, profile = null, deck = null }) {
+  constructor({ stage, deck, humanDefs, config, seed = 1, mana }) {
     this.stage = stage;
     this.config = config;
     this.humanDefs = humanDefs;
@@ -33,19 +31,19 @@ export class Battle {
     this.commands = [];
     this.nextId = 1;
     this.entities = [];
-    this.stats = { summoned: 0, kills: 0, lost: 0, manaSpent: 0, spells: 0 };
+    this.stats = { summoned: 0, kills: 0, lost: 0, manaSpent: 0, spells: 0, heroesBeaten: 0 };
 
     const hw = config.baseHalfWidth;
-    this.shrine = { side: 'demon', x: 120, hp: stage.shrineHp, maxHp: stage.shrineHp, halfWidth: hw };
-    this.base = { side: 'human', x: stage.length - 120, hp: stage.baseHp, maxHp: stage.baseHp, halfWidth: hw };
+    this.base = { side: 'human', x: 110, hp: stage.baseHp, maxHp: stage.baseHp, halfWidth: hw };
+    this.shrine = { side: 'demon', x: stage.length - 110, hp: stage.shrineHp, maxHp: stage.shrineHp, halfWidth: hw };
 
-    const m = resolveMana(stage.mana, profile);
+    const m = mana || stage.mana;
     this.mana = m.start;
     this.manaMax = m.max;
     this.manaRegen = m.regen;
     this.furnaceLv = 1;
 
-    this.deck = (deck || stage.deck).map((key) => resolveUnit(key, unitDefs, profile));
+    this.deck = deck; // 戦闘で使う数値に解決済みのユニット定義（key を持つ）
     this.cooldowns = Object.fromEntries(this.deck.map((d) => [d.key, 0]));
     this.spellCharge = 0;
 
@@ -53,20 +51,25 @@ export class Battle {
     this.pending = []; // { at, who }
   }
 
+  // ---------- 向き・位置 ----------
+  dirOf(side) { return side === 'demon' ? -1 : 1; }
+  home(side) { return side === 'demon' ? this.shrine : this.base; }
+  enemyBase(e) { return e.side === 'demon' ? this.base : this.shrine; }
+  spawnX(side) { const h = this.home(side); return h.x + this.dirOf(side) * (h.halfWidth + 10); }
+
   // ---------- 操作 ----------
   queue(cmd) { this.commands.push(cmd); }
-
   deckDef(key) { return this.deck.find((d) => d.key === key); }
   aliveDemons() { let n = 0; for (const e of this.entities) if (e.side === 'demon' && e.state !== 'dead') n++; return n; }
   aliveHumans() { let n = 0; for (const e of this.entities) if (e.side === 'human' && e.state !== 'dead') n++; return n; }
 
-  // 召喚できるか。{ ok, reason, wait? }
+  // 召喚できるか。{ ok, reason, wait?, need? }
   canSummon(key) {
     if (this.result) return { ok: false, reason: 'ended' };
     const d = this.deckDef(key);
     if (!d) return { ok: false, reason: 'locked' };
     if (d.unique && this.entities.some((e) => e.key === key && e.state !== 'dead')) return { ok: false, reason: 'alive' };
-    // 理由の優先：出撃上限 → 再召喚待ち → 魔力不足（いちばん「待っても解決しない」ものから見せる）
+    // 理由の優先：出撃上限 → 再召喚待ち → 魔力不足
     if (this.aliveDemons() >= this.config.demonCap) return { ok: false, reason: 'cap' };
     if (this.cooldowns[key] > 0) return { ok: false, reason: 'cooldown', wait: this.cooldowns[key] };
     if (this.mana < d.cost) return { ok: false, reason: 'mana', need: d.cost - this.mana };
@@ -87,6 +90,7 @@ export class Battle {
   canCastSpell() {
     if (this.result) return { ok: false, reason: 'ended' };
     if (this.spellCharge < this.config.spell.charge) return { ok: false, reason: 'charging' };
+    if (!this.entities.some((e) => e.side === 'human' && e.state !== 'dead')) return { ok: false, reason: 'noTarget' };
     return { ok: true };
   }
 
@@ -105,7 +109,6 @@ export class Battle {
 
     for (const e of this.entities) { e.px = e.x; this.updateEntity(e, dt); }
 
-    // 撃破の演出が終わったものを消す
     if (this.entities.some((e) => e.state === 'dead' && e.timer >= this.config.deathTime)) {
       this.entities = this.entities.filter((e) => !(e.state === 'dead' && e.timer >= this.config.deathTime));
     }
@@ -129,7 +132,7 @@ export class Battle {
       this.mana -= d.cost;
       this.stats.manaSpent += d.cost;
       if (!d.unique) this.cooldowns[c.key] = d.cooldown; // 幹部は撃破されたときから数える
-      this.spawn('demon', d, this.shrine.x + this.shrine.halfWidth + 10);
+      this.spawn('demon', d, this.spawnX('demon'));
       this.stats.summoned++;
     } else if (c.type === 'furnace') {
       const chk = this.canUpgradeFurnace();
@@ -140,7 +143,8 @@ export class Battle {
       this.manaRegen += this.config.furnace.regenAdd;
       this.events.push({ type: 'furnace', lv: this.furnaceLv });
     } else if (c.type === 'spell') {
-      if (!this.canCastSpell().ok) { this.events.push({ type: 'denied', key: 'spell', reason: 'charging' }); return; }
+      const chk = this.canCastSpell();
+      if (!chk.ok) { this.events.push({ type: 'denied', key: 'spell', ...chk }); return; }
       this.castSpell();
     }
   }
@@ -148,31 +152,33 @@ export class Battle {
   spawn(side, def, x) {
     const e = {
       id: this.nextId++, side, key: def.key, def,
-      dir: side === 'demon' ? 1 : -1,
-      x: x + (this.rng() - 0.5) * 12, px: x,
+      dir: this.dirOf(side),
+      x: x + (this.rng() - 0.5) * 14, px: x,
       lane: this.rng(),
       hp: def.hp, maxHp: def.hp,
-      state: 'walk', timer: 0, hitDone: false, kbDone: 0,
+      state: 'walk', timer: 0, hitsDone: 0, kbDone: 0,
       healTimer: 0, flash: 0, born: this.t,
+      stun: 0, skillCd: {}, skill: null,
     };
+    for (const s of def.skills || []) e.skillCd[s.id] = s.first ?? s.every;
     e.px = e.x;
     this.entities.push(e);
-    this.events.push({ type: 'spawn', id: e.id, side, key: def.key, x: e.x });
+    this.events.push({ type: 'spawn', id: e.id, side, key: def.key, x: e.x, hero: !!def.hero });
     return e;
   }
 
-  // ---------- 敵の出撃 ----------
+  // ---------- 人間軍の出撃 ----------
   runSpawner() {
     const s = this.stage;
     const humansFull = () => this.aliveHumans() >= this.config.humanCap;
     s.spawns.forEach((row, i) => {
       const st = this.spawnState[i];
       if (row.trigger) {
-        if (!st.fired && this.base.hp / this.base.maxHp < row.trigger.baseBelow) {
+        if (!st.fired && this.base.hp / this.base.maxHp <= row.trigger.baseBelow) {
           st.fired = true;
           let at = this.t;
-          for (const w of row.wave) for (let n = 0; n < w.count; n++) { this.pending.push({ at, who: w.who }); at += row.gap || 0.6; }
-          this.events.push({ type: 'alarm' });
+          for (const w of row.wave) for (let n = 0; n < w.count; n++) { this.pending.push({ at, who: w.who, force: !!this.humanDefs[w.who].hero }); at += row.gap || 0.6; }
+          this.events.push({ type: row.hero ? 'heroAlarm' : 'alarm', who: row.hero || null, line: row.line || null });
         }
         return;
       }
@@ -190,7 +196,7 @@ export class Battle {
       if (due.length) {
         this.pending = this.pending.filter((p) => p.at > this.t + 1e-9);
         for (const p of due) {
-          if (humansFull()) { p.at = this.t + 1; this.pending.push(p); continue; }
+          if (humansFull() && !p.force) { p.at = this.t + 1; this.pending.push(p); continue; } // 勇者は上限でも必ず出る
           this.spawnHuman(p.who);
         }
       }
@@ -198,35 +204,34 @@ export class Battle {
   }
 
   spawnHuman(who) {
-    const def = { ...this.humanDefs[who], key: who };
-    return this.spawn('human', def, this.base.x - this.base.halfWidth - 10);
+    const base = this.humanDefs[who];
+    const k = this.stage.enemyScale || 1;
+    const def = { ...base, key: who, hp: Math.round(base.hp * k), atk: Math.round(base.atk * k) };
+    return this.spawn('human', def, this.spawnX('human'));
   }
 
   // ---------- ユニットの動き ----------
-  opponents(e) { return e.side === 'demon' ? 'human' : 'demon'; }
-  enemyBase(e) { return e.side === 'demon' ? this.base : this.shrine; }
-
-  // 射程内の相手（近い順）。{ target, dist, isBase }
-  targetsInRange(e, extra = 0) {
+  // 射程内の相手（近い順）。{ target, dist, isBase }。from〜to は自分の前方の距離
+  targetsAhead(e, from, to) {
     const out = [];
-    const range = e.def.range + extra;
-    const opp = this.opponents(e);
     for (const o of this.entities) {
-      if (o.side !== opp || o.state === 'dead' || o.state === 'kb') continue; // 吹き飛んでいる間は当たらない
+      if (o.side === e.side || o.state === 'dead' || o.state === 'kb') continue; // 吹き飛んでいる間は当たらない
       const dist = (o.x - e.x) * e.dir;
-      if (dist >= -12 && dist <= range) out.push({ target: o, dist });
+      if (dist >= from && dist <= to) out.push({ target: o, dist });
     }
     const b = this.enemyBase(e);
     const bd = (b.x - e.x) * e.dir - b.halfWidth;
-    if (bd <= range) out.push({ target: b, dist: Math.max(0, bd), isBase: true });
+    if (bd <= to) out.push({ target: b, dist: Math.max(0, bd), isBase: true });
     out.sort((a, c) => a.dist - c.dist);
     return out;
   }
+  targetsInRange(e, extra = 0) { return this.targetsAhead(e, -12, e.def.range + extra); }
 
   updateEntity(e, dt) {
     const d = e.def;
     e.timer += dt;
     if (e.flash > 0) e.flash = Math.max(0, e.flash - dt);
+    for (const k in e.skillCd) if (e.skillCd[k] > 0) e.skillCd[k] -= dt;
 
     if (e.state === 'dead') { e.x -= e.dir * 20 * dt; return; }
 
@@ -238,30 +243,43 @@ export class Battle {
       return;
     }
 
-    if (d.heal) {
-      e.healTimer += dt;
-      if (e.healTimer >= d.heal.every) {
-        const hurt = this.entities.filter((o) => o.side === e.side && o.state !== 'dead' && o.hp < o.maxHp && Math.abs(o.x - e.x) <= d.heal.radius);
-        if (hurt.length) {
-          e.healTimer = 0;
-          for (const o of hurt) {
-            const amt = Math.round(o.maxHp * d.heal.ratio);
-            o.hp = Math.min(o.maxHp, o.hp + amt);
-            this.events.push({ type: 'heal', id: o.id, x: o.x, amount: amt, side: o.side });
-          }
-        }
-      }
+    // 行動妨害（気絶）：動かず攻撃もしない
+    if (e.stun > 0) {
+      e.stun -= dt;
+      if (e.state === 'attack' || e.state === 'skill') { e.state = 'walk'; e.timer = 0; e.skill = null; }
+      return;
+    }
+
+    if (d.heal) this.tickHeal(e, d.heal, dt);
+
+    if (e.state === 'skill') {
+      const s = e.skill;
+      if (!s.done && e.timer >= s.windup) { s.done = true; this.useSkill(e, s); }
+      if (e.timer >= s.windup + (s.recover ?? 0.5)) { e.state = 'walk'; e.timer = 0; e.skill = null; }
+      return;
     }
 
     if (e.state === 'attack') {
-      if (!e.hitDone && e.timer >= d.windup) { e.hitDone = true; this.resolveAttack(e); }
+      const hits = d.hits || 1;
+      const at = d.windup + e.hitsDone * (d.hitGap || 0.2);
+      if (e.hitsDone < hits && e.timer >= at) { e.hitsDone++; this.resolveAttack(e); }
       if (e.timer >= d.interval) { e.state = 'walk'; e.timer = 0; }
       return;
     }
 
-    // walk：射程に相手がいれば攻撃を始める。いなければ前進
+    // 特技（たまっていて、使える相手がいれば攻撃より優先）
+    for (const s of d.skills || []) {
+      if (e.skillCd[s.id] > 0) continue;
+      if (!this.skillReady(e, s)) continue;
+      e.skillCd[s.id] = s.every;
+      e.state = 'skill'; e.timer = 0; e.skill = { ...s, done: false };
+      this.events.push({ type: 'skillStart', id: e.id, skill: s.id, side: e.side, x: e.x, name: s.name });
+      return;
+    }
+
+    // 射程に相手がいれば攻撃を始める。いなければ前進
     if (this.targetsInRange(e).length) {
-      e.state = 'attack'; e.timer = 0; e.hitDone = false;
+      e.state = 'attack'; e.timer = 0; e.hitsDone = 0;
       this.events.push({ type: 'windup', id: e.id });
       return;
     }
@@ -273,22 +291,97 @@ export class Battle {
     }
   }
 
+  tickHeal(e, h, dt) {
+    e.healTimer += dt;
+    if (e.healTimer < h.every) return;
+    const hurt = this.entities.filter((o) => o.side === e.side && o.state !== 'dead' && o.hp < o.maxHp && Math.abs(o.x - e.x) <= h.radius);
+    if (!hurt.length) return;
+    e.healTimer = 0;
+    this.events.push({ type: 'healCast', id: e.id, x: e.x, radius: h.radius, side: e.side });
+    for (const o of hurt) this.healUnit(o, Math.round(o.maxHp * h.ratio));
+  }
+
+  healUnit(o, amt) {
+    const before = o.hp;
+    o.hp = Math.min(o.maxHp, o.hp + amt);
+    this.events.push({ type: 'heal', id: o.id, x: o.x, amount: Math.round(o.hp - before), side: o.side, lane: o.lane });
+  }
+
   resolveAttack(e) {
     const d = e.def;
     const list = this.targetsInRange(e, 10); // 準備のあいだに少し離れても当たる
     if (!list.length) { this.events.push({ type: 'whiff', id: e.id }); return; }
-    const hits = d.attack === 'area' ? list : [list[0]];
-    if (d.projectile) {
-      this.events.push({ type: 'shot', id: e.id, kind: d.projectile, from: e.x, to: hits[0].target.x, side: e.side });
+
+    // 特殊魔法：確率で強い魔法・失敗
+    let mult = 1; let area = d.attack === 'area'; let radius = 0;
+    if (d.gamble) {
+      const r = this.rng();
+      if (r < d.gamble.fail) {
+        e.stun = d.gamble.failStun || 1;
+        this.events.push({ type: 'fizzle', id: e.id, x: e.x, side: e.side, lane: e.lane });
+        return;
+      }
+      if (r < d.gamble.fail + d.gamble.strong) {
+        mult = d.gamble.strongMult; area = true; radius = d.gamble.strongRadius;
+        this.events.push({ type: 'bigMagic', id: e.id, x: list[0].target.x, radius, side: e.side });
+      }
     }
-    this.events.push({ type: 'strike', id: e.id, area: d.attack === 'area', side: e.side });
+
+    let hits;
+    if (radius) {
+      // 最初の相手を中心に、半径 radius の全員
+      const cx = list[0].target.x;
+      hits = this.targetsAhead(e, -12, d.range + 10 + radius).filter((h) => Math.abs(h.target.x - cx) <= radius || h.isBase && Math.abs(h.dist - list[0].dist) <= radius);
+    } else hits = area ? list : [list[0]];
+
+    if (d.projectile) this.events.push({ type: 'shot', id: e.id, kind: d.projectile, from: e.x, to: hits[0].target.x, side: e.side, big: mult > 1 });
+    this.events.push({ type: 'strike', id: e.id, area, side: e.side });
+    const dmg = Math.round(d.atk * mult);
     for (const h of hits) {
-      if (h.isBase) this.damageBase(h.target, d.atk, e);
-      else this.damageUnit(h.target, d.atk, e);
+      if (h.isBase) this.damageBase(h.target, dmg, e);
+      else this.damageUnit(h.target, dmg, e, d.blowAway);
     }
   }
 
-  damageBase(b, dmg, src) {
+  // 特技が使える状況か（前方の射程に相手がいる・回復が必要な味方がいる）
+  skillReady(e, s) {
+    if (s.type === 'heal') return this.entities.some((o) => o.side === e.side && o.state !== 'dead' && o.hp < o.maxHp * 0.8 && Math.abs(o.x - e.x) <= s.radius);
+    return this.targetsAhead(e, -12, s.reach).some((t) => !t.isBase);
+  }
+
+  useSkill(e, s) {
+    const ev = { type: 'skill', id: e.id, skill: s.id, side: e.side, x: e.x, dir: e.dir, reach: s.reach, name: s.name };
+    this.events.push(ev);
+    if (s.type === 'wave') {
+      // 前方へ飛ぶ斬撃：届く範囲の全員にダメージと吹き飛ばし
+      for (const t of this.targetsAhead(e, -12, s.reach)) {
+        if (t.isBase) continue;
+        this.damageUnit(t.target, Math.round(e.def.atk * s.mult), e, true);
+      }
+    } else if (s.type === 'stun') {
+      for (const t of this.targetsAhead(e, -12, s.reach)) {
+        if (t.isBase || t.target.state === 'dead') continue;
+        t.target.stun = Math.max(t.target.stun, s.duration);
+        this.events.push({ type: 'stun', id: t.target.id, x: t.target.x, lane: t.target.lane, duration: s.duration });
+      }
+    } else if (s.type === 'heal') {
+      for (const o of this.entities) {
+        if (o.side !== e.side || o.state === 'dead' || Math.abs(o.x - e.x) > s.radius) continue;
+        this.healUnit(o, Math.round(o.maxHp * s.ratio));
+      }
+    } else if (s.type === 'charge') {
+      // 突進：前方へ進みながら、通り道の敵をまとめて吹き飛ばす
+      for (const t of this.targetsAhead(e, -12, s.reach)) {
+        if (t.isBase) this.damageBase(t.target, Math.round(e.def.atk * s.mult), e);
+        else this.damageUnit(t.target, Math.round(e.def.atk * s.mult), e, true);
+      }
+      const b = this.enemyBase(e);
+      const limit = b.x - e.dir * (b.halfWidth + 20);
+      e.x += e.dir * Math.min(s.move, Math.max(0, (limit - e.x) * e.dir));
+    }
+  }
+
+  damageBase(b, dmg) {
     if (b.hp <= 0) return;
     b.hp = Math.max(0, b.hp - dmg);
     this.events.push({ type: 'baseHit', side: b.side, dmg, x: b.x });
@@ -296,25 +389,29 @@ export class Battle {
 
   damageUnit(o, dmg, src, forceKb = false) {
     if (o.state === 'dead') return;
+    const cut = o.def.guard || 0; // 被ダメージの軽減率
+    dmg = Math.max(1, Math.round(dmg * (1 - cut)));
     o.hp -= dmg;
     o.flash = 0.12;
     this.events.push({ type: 'hit', id: o.id, x: o.x, dmg, side: o.side, lane: o.lane });
     if (o.hp <= 0) { this.kill(o); return; }
     const per = o.maxHp / o.def.kb;
     const crossed = Math.floor((o.maxHp - o.hp) / per);
-    if (crossed > o.kbDone || forceKb) {
+    const threshold = crossed > o.kbDone;
+    if (threshold || forceKb) {
       o.kbDone = Math.max(o.kbDone, crossed);
-      this.knockback(o);
+      // 決まった回数のノックバックは満額、技による吹き飛ばしだけのときは少し短い
+      this.knockback(o, threshold ? this.config.kbDistance : this.config.kbDistance * 0.6);
     }
   }
 
   knockback(o, dist = this.config.kbDistance) {
-    o.state = 'kb'; o.timer = 0;
+    if (o.def.noKbFromSmall && dist < this.config.kbDistance) return; // 勇者は小さな吹き飛ばしを受けない
+    o.state = 'kb'; o.timer = 0; o.skill = null;
     o.kbFrom = o.x;
-    const own = o.side === 'demon' ? this.shrine : this.base;
+    const own = this.home(o.side);
     let to = o.x - o.dir * dist;
-    // 自分の祠・拠点より後ろへは下がらない
-    const back = own.x + o.dir * (own.halfWidth + 5);
+    const back = own.x + o.dir * (own.halfWidth + 5); // 自分の拠点より後ろへは下がらない
     if ((to - back) * o.dir < 0) to = back;
     o.kbTo = to;
     this.events.push({ type: 'kb', id: o.id, x: o.x, side: o.side });
@@ -322,10 +419,11 @@ export class Battle {
 
   kill(o) {
     o.hp = 0;
-    o.state = 'dead'; o.timer = 0;
-    this.events.push({ type: 'death', id: o.id, x: o.x, side: o.side, key: o.key, lane: o.lane });
+    o.state = 'dead'; o.timer = 0; o.stun = 0;
+    this.events.push({ type: 'death', id: o.id, x: o.x, side: o.side, key: o.key, lane: o.lane, hero: !!o.def.hero });
     if (o.side === 'human') {
       this.stats.kills++;
+      if (o.def.hero) this.stats.heroesBeaten++;
       if (o.def.mana) {
         this.mana = Math.min(this.manaMax, this.mana + o.def.mana);
         this.events.push({ type: 'manaGain', x: o.x, amount: o.def.mana });
@@ -336,17 +434,29 @@ export class Battle {
     }
   }
 
+  // 魔王の呪文：人間がいちばん密集している地点を中心に、範囲ダメージと吹き飛ばし
+  spellCenter() {
+    const sp = this.config.spell;
+    const hs = this.entities.filter((o) => o.side === 'human' && o.state !== 'dead');
+    let best = null; let bestN = -1;
+    for (const h of hs) {
+      let n = 0; for (const o of hs) if (Math.abs(o.x - h.x) <= sp.radius) n += o.def.hero ? 3 : 1;
+      // 同じ数なら祠に近い（危ない）方
+      if (n > bestN || (n === bestN && h.x > best)) { bestN = n; best = h.x; }
+    }
+    return best;
+  }
+
   castSpell() {
     const sp = this.config.spell;
+    const cx = this.spellCenter();
     this.spellCharge = 0;
     this.stats.spells++;
-    const x0 = this.shrine.x + this.shrine.halfWidth;
-    const x1 = x0 + sp.reach;
-    this.events.push({ type: 'spell', x0, x1 });
+    this.events.push({ type: 'spell', x: cx, radius: sp.radius });
     for (const o of this.entities) {
       if (o.side !== 'human' || o.state === 'dead') continue;
-      if (o.x < x0 || o.x > x1) continue;
-      this.damageUnit(o, sp.damage, null, sp.knockback); // 吹き飛び中の相手にも当たる
+      if (Math.abs(o.x - cx) > sp.radius) continue;
+      this.damageUnit(o, sp.damage, null, true);
     }
   }
 
