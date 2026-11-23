@@ -13,6 +13,7 @@ export function profileFor(stageId, upgraded = false) {
   const p = newProfile();
   const order = { '1-1': [], '1-2': ['ranged'], '1-3': ['ranged', 'fast'], '1-4': ['ranged', 'fast', 'healer'], '1-5': ['ranged', 'fast', 'healer', 'special'] };
   for (const k of order[stageId] || []) p.units[k].unlocked = true;
+  for (const id of CHAPTER1.stages) { if (id === stageId) break; p.stages[id] = { cleared: true, clears: 1, bestTime: 200 }; }
   if (upgraded) {
     const plan = { '1-1': [], '1-2': ['vanguard'], '1-3': ['vanguard', 'area'], '1-4': ['vanguard', 'area', 'vanguard'], '1-5': ['vanguard', 'area', 'vanguard', 'tank', 'area'] };
     for (const k of plan[stageId] || []) p.units[k].level++;

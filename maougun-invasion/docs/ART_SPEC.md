@@ -1,6 +1,10 @@
 # 素材の仕様（ChatGPT 制作分の依頼用）
 
-素材が届いたら `assets/` に置き、`js/data/skin.js` の `sprites` に登録すると、その枠だけ絵に替わります（読めないときは図形の仮の絵に戻ります）。
+素材が届いたら `assets/` に置き、`js/data/skin.js` の `sprites`・`portraits` に登録すると、その枠だけ絵に替わります（読めないときは図形の仮の絵に戻ります）。
+
+**画面の向き（確定）：人間軍は左、魔王軍は右。** 魔物は**左向き**（右の祠から左へ進む）、人間軍は**右向き**で描いてください。
+反対向きで描いた場合も `facing` を書けばゲーム側で反転します。
+いただいたコンセプト画像（バトル画面・村の背景・祠の会話）は雰囲気の基準としてだけ使い、画像からの切り出しはしません。正式な個別素材が届いたら差し替えます。
 
 ## 共通
 
@@ -16,14 +20,14 @@
 
 | ファイル名 | 枠 | 向き | 寸法 | コマ |
 |---|---|---|---|---|
-| `assets/units/mass.png` | 量産型 | **右向き** | 1コマ 128×128、横に4コマ（512×128） | 0 歩きA・1 歩きB・2 攻撃準備・3 攻撃発動 |
-| `assets/units/vanguard.png` | 前衛 | 右 | 同上 | 同上 |
-| `assets/units/tank.png` | 高HPタンク | 右 | 同上（体は大きめに） | 同上 |
-| `assets/units/ranged.png` | 遠距離 | 右 | 同上 | 同上（2で構え、3で放つ） |
-| `assets/units/fast.png` | 高速型 | 右 | 同上 | 同上 |
-| `assets/units/area.png` | 範囲攻撃 | 右 | 同上 | 同上 |
-| `assets/units/healer.png` | 回復支援 | 右 | 同上 | 同上（3は回復の動作でもよい） |
-| `assets/units/special.png` | 特殊魔法型 | 右 | 同上 | 同上 |
+| `assets/units/mass.png` | 量産型 | **左向き** | 1コマ 128×128、横に4コマ（512×128） | 0 歩きA・1 歩きB・2 攻撃準備・3 攻撃発動 |
+| `assets/units/vanguard.png` | 前衛 | 左 | 同上 | 同上 |
+| `assets/units/tank.png` | 高HPタンク | 左 | 同上（体は大きめに） | 同上 |
+| `assets/units/ranged.png` | 遠距離 | 左 | 同上 | 同上（2で構え、3で放つ） |
+| `assets/units/fast.png` | 高速型 | 左 | 同上 | 同上 |
+| `assets/units/area.png` | 範囲攻撃 | 左 | 同上 | 同上 |
+| `assets/units/healer.png` | 回復支援 | 左 | 同上 | 同上（3は回復の動作でもよい） |
+| `assets/units/special.png` | 特殊魔法型 | 左 | 同上 | 同上 |
 
 - **足元**：各コマの横の中央（x=64）、下から8px（y=120）に足の裏をそろえる。浮いているキャラは影の位置を足元とする。
 - 背丈の目安（128のコマの中で）：量産型・遠距離・高速型 50〜60px、前衛・範囲・回復・特殊 70〜80px、タンク 90〜100px。
@@ -38,21 +42,22 @@
 | `assets/bosses/trickster.png` | 罠と身代わり | 同上 | 同上 |
 | `assets/bosses/thunder.png` | 落雷 | 同上 | 同上 |
 | `assets/bosses/mist.png` | 霧 | 同上 | 同上 |
-| `assets/lord/lord.png` | 大魔王（祠の上に立つ） | 192×192 ×3コマ | 0 待機・1 待機B・2 呪文を唱える |
+| `assets/lord/lord.png` | 大魔王（祠の上・呪文の演出） | 192×192 ×3コマ | 0 待機・1 待機B・2 呪文を唱える |
 | `assets/lord/lord_awakened.png` | 大魔王の真の姿（将来） | 192×192 ×6コマ | 幹部と同じ |
 
-- 右向き。足元は x=96・y=184。背丈は通常ユニットの約1.5倍。
+- 左向き。足元は x=96・y=184。背丈は通常ユニットの約1.5倍。幹部「突進」は第1章クリアで解放されるため、**待機2・移動4・攻撃4・特技（突進）6コマ**を最初に用意。
 
 ## 3. 人間軍
 
 | ファイル名 | 内容 | 向き | 寸法 | コマ |
 |---|---|---|---|---|
-| `assets/humans/militia.png` | 自警団 | **左向き** | 128×128 ×4 | 歩きA・歩きB・攻撃準備・攻撃発動 |
-| `assets/humans/swordsman.png` | 見習い剣士 | 左 | 同上 | 同上 |
-| `assets/humans/archer.png` ほか | 弓兵・盾兵・見習い僧侶・子馬の騎兵 | 左 | 同上 | 同上 |
-| `assets/humans/take.png` | 勇者たけ | 左 | 192×192 ×6 | 幹部と同じ（4〜5：飛ぶ斬撃） |
-| `assets/humans/sai.png` | 勇者サイ | 左 | 192×192 ×6 | 幹部と同じ（4〜5：回復・光） |
-| `assets/talk/{take,sai,koi,mot,waan,tiw}.png` | 会話の顔 | 正面 | 256×256 | 1（あれば 笑顔・驚き・真剣 の3枚） |
+| `assets/humans/militia.png` | 自警団 | **右向き** | 128×128 ×4 | 歩きA・歩きB・攻撃準備・攻撃発動 |
+| `assets/humans/swordsman.png` | 見習い剣士 | 右 | 同上 | 同上 |
+| `assets/humans/archer.png` ほか | 弓兵・盾兵・見習い僧侶・子馬の騎兵 | 右 | 同上 | 同上 |
+| `assets/humans/take.png` | 勇者たけ | 右 | 192×192 ×6 | 幹部と同じ（4〜5：飛ぶ斬撃） |
+| `assets/humans/sai.png` | 勇者サイ | 右 | 192×192 ×6 | 幹部と同じ（4〜5：回復・光） |
+| `assets/talk/{lord,aide}_{normal,angry,happy,sad}.png` | 会話の顔：大魔王・側近 | 大魔王は右向き（画面の左に出る）、側近は左向き（右に出る） | 512×512 の胸から上 | 表情4種（側近は normal だけでもよい） |
+| `assets/talk/{take,sai,koi,mot,waan,tiw}_normal.png` | 会話の顔：勇者・村人 | 村人は右向き、勇者は左向き | 512×512 | normal（あれば angry・happy） |
 
 たけ・サイ・村人4人の見た目は、既存『たけとサイの大冒険』の自作キャラクター（`assets/chars/`）を基準にしてください。
 
@@ -60,11 +65,14 @@
 
 | ファイル名 | 内容 | 寸法 | 備考 |
 |---|---|---|---|
-| `assets/bases/shrine_0.png`〜`_2.png` | 封印の祠（無傷・ひび・崩れかけ） | 240×320 | 足元は下端の中央。左側に置く |
-| `assets/bases/watchtower_0.png`〜`_2.png` | 1-1 の見張り小屋（同3段階） | 240×320 | 右側に置く |
-| `assets/bg/ch1_far.png` | 遠景（空・月・山） | 1920×540 | 左右つながる（ループ） |
-| `assets/bg/ch1_mid.png` | 中景（村・畑・木） | 2400×540 | 透過。下 150px は空けてよい |
-| `assets/bg/ch1_ground.png` | 地面 | 2400×160 | 左（魔界寄り・紫）→ 右（人間側・緑）へ色が変わる |
+| `assets/bases/shrine_0.png`〜`_2.png` | 封印の祠（無傷・ひび・崩れかけ） | 240×320 | 足元は下端の中央。**右側**に置く |
+| `assets/bases/watchtower_0.png`〜`_2.png` | 1-1・1-2・1-3 の見張り台（同3段階） | 240×320 | **左側**に置く |
+| `assets/bases/gate_0.png`〜`_2.png` | 1-4 の村の門 | 240×320 | 左側 |
+| `assets/bases/castle_0.png`〜`_2.png` | 1-5 の村の広場の城 | 280×340 | 左側 |
+| `assets/bg/shrine_room.png` | 会話の背景：封印の祠の中 | 1920×1080 | 人物なし |
+| `assets/bg/ch1_{day,sunset,night}_far.png` | 遠景（空・山・遠くの城）昼・夕方・夜 | 1920×540 | 左右つながる（ループ）。1-1〜1-3 昼、1-4 夕方、1-5 夜 |
+| `assets/bg/ch1_mid_{watch,wheat,river,gate,plaza}.png` | 中景（家・風車・麦畑・川と石橋・噴水） | 2500×540 | 透過。下 150px は空けてよい |
+| `assets/bg/ch1_ground.png` | 地面と道 | 2500×160 | 左（人間側・緑）→ 右（祠のまわり・紫）へ色が変わる |
 
 ## 5. 演出・UI
 
@@ -74,7 +82,11 @@
 | `assets/fx/slash.png` | 斬撃 | 96×96 ×4 | 横並び |
 | `assets/fx/arrow.png` | 矢 | 48×12 | 1 |
 | `assets/fx/fireball.png` | 火の玉 | 32×32 ×4 | 横並び |
-| `assets/fx/spell.png` | 魔王の呪文（大きな雷・闇の波） | 384×540 ×6 | 横並び。画面の縦いっぱい |
+| `assets/fx/spell.png` | 魔王の呪文（密集地点に落ちる紫の雷） | 384×540 ×6 | 横並び。画面の縦いっぱい |
+| `assets/fx/big_magic.png` / `fizzle.png` | 特殊魔法の成功（大爆発）・失敗（けむり） | 192×192 ×6 / 96×96 ×4 | 横並び |
+| `assets/fx/wave.png` / `stun.png` | 勇者たけの飛ぶ斬撃・勇者サイのまばゆい光 | 192×128 ×4 / 128×128 ×4 | 横並び |
+| `assets/fx/heal.png` | 回復の光 | 128×64 ×6 | 横並び |
+| `assets/ui/loot_{1-1〜1-5}.png` | 戦利品（手がかり）のアイコン | 192×192 | 1 |
 | `assets/fx/summon.png` | 召喚の魔法陣 | 128×48 ×6 | 横並び |
 | `assets/fx/defeat_demon.png` / `defeat_human.png` | 撃破（魔物は小さな魂、人間は星） | 96×96 ×6 | 横並び |
 | `assets/ui/icon_{枠}.png` | 召喚ボタンのアイコン | 128×128 | 1（無ければ歩きAのコマから作る） |
@@ -84,6 +96,6 @@
 ```js
 // js/data/skin.js
 sprites: {
-  mass: { src: 'assets/units/mass.png', frameW: 128, frameH: 128, frames: { walk: [0, 1], windup: 2, attack: 3 }, footY: 120, facing: 'right', scale: 0.55 },
+  mass: { src: 'assets/units/mass.png', frameW: 128, frameH: 128, frames: { walk: [0, 1], windup: 2, attack: 3 }, footY: 120, facing: 'left', scale: 0.55 },
 },
 ```

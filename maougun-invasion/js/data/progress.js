@@ -7,6 +7,8 @@
  *   upgrades    { manaMax, manaRegen, cooldown } の段階
  *   stages[id]  { cleared, clears, bestTime }
  *   seen        { [key]: true }  解放画面を見たユニット
+ *   story       { [scene]: true }  見た会話（opening・before:1-2・after:1-1 …）
+ *   loot        集めた戦利品（手がかり）のステージID
  */
 import { ALL_DEMONS, UNIT_ORDER } from './units.js';
 import { STAGES, CHAPTER1 } from './stages.js';
@@ -27,7 +29,7 @@ export const unitLevelCost = (lv) => 60 + (lv - 1) * 70; // Lv → Lv+1
 export function newProfile() {
   const units = {};
   for (const k of [...UNIT_ORDER, 'charger']) units[k] = { unlocked: START_UNITS.includes(k), level: 1, form: 0 };
-  return { version: SAVE_VERSION, stones: 0, units, upgrades: { manaMax: 0, manaRegen: 0, cooldown: 0 }, stages: {}, seen: Object.fromEntries(START_UNITS.map((k) => [k, true])) };
+  return { version: SAVE_VERSION, stones: 0, units, upgrades: { manaMax: 0, manaRegen: 0, cooldown: 0 }, stages: {}, story: {}, loot: [], seen: Object.fromEntries(START_UNITS.map((k) => [k, true])) };
 }
 
 function safeStorage(storage) {
@@ -55,6 +57,8 @@ export function migrate(p) {
   out.upgrades = { ...base.upgrades, ...(p.upgrades || {}) };
   out.stages = { ...(p.stages || {}) };
   out.seen = { ...base.seen, ...(p.seen || {}) };
+  out.story = { ...(p.story || {}) };
+  out.loot = Array.isArray(p.loot) ? p.loot.slice() : [];
   out.stones = Number.isFinite(p.stones) ? p.stones : 0;
   return out;
 }
@@ -92,6 +96,7 @@ export function applyResult(p, stageId, result, time) {
     rec.cleared = true;
     rec.clears++;
     rec.bestTime = rec.bestTime == null ? time : Math.min(rec.bestTime, time);
+    if (!p.loot.includes(stageId)) p.loot.push(stageId);
     const u = stage.reward.unlock;
     if (u && p.units[u] && !p.units[u].unlocked) { p.units[u].unlocked = true; out.unlocked = u; }
   } else {
@@ -125,12 +130,17 @@ export function resolveUnit(key, p) {
   };
 }
 
+// 封印のほころび：ステージを1つクリアするごとに、大魔王の魔力が少し戻る（第1章の成長）
+export const LORD_GROWTH = { max: 60, regen: 1.5 };
+export function lordLevel(p) { return 1 + Object.values((p && p.stages) || {}).filter((s) => s.cleared).length; }
+
 export function resolveMana(stageMana, p) {
   const up = (p && p.upgrades) || {};
+  const lv = lordLevel(p) - 1;
   return {
     start: stageMana.start,
-    max: stageMana.max + (up.manaMax || 0) * UPGRADES.manaMax.per,
-    regen: stageMana.regen + (up.manaRegen || 0) * UPGRADES.manaRegen.per,
+    max: stageMana.max + (up.manaMax || 0) * UPGRADES.manaMax.per + lv * LORD_GROWTH.max,
+    regen: stageMana.regen + (up.manaRegen || 0) * UPGRADES.manaRegen.per + lv * LORD_GROWTH.regen,
   };
 }
 

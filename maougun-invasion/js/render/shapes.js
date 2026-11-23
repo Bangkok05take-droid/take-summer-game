@@ -124,6 +124,23 @@ const DRAW = {
     ctx.beginPath(); ctx.moveTo(14, 0); ctx.lineTo(14, -38); ctx.moveTo(9, -38); ctx.lineTo(19, -38); ctx.moveTo(9, -38); ctx.lineTo(9, -44); ctx.moveTo(19, -38); ctx.lineTo(19, -44); ctx.moveTo(14, -38); ctx.lineTo(14, -46); ctx.stroke();
     eyes(ctx, -3, -18, 3, 7, o.flash, true);
   },
+  // 幹部・突進：大きな角の重戦士と大斧（仮）
+  charger(ctx, o) {
+    const sw = o.pose === 'windup' ? -1.4 : o.pose === 'strike' ? 0.9 : -0.4;
+    ctx.fillStyle = col('charger', 0, o.flash); ctx.strokeStyle = col('charger', 1, o.flash); ctx.lineWidth = 3;
+    rrect(ctx, -20, -48, 40, 42, 12); ctx.fill(); ctx.stroke();
+    ctx.fillRect(-16, -10, 12, 10); ctx.fillRect(4, -10, 12, 10);
+    ctx.beginPath(); ctx.arc(2, -58, 15, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = o.flash ? '#fff' : '#f0e2c0';
+    ctx.beginPath(); ctx.moveTo(-8, -66); ctx.quadraticCurveTo(-22, -76, -18, -88); ctx.quadraticCurveTo(-12, -76, -2, -70); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(10, -66); ctx.quadraticCurveTo(24, -76, 20, -88); ctx.quadraticCurveTo(14, -76, 6, -70); ctx.fill();
+    eyes(ctx, 0, -58, 3, 9, o.flash, true);
+    ctx.save(); ctx.translate(18, -34); ctx.rotate(sw);
+    ctx.strokeStyle = '#6a4220'; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(0, 10); ctx.lineTo(0, -40); ctx.stroke();
+    ctx.fillStyle = o.flash ? '#fff' : '#c9d2dc'; ctx.strokeStyle = '#3a3a4a'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(0, -40); ctx.quadraticCurveTo(22, -46, 20, -22); ctx.lineTo(0, -28); ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.restore();
+  },
   // ---- 人間軍 ----
   militia(ctx, o) { human(ctx, o, 'militia', 'fork'); },
   swordsman(ctx, o) { human(ctx, o, 'swordsman', 'sword'); },
@@ -186,4 +203,70 @@ export function spriteFor(key) {
     img.src = s.src;
   }
   return images[key].ok ? { ...s, img: images[key].img } : null;
+}
+
+/* 会話の顔（仮）。w×h の枠の中に、胸から上を描く。face：'normal' | 'angry' | 'happy' | 'sad' */
+export function drawPortrait(ctx, who, face, w, h) {
+  ctx.save();
+  ctx.clearRect(0, 0, w, h);
+  ctx.translate(w / 2, h);
+  const k = h / 120;
+  ctx.scale(k, k);
+  const P = PORTRAIT[who] || PORTRAIT.villager;
+  P(ctx, face || 'normal', who);
+  ctx.restore();
+}
+
+function faceEyes(ctx, x, y, gap, face, color = '#1a0f20') {
+  ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.ellipse(x, y, 5, 6, 0, 0, Math.PI * 2); ctx.ellipse(x + gap, y, 5, 6, 0, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = color; ctx.beginPath(); ctx.arc(x + 1, y + 1, 3, 0, Math.PI * 2); ctx.arc(x + gap + 1, y + 1, 3, 0, Math.PI * 2); ctx.fill();
+  ctx.strokeStyle = '#3a2a2a'; ctx.lineWidth = 2.5; ctx.beginPath();
+  if (face === 'angry') { ctx.moveTo(x - 7, y - 11); ctx.lineTo(x + 5, y - 6); ctx.moveTo(x + gap + 7, y - 11); ctx.lineTo(x + gap - 5, y - 6); }
+  else if (face === 'sad') { ctx.moveTo(x - 6, y - 7); ctx.lineTo(x + 5, y - 11); ctx.moveTo(x + gap + 6, y - 7); ctx.lineTo(x + gap - 5, y - 11); }
+  else { ctx.moveTo(x - 6, y - 10); ctx.lineTo(x + 5, y - 10); ctx.moveTo(x + gap + 6, y - 10); ctx.lineTo(x + gap - 5, y - 10); }
+  ctx.stroke();
+}
+
+const PORTRAIT = {
+  // 大魔王（仮）：紫の衣と金の冠、白いひげのおじいちゃん
+  lord(ctx, face) {
+    ctx.fillStyle = '#4a1f7a'; ctx.beginPath(); ctx.moveTo(-58, 0); ctx.quadraticCurveTo(-50, -52, 0, -56); ctx.quadraticCurveTo(50, -52, 58, 0); ctx.fill();
+    ctx.fillStyle = '#d4a93a'; ctx.fillRect(-4, -54, 8, 54);
+    ctx.fillStyle = '#ffd9b8'; ctx.beginPath(); ctx.ellipse(0, -78, 26, 28, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#f4f0ec'; ctx.beginPath(); ctx.moveTo(-26, -76); ctx.quadraticCurveTo(-30, -30, 0, -22); ctx.quadraticCurveTo(30, -30, 26, -76); ctx.quadraticCurveTo(0, -60, -26, -76); ctx.fill();
+    faceEyes(ctx, -11, -84, 22, face);
+    ctx.fillStyle = '#3a1a10'; ctx.beginPath();
+    if (face === 'angry') { ctx.ellipse(0, -60, 7, 5, 0, 0, Math.PI * 2); } else if (face === 'happy') { ctx.arc(0, -64, 6, 0, Math.PI); } else { ctx.ellipse(0, -62, 5, 2, 0, 0, Math.PI * 2); }
+    ctx.fill();
+    ctx.fillStyle = '#e0b84a'; ctx.strokeStyle = '#7a5a10'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(-26, -100); ctx.lineTo(-22, -118); ctx.lineTo(-11, -106); ctx.lineTo(0, -122); ctx.lineTo(11, -106); ctx.lineTo(22, -118); ctx.lineTo(26, -100); ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#b26bff'; ctx.beginPath(); ctx.arc(0, -108, 4, 0, Math.PI * 2); ctx.fill();
+  },
+  // 側近（仮）：濃紺のフードと銀の仮面
+  aide(ctx) {
+    ctx.fillStyle = '#26304a'; ctx.beginPath(); ctx.moveTo(-54, 0); ctx.quadraticCurveTo(-48, -60, 0, -62); ctx.quadraticCurveTo(48, -60, 54, 0); ctx.fill();
+    ctx.fillStyle = '#334068'; ctx.beginPath(); ctx.moveTo(-34, -50); ctx.quadraticCurveTo(-36, -118, 0, -120); ctx.quadraticCurveTo(36, -118, 34, -50); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#c9cfdc'; ctx.beginPath(); ctx.ellipse(0, -80, 18, 22, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#2a3048'; ctx.fillRect(-12, -86, 9, 4); ctx.fillRect(3, -86, 9, 4);
+    ctx.fillStyle = '#8fd0ff'; ctx.fillRect(-10, -85, 5, 2); ctx.fillRect(5, -85, 5, 2);
+    ctx.fillStyle = '#9aa6c8'; ctx.fillRect(-1, -76, 2, 10);
+  },
+  take(ctx, face) { hero(ctx, face, '#3e6fc4', '#2a1a10', true); },
+  sai(ctx, face) { hero(ctx, face, '#f5f0ff', '#e8c070', false); },
+  villager(ctx, face, who) {
+    const c = { tiw: '#6fbf73', mot: '#c98a3a', waan: '#e0708a', koi: '#7a8aa0' }[who] || '#a0a0a0';
+    ctx.fillStyle = c; ctx.beginPath(); ctx.moveTo(-44, 0); ctx.quadraticCurveTo(-40, -50, 0, -52); ctx.quadraticCurveTo(40, -50, 44, 0); ctx.fill();
+    ctx.fillStyle = '#ffd9b8'; ctx.beginPath(); ctx.arc(0, -76, 24, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#4a2a14'; ctx.beginPath(); ctx.arc(0, -84, 25, Math.PI, 0); ctx.fill();
+    faceEyes(ctx, -10, -76, 20, face);
+  },
+};
+
+function hero(ctx, face, cloth, hair, spiky) {
+  ctx.fillStyle = cloth; ctx.beginPath(); ctx.moveTo(-46, 0); ctx.quadraticCurveTo(-42, -50, 0, -52); ctx.quadraticCurveTo(42, -50, 46, 0); ctx.fill();
+  ctx.fillStyle = '#ffd9b8'; ctx.beginPath(); ctx.arc(0, -78, 25, 0, Math.PI * 2); ctx.fill();
+  ctx.fillStyle = hair;
+  if (spiky) { ctx.beginPath(); ctx.moveTo(-28, -80); for (let i = 0; i < 7; i++) ctx.lineTo(-28 + i * 9 + 4, -112 + (i % 2) * 10); ctx.lineTo(28, -80); ctx.quadraticCurveTo(0, -96, -28, -80); ctx.fill(); }
+  else { ctx.beginPath(); ctx.arc(0, -86, 27, Math.PI, 0); ctx.fill(); ctx.fillRect(-27, -86, 10, 40); ctx.fillRect(17, -86, 10, 40); }
+  faceEyes(ctx, -10, -78, 20, face, '#2a3a6a');
 }

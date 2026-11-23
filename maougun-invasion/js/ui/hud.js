@@ -1,4 +1,4 @@
-/* 画面の上下（DOM）：HP・魔力・召喚ボタン・魔力炉・呪文・お知らせ */
+/* 戦闘画面の上下（DOM）：HP・魔力・召喚カード・魔力炉・呪文・お知らせ */
 import { SKIN } from '../data/skin.js';
 import { Renderer } from '../render/renderer.js';
 
@@ -8,14 +8,18 @@ export class Hud {
   constructor(handlers) {
     this.h = handlers;
     this.slots = [];
-    this.toastTimer = 0;
-    $('btnFurnace').addEventListener('pointerdown', (ev) => { ev.preventDefault(); this.h.furnace(); });
-    $('btnSpell').addEventListener('pointerdown', (ev) => { ev.preventDefault(); this.h.spell(); });
-    $('btnSpeed').addEventListener('click', () => this.h.speed());
+    this.toastUntil = 0;
+    const tap = (id, fn) => $(id).addEventListener('pointerdown', (ev) => { ev.preventDefault(); fn(); });
+    tap('btnFurnace', () => this.h.furnace());
+    tap('btnSpell', () => this.h.spell());
+    $('btnX1').addEventListener('click', () => this.h.speed(1));
+    $('btnX2').addEventListener('click', () => this.h.speed(2));
     $('btnPause').addEventListener('click', () => this.h.pause());
   }
 
-  build(battle) {
+  build(battle, stage) {
+    $('tagChap').textContent = `第${stage.chapter}章 はじまりの村を侵略せよ`;
+    $('tagStage').textContent = `${stage.id}　${stage.name}`;
     const wrap = $('slots');
     wrap.innerHTML = '';
     this.slots = battle.deck.map((d, i) => {
@@ -23,19 +27,15 @@ export class Hud {
       b.type = 'button';
       b.className = 'slot';
       b.dataset.key = d.key;
-      b.setAttribute('aria-label', `${SKIN.names[d.key]}を召喚（魔力${d.cost}）`);
-      const cv = document.createElement('canvas'); cv.width = 144; cv.height = 120;
+      b.setAttribute('aria-label', `${SKIN.names[d.key]}を召喚（魔力${d.cost}）キー${i + 1}`);
+      const cv = document.createElement('canvas'); cv.width = 128; cv.height = 108;
       const name = document.createElement('span'); name.className = 'name'; name.textContent = SKIN.names[d.key] || d.key;
       const cost = document.createElement('span'); cost.className = 'cost'; cost.textContent = d.cost;
       const cd = document.createElement('i'); cd.className = 'cd';
       const why = document.createElement('span'); why.className = 'why';
       b.append(cv, name, cost, cd, why);
       // 押した瞬間に反応させる（click の遅れをなくす）
-      b.addEventListener('pointerdown', (ev) => {
-        ev.preventDefault();
-        b.classList.add('press'); setTimeout(() => b.classList.remove('press'), 90);
-        this.h.summon(d.key, b);
-      });
+      b.addEventListener('pointerdown', (ev) => { ev.preventDefault(); this.press(i); this.h.summon(d.key); });
       wrap.appendChild(b);
       Renderer.thumb(cv, d.key, d.size);
       return { el: b, key: d.key, def: d, cd, why, state: '' };
@@ -43,14 +43,19 @@ export class Hud {
     $('capMax').textContent = battle.config.demonCap;
   }
 
+  press(i) {
+    const s = this.slots[i]; if (!s) return;
+    s.el.classList.add('press'); setTimeout(() => s.el.classList.remove('press'), 90);
+  }
+
   update(b) {
     const pct = (v) => `scaleX(${Math.max(0, Math.min(1, v))})`;
     $('shrineBar').style.transform = pct(b.shrine.hp / b.shrine.maxHp);
     $('baseBar').style.transform = pct(b.base.hp / b.base.maxHp);
-    $('shrineNum').textContent = `${Math.ceil(b.shrine.hp)} / ${b.shrine.maxHp}`;
-    $('baseNum').textContent = `${Math.ceil(b.base.hp)} / ${b.base.maxHp}`;
+    $('shrineNum').textContent = `${Math.ceil(b.shrine.hp)}/${b.shrine.maxHp}`;
+    $('baseNum').textContent = `${Math.ceil(b.base.hp)}/${b.base.maxHp}`;
     $('manaNum').textContent = Math.floor(b.mana);
-    $('manaMax').textContent = '/' + b.manaMax;
+    $('manaMax').textContent = '/' + Math.round(b.manaMax);
     $('manaBar').style.transform = pct(b.mana / b.manaMax);
 
     const alive = b.aliveDemons();
@@ -84,20 +89,18 @@ export class Hud {
     $('spellPct').textContent = r >= 1 ? '発動！' : Math.floor(r * 100) + '%';
     $('btnSpell').classList.toggle('full', r >= 1);
 
-    if (this.toastTimer > 0) {
-      this.toastTimer -= 1 / 60;
-      if (this.toastTimer <= 0) $('toast').classList.remove('show');
-    }
+    if (this.toastUntil && performance.now() > this.toastUntil) { $('toast').classList.remove('show'); this.toastUntil = 0; }
   }
 
-  setSpeed(v) { const el = $('btnSpeed'); el.textContent = '×' + v; el.classList.toggle('on', v > 1); }
+  setSpeed(v) { $('btnX1').classList.toggle('on', v === 1); $('btnX2').classList.toggle('on', v === 2); }
+  setPaused(p) { $('btnPause').classList.toggle('on', p); }
 
   toast(text, info = false) {
     const t = $('toast');
     t.textContent = text;
     t.classList.toggle('info', info);
     t.classList.add('show');
-    this.toastTimer = 1.4;
+    this.toastUntil = performance.now() + 1400;
   }
 
   deny(key) {
@@ -114,6 +117,7 @@ export function reasonText(chk, cap) {
     case 'cap': return `出撃上限です（同時に ${cap} 体まで）`;
     case 'alive': return '出撃中です（同じ幹部は同時に1体まで）';
     case 'charging': return '魔王の呪文はまだたまっていません';
+    case 'noTarget': return '呪文を当てる相手がいません';
     case 'max': return '魔力炉は最大です';
     case 'ended': return '戦闘は終わりました';
     default: return '召喚できません';
