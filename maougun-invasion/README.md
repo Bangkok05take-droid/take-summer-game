@@ -37,6 +37,8 @@ npm run balance        # ボットで全5ステージのクリア時間を確認
 | [docs/SURVEY.md](docs/SURVEY.md) | 既存ゲームのモンスター・ボス・魔法・素材の調査結果と、再利用できるものの一覧 |
 | [docs/PROPOSAL.md](docs/PROPOSAL.md) | 開発方針（統合指示書 Ver.2.0＋編成修正）・技術構成・フォルダ・開発の順番・決定事項 |
 | [docs/UNITS.md](docs/UNITS.md) | 魔王軍ユニット（通常8枠・幹部5枠・大魔王、数値、進化の仕組み） |
+| [docs/ASSET_MAP.md](docs/ASSET_MAP.md) | **素材の組み込み先・状態・不足素材の一覧**（担当：デザインは ChatGPT、承認はユーザー、組み込みは Claude Code） |
+| [docs/ASSET_SOURCES.md](docs/ASSET_SOURCES.md) | 取り込んだ承認済み素材の出どころ（自動記録） |
 | [docs/ART_SPEC.md](docs/ART_SPEC.md) | ChatGPT に依頼する素材の仕様（寸法・向き・コマ数・ファイル名） |
 | [docs/STORY.md](docs/STORY.md) | 第1章のストーリー・人物・演出の流れ・手がかり |
 | [docs/STAGES.md](docs/STAGES.md) | 人間軍（兵士・勇者たけ／サイ・村人）、第1章と 1-1 の敵構成、世界侵略マップ |

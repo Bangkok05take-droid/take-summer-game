@@ -3,6 +3,8 @@
 import { drawUnit, spriteFor } from './shapes.js';
 import { unitSprite, PIX, FLOATING, BOUNCY } from './pixelart.js';
 import { backdrop, shrineArt, baseArt, BASE_KIND, BG_PIX, PARALLAX } from './backdrop.js';
+import { getImage } from './images.js';
+import { SKIN } from '../data/skin.js';
 
 export const VIEW_W = 960;
 export const VIEW_H = 540;
@@ -126,11 +128,14 @@ export class Renderer {
     const sx = this.reduced ? 0 : (Math.random() - 0.5) * this.shake;
     const sy = this.reduced ? 0 : (Math.random() - 0.5) * this.shake;
 
-    const bd = backdrop(b.stage);
-    this.drawLayers(bd);
+    // 背景：承認済み画像があればそれを、無ければ仮の背景
+    const bgDef = SKIN.images.stageBg[b.stage.id] || SKIN.images.stageBg['chapter' + b.stage.chapter];
+    const bgImg = bgDef && getImage(bgDef.src);
+    const bd = bgImg ? null : backdrop(b.stage);
+    if (bgImg) this.drawStageImage(b, bgImg, bgDef); else this.drawLayers(bd);
     ctx.save();
     ctx.translate(-Math.round(this.camX) + sx, sy);
-    ctx.drawImage(bd.ground, 0, GROUND_Y - 12, bd.ground.width * BG_PIX, bd.ground.height * BG_PIX);
+    if (bd) ctx.drawImage(bd.ground, 0, GROUND_Y - 12, bd.ground.width * BG_PIX, bd.ground.height * BG_PIX);
     this.drawBaseArt(b);
     this.drawShrineArt(b);
 
@@ -142,6 +147,19 @@ export class Renderer {
 
     if (this.flashScreen > 0 && !this.reduced) { ctx.fillStyle = `rgba(230,160,255,${this.flashScreen * 0.55})`; ctx.fillRect(0, 0, VIEW_W, VIEW_H); }
     if (b.entities.length || b.t > 0) this.drawMinimap(b);
+  }
+
+  // 承認済みの背景画像（1枚）。見た目は変えず、拡大縮小と位置だけ。横に余る分だけ、カメラに合わせてゆっくり動かす
+  drawStageImage(b, img, def) {
+    const ctx = this.ctx;
+    const w = img.naturalWidth * def.scale; const h = img.naturalHeight * def.scale;
+    const range = Math.max(0, b.stage.length - VIEW_W);
+    const extra = Math.max(0, w - VIEW_W);
+    const x = range ? -extra * (this.camX / range) : -extra / 2;
+    ctx.imageSmoothingEnabled = true;
+    ctx.drawImage(img, x, def.offsetY || 0, w, h);
+    ctx.imageSmoothingEnabled = false;
+    if (h + (def.offsetY || 0) < VIEW_H) { ctx.fillStyle = '#1a0d29'; ctx.fillRect(0, h + (def.offsetY || 0), VIEW_W, VIEW_H); }
   }
 
   // 空・遠景・丘・村（視差つき）
@@ -171,6 +189,8 @@ export class Renderer {
   // 人間軍の拠点（ドット絵）。被弾で揺れ、HPが減るとひび・煙・火
   drawBaseArt(b) {
     const ctx = this.ctx; const s = b.base;
+    const kind = BASE_KIND[b.stage.theme] || 'tower';
+    if (this.drawApproved(SKIN.images.base[kind], s, 'human')) return;
     const art = baseArt(BASE_KIND[b.stage.theme] || 'tower');
     const ratio = s.hp / s.maxHp;
     const hit = this.baseShake && this.baseShake.human > 0 ? Math.sin(this.time * 80) * 2 : 0;
@@ -183,6 +203,7 @@ export class Renderer {
   // 封印の祠（ドット絵）＋ 動く紫の渦・足元の魔法陣
   drawShrineArt(b) {
     const ctx = this.ctx; const s = b.shrine;
+    if (this.drawApproved(SKIN.images.shrine, s, 'demon')) return;
     const art = shrineArt();
     const ratio = s.hp / s.maxHp;
     const hit = this.baseShake && this.baseShake.demon > 0 ? Math.sin(this.time * 80) * 2 : 0;
@@ -205,6 +226,21 @@ export class Renderer {
     for (let i = 0; i < 6; i++) { const t = (this.time * 0.5 + i / 6) % 1; ctx.fillStyle = `rgba(255,230,255,${1 - t})`; ctx.fillRect(cx + Math.sin(i * 2.4) * pw * 0.35, py + ph - t * ph, 3, 3); }
     ctx.restore();
     this.damageMarks(ctx, s.x, y, w, h, ratio, '#c26bff');
+  }
+
+  // 承認済みの建物画像（{ src, width, footY }）。足元の中央を拠点の位置にそろえる
+  drawApproved(def, s, side) {
+    const img = def && getImage(def.src);
+    if (!img) return false;
+    const ctx = this.ctx;
+    const k = def.width / img.naturalWidth; const w = def.width; const h = img.naturalHeight * k;
+    const hit = this.baseShake && this.baseShake[side] > 0 ? Math.sin(this.time * 80) * 2 : 0;
+    const foot = (def.footY ?? img.naturalHeight) * k;
+    ctx.imageSmoothingEnabled = true;
+    ctx.drawImage(img, s.x - w / 2 + hit, GROUND_Y + 12 - foot, w, h);
+    ctx.imageSmoothingEnabled = false;
+    this.damageMarks(ctx, s.x, GROUND_Y + 12 - foot, w, foot, s.hp / s.maxHp, side === 'demon' ? '#c26bff' : '#ff9a3a');
+    return true;
   }
 
   magicCircle(ctx, x, y, r, a) {

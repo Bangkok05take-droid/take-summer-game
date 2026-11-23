@@ -71,6 +71,10 @@ export class TalkPlayer {
     this.lines = lines; this.i = 0; this.done = done;
     this.shown = { left: null, right: null };
     $('talkBg').className = 'talkBg ' + (bg || 'field');
+    const img = SKIN.images.talkBg[bg || 'field'];
+    $('talkBg').style.backgroundImage = img ? `url("${img}")` : '';
+    $('talkBg').style.backgroundSize = img ? 'cover' : '';
+    $('talkBg').style.backgroundPosition = img ? 'center' : '';
     for (const id of ['ptLeft', 'ptRight']) { const c = $(id); c.getContext('2d').clearRect(0, 0, c.width, c.height); c.hidden = true; }
     $('scTalk').hidden = false;
     this.show();

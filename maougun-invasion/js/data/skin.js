@@ -20,6 +20,19 @@ export const SKIN = {
   },
   sprites: {},
   portraits: {},
+  /* 画面の各場所に入れる承認済み画像（場所と仕様の一覧：docs/ASSET_MAP.md）。
+   * 未登録・読み込み失敗のときは、今の仮の表示に戻る。見た目は変えず、拡大縮小と位置だけ指定する。 */
+  images: {
+    // 戦闘の背景。ステージIDで個別に、無ければ chapter1。scale：論理画面（960×540）での倍率、offsetY：上下の位置
+    stageBg: {
+      chapter1: { src: 'assets/approved/bg/ch1_village.webp', scale: 0.62, offsetY: -66 },
+    },
+    // 人間軍の拠点（tower：1-1〜1-3、gate：1-4、castle：1-5）と、魔王軍の祠。{ src, width, footY }
+    base: {},
+    shrine: null,
+    // 会話の背景（shrine：祠の中、field：戦場）
+    talkBg: {},
+  },
   colors: {
     mass: ['#8b5cf6', '#3b1d74'],
     vanguard: ['#6d6a86', '#25233a'],
