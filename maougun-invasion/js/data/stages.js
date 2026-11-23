@@ -29,10 +29,15 @@ export const CHAPTER1 = { id: 1, name: 'はじまりの村を侵略せよ', stag
 
 const MANA = { start: 200, max: 1000, regen: 28 };
 
+/* 戦場の横幅の倍率。元の長さ（L(…) の中の数字）に掛ける。
+ * 2026-11-23：「横が長い」とのことで 0.7 に短縮（1-1 は 2200 → 1540、約1.6画面）。元に戻すときは 1 にする */
+export const FIELD_SCALE = 0.7;
+const L = (len) => Math.round(len * FIELD_SCALE);
+
 export const STAGES = {
   '1-1': {
     id: '1-1', chapter: 1, name: '見張り小屋', theme: 'watch',
-    length: 2200, shrineHp: 5000, baseHp: 5500, enemyScale: 1.0, mana: MANA,
+    length: L(2200), shrineHp: 5000, baseHp: 5500, enemyScale: 1.0, mana: MANA,
     spawns: [
       { who: 'militia', start: 3, every: 6, max: 6 },
       { who: 'militia', start: 40, every: 4, max: 8 },
@@ -50,7 +55,7 @@ export const STAGES = {
   },
   '1-2': {
     id: '1-2', chapter: 1, name: '麦畑の柵', theme: 'wheat',
-    length: 2300, shrineHp: 5500, baseHp: 7500, enemyScale: 1.05, mana: MANA,
+    length: L(2300), shrineHp: 5500, baseHp: 7500, enemyScale: 1.05, mana: MANA,
     spawns: [
       { who: 'militia', start: 3, every: 5, max: 7 },
       { who: 'swordsman', start: 15, every: 12, max: 3 },
@@ -69,7 +74,7 @@ export const STAGES = {
   },
   '1-3': {
     id: '1-3', chapter: 1, name: '小川の橋', theme: 'river',
-    length: 2400, shrineHp: 6000, baseHp: 7000, enemyScale: 1.15, mana: MANA,
+    length: L(2400), shrineHp: 6000, baseHp: 7000, enemyScale: 1.15, mana: MANA,
     spawns: [
       { who: 'militia', start: 3, every: 5, max: 6 },
       { who: 'swordsman', start: 10, every: 11, max: 3 },
@@ -90,7 +95,7 @@ export const STAGES = {
   },
   '1-4': {
     id: '1-4', chapter: 1, name: '村の門', theme: 'gate',
-    length: 2400, shrineHp: 6500, baseHp: 7000, enemyScale: 1.3, mana: MANA,
+    length: L(2400), shrineHp: 6500, baseHp: 7000, enemyScale: 1.3, mana: MANA,
     spawns: [
       { who: 'militia', start: 3, every: 4.5, max: 6 },
       { who: 'shield', start: 8, every: 26, max: 2 },
@@ -112,7 +117,7 @@ export const STAGES = {
   },
   '1-5': {
     id: '1-5', chapter: 1, name: '村の広場', theme: 'plaza', boss: true,
-    length: 2500, shrineHp: 7000, baseHp: 6500, enemyScale: 1.4, mana: { ...MANA, start: 500 },
+    length: L(2500), shrineHp: 7000, baseHp: 6500, enemyScale: 1.4, mana: { ...MANA, start: 500 },
     spawns: [
       { who: 'militia', start: 2, every: 4, max: 7 },
       { who: 'swordsman', start: 8, every: 9, max: 4 },
