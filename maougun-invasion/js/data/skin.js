@@ -63,3 +63,6 @@ Object.assign(SKIN.images.stageBg, APPROVED.images.stageBg);
 Object.assign(SKIN.images.base, APPROVED.images.base);
 Object.assign(SKIN.images.talkBg, APPROVED.images.talkBg);
 if (APPROVED.images.shrine) SKIN.images.shrine = APPROVED.images.shrine;
+// エフェクト（{ src, frameW, frameH, frames }）と UI 画像（ファイルのパス）。docs/ASSET_MAP.md
+SKIN.fx = { ...(APPROVED.fx || {}) };
+SKIN.ui = { ...(APPROVED.ui || {}) };

@@ -3,7 +3,7 @@
 import { drawUnit, spriteFor } from './shapes.js';
 import { unitSprite, PIX, FLOATING, BOUNCY } from './pixelart.js';
 import { backdrop, shrineArt, baseArt, BASE_KIND, BG_PIX, PARALLAX } from './backdrop.js';
-import { getImage } from './images.js';
+import { getImage, preload } from './images.js';
 import { SKIN } from '../data/skin.js';
 
 export const VIEW_W = 960;
@@ -32,6 +32,7 @@ export class Renderer {
     this.flashScreen = 0;
     this.reduced = typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
     this.time = 0;
+    preload(Object.values(SKIN.fx || {}).map((d) => d.src)); // 承認済みのエフェクトは最初に読んでおく（初回だけ仮の演出になるのを防ぐ）
     this.stars = Array.from({ length: 60 }, (_, i) => ({ x: (i * 197) % 960, y: (i * 89) % 200 + 70, r: (i % 3) * 0.5 + 0.6 }));
     this.clouds = Array.from({ length: 7 }, (_, i) => ({ x: i * 420 + 60, y: 105 + (i % 3) * 26, s: 0.7 + (i % 4) * 0.15 }));
   }
@@ -62,15 +63,15 @@ export class Renderer {
         }
         case 'death': {
           const y = laneY(ev.lane);
-          this.add({ kind: 'puff', x: ev.x, y: y - 16, color: ev.side === 'human' ? '#ffe9a8' : '#b58cff', life: 0.6 });
-          if (ev.side === 'demon') { this.add({ kind: 'ghost', x: ev.x, y: y - 24, life: 1.0 }); this.add({ kind: 'motes', x: ev.x, y: y - 20, color: '#c58cff', life: 0.8 }); }
-          else { this.add({ kind: 'motes', x: ev.x, y: y - 20, color: '#ffe9a8', life: 0.7 }); this.add({ kind: 'stars', x: ev.x, y: y - 36, life: 0.7 }); }
+          this.add({ kind: 'puff', x: ev.x, side: ev.side, y: y - 16, color: ev.side === 'human' ? '#ffe9a8' : '#b58cff', life: 0.6 });
+          if (ev.side === 'demon') { this.add({ kind: 'ghost', x: ev.x, side: ev.side, y: y - 24, life: 1.0 }); this.add({ kind: 'motes', x: ev.x, side: ev.side, y: y - 20, color: '#c58cff', life: 0.8 }); }
+          else { this.add({ kind: 'motes', x: ev.x, side: ev.side, y: y - 20, color: '#ffe9a8', life: 0.7 }); this.add({ kind: 'stars', x: ev.x, side: ev.side, y: y - 36, life: 0.7 }); }
           if (ev.hero) this.add({ kind: 'banner', text: '勇者が撤退した！', color: '#5b2a99', life: 1.8 });
           break;
         }
         case 'manaGain': this.add({ kind: 'num', x: ev.x, y: GROUND_Y - 84, text: '+' + ev.amount, color: '#e2c6ff', life: 0.9, small: true }); break;
         case 'heal': if (ev.amount > 0) this.add({ kind: 'num', x: ev.x, y: laneY(ev.lane) - 56, text: '+' + ev.amount, color: '#7ef0b0', life: 0.8, small: true }); break;
-        case 'healCast': this.add({ kind: 'ring', x: ev.x, y: GROUND_Y + 10, color: '#7ef0b0', life: 0.7, w: ev.radius }); break;
+        case 'healCast': this.add({ kind: 'ring', heal: true, x: ev.x, y: GROUND_Y + 10, color: '#7ef0b0', life: 0.7, w: ev.radius }); break;
         case 'shot': {
           const e = byId(ev.id);
           this.add({ kind: 'shot', shot: ev.kind, from: ev.from, to: ev.to, y: laneY(e ? e.lane : 0.5) - 32, side: ev.side, big: ev.big, life: ev.kind === 'arrow' ? 0.22 : 0.26 });
@@ -92,7 +93,7 @@ export class Renderer {
         case 'skill':
           if (ev.skill === 'wave') this.add({ kind: 'wave', x: ev.x, dir: ev.dir, reach: ev.reach, life: 0.45 });
           else if (ev.skill === 'stun') this.add({ kind: 'lightBurst', x: ev.x, dir: ev.dir, reach: ev.reach, life: 0.6 });
-          else if (ev.skill === 'heal') this.add({ kind: 'ring', x: ev.x, y: GROUND_Y + 10, color: '#a8ffcf', life: 0.9, w: 260 });
+          else if (ev.skill === 'heal') this.add({ kind: 'ring', heal: true, x: ev.x, y: GROUND_Y + 10, color: '#a8ffcf', life: 0.9, w: 260 });
           else if (ev.skill === 'charge') this.add({ kind: 'wave', x: ev.x, dir: ev.dir, reach: ev.reach, life: 0.45, color: '#ffb070' });
           this.shake = Math.max(this.shake, 4);
           break;
@@ -315,7 +316,11 @@ export class Renderer {
 
     ctx.fillStyle = 'rgba(0,0,0,.28)';
     ctx.beginPath(); ctx.ellipse(x, y, Math.max(12, sw * 0.38), 4.5, 0, 0, Math.PI * 2); ctx.fill();
-    if (summon < 1) this.magicCircle(ctx, x, y + 2, 26 + 10 * summon, 1 - summon * 0.6);
+    if (summon < 1) {
+      const sfx = this.fxImage('summon');
+      if (sfx) this.drawFxFrame(ctx, sfx, summon, x, y, 96, 96 * sfx.def.frameH / sfx.def.frameW);
+      else this.magicCircle(ctx, x, y + 2, 26 + 10 * summon, 1 - summon * 0.6);
+    }
 
     // 勇者は足元に光の輪
     if (d.hero && e.state !== 'dead') {
@@ -374,6 +379,7 @@ export class Renderer {
     for (const f of this.fx) {
       const p = f.age / f.life;
       if ((f.kind === 'banner') !== screen) continue;
+      if (this.approvedFx(ctx, f, p)) continue; // 承認済みのエフェクト画像があれば、そちらで描く
       switch (f.kind) {
         case 'num': {
           ctx.globalAlpha = 1 - p * p;
@@ -514,6 +520,43 @@ export class Renderer {
         }
         default: break;
       }
+    }
+  }
+
+  // ---------- 承認済みのエフェクト画像（SKIN.fx）。無ければ false を返し、仮の演出を描く ----------
+  fxImage(name) {
+    const def = SKIN.fx && SKIN.fx[name];
+    const img = def && getImage(def.src);
+    return img ? { def, img } : null;
+  }
+
+  // 中心 (cx, cy)、大きさ w×h で、進み具合 p（0〜1）のコマを描く
+  drawFxFrame(ctx, fx, p, cx, cy, w, h, flip = 1, alpha = 1) {
+    const { def, img } = fx;
+    const i = Math.min(def.frames - 1, Math.floor(p * def.frames));
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.translate(cx, cy); ctx.scale(flip, 1);
+    ctx.imageSmoothingEnabled = true;
+    ctx.drawImage(img, i * def.frameW, 0, def.frameW, def.frameH, -w / 2, -h / 2, w, h);
+    ctx.restore();
+  }
+
+  approvedFx(ctx, f, p) {
+    const sized = (fx, h) => [h * fx.def.frameW / fx.def.frameH, h];
+    let fx;
+    switch (f.kind) {
+      case 'spark': if ((fx = this.fxImage('hit'))) { this.drawFxFrame(ctx, fx, p, f.x, f.y, 56, 56); return true; } return false;
+      case 'slash': if ((fx = this.fxImage('slash'))) { this.drawFxFrame(ctx, fx, p, f.x, f.y, f.area ? 96 : 72, f.area ? 96 : 72, f.dir < 0 ? -1 : 1); return true; } return false;
+      case 'puff': if ((fx = this.fxImage(f.side === 'demon' ? 'defeat_demon' : 'defeat_human'))) { this.drawFxFrame(ctx, fx, p, f.x, f.y - 10, 88, 88); return true; } return false;
+      case 'ghost': case 'motes': case 'stars': return !!this.fxImage(f.side === 'demon' ? 'defeat_demon' : 'defeat_human'); // 撃破の画像があれば、仮の粒は出さない
+      case 'spell': if ((fx = this.fxImage('spell'))) { const [w, h] = sized(fx, 440); this.drawFxFrame(ctx, fx, p, f.x, GROUND_Y + 20 - h / 2, Math.max(w, f.r * 2.2), h); return true; } return false;
+      case 'boom': if ((fx = this.fxImage('big_magic'))) { this.drawFxFrame(ctx, fx, p, f.x, f.y - 30, f.r * 2.4, f.r * 2.4); return true; } return false;
+      case 'fizzle': if ((fx = this.fxImage('fizzle'))) { this.drawFxFrame(ctx, fx, p, f.x, f.y + 10, 64, 64); return true; } return false;
+      case 'wave': if ((fx = this.fxImage('wave'))) { const [w, h] = sized(fx, 100); this.drawFxFrame(ctx, fx, p, f.x + f.dir * f.reach * p, GROUND_Y - 30, w, h, f.dir < 0 ? -1 : 1); return true; } return false;
+      case 'lightBurst': if ((fx = this.fxImage('stun'))) { this.drawFxFrame(ctx, fx, p, f.x + f.dir * f.reach / 2, GROUND_Y - 40, f.reach, f.reach, f.dir < 0 ? -1 : 1); return true; } return false;
+      case 'ring': if (f.heal && (fx = this.fxImage('heal'))) { const w = (f.w || 160) * 1.6; this.drawFxFrame(ctx, fx, p, f.x, f.y - w * 0.2, w, w * fx.def.frameH / fx.def.frameW); return true; } return false;
+      default: return false;
     }
   }
 

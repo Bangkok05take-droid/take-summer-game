@@ -3,5 +3,7 @@
 export const APPROVED = /*JSON*/{
   "sprites": {},
   "images": { "stageBg": {}, "base": {}, "shrine": null, "talkBg": {} },
-  "portraits": {}
+  "portraits": {},
+  "fx": {},
+  "ui": {}
 }/*END*/;

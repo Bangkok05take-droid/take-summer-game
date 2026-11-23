@@ -13,6 +13,7 @@ import {
 import { Renderer, VIEW_W, VIEW_H, MINIMAP } from './render/renderer.js';
 import { Hud, reasonText } from './ui/hud.js';
 import { TalkPlayer, renderSelect, renderLoot, renderUnlock, renderUpgrade } from './ui/screens.js';
+import { applyUiSkin } from './ui/uiskin.js';
 
 const $ = (id) => document.getElementById(id);
 const params = new URLSearchParams(location.search);
@@ -307,6 +308,7 @@ window.__game = {
 document.addEventListener('visibilitychange', () => { if (document.hidden && app.screen === 'battle' && app.battle && !app.battle.result) setPaused(true); });
 document.addEventListener('dblclick', (ev) => ev.preventDefault());
 
+applyUiSkin();
 fit();
 toTitle();
 requestAnimationFrame(frame);

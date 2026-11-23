@@ -63,6 +63,7 @@ const HUMAN_SPEAKERS = ['take', 'sai', 'tiw', 'mot', 'waan', 'koi', 'yanai'];
 export class TalkPlayer {
   constructor() {
     preload(Object.values(SKIN.portraits));
+    preload(Object.entries(SKIN.ui || {}).filter(([k]) => k.startsWith('loot_')).map(([, v]) => v));
     this.lines = []; this.i = 0; this.done = null;
     $('scTalk').addEventListener('click', (ev) => { if (ev.target.id !== 'btnSkip') this.next(); });
     $('btnSkip').addEventListener('click', (ev) => { ev.stopPropagation(); this.finish(); });
@@ -123,12 +124,16 @@ export function renderLoot(stageId, res, firstClear) {
   const loot = LOOT[stageId];
   const c = $('lootIcon').getContext('2d');
   c.clearRect(0, 0, 96, 96);
+  const icon = getImage(SKIN.ui && SKIN.ui['loot_' + stageId]); // 承認済みのアイコンがあればそれを
+  if (icon && firstClear) c.drawImage(icon, 0, 0, 96, 96);
+  else {
   // 巻いた古い地図（仮の絵）
   c.fillStyle = '#e8d4a0'; c.strokeStyle = '#7a5a2a'; c.lineWidth = 3;
   c.beginPath(); c.moveTo(14, 22); c.lineTo(82, 16); c.lineTo(86, 76); c.lineTo(16, 82); c.closePath(); c.fill(); c.stroke();
   c.strokeStyle = '#b0452a'; c.lineWidth = 2; c.setLineDash([4, 3]);
   c.beginPath(); c.moveTo(26, 66); c.quadraticCurveTo(44, 30, 70, 40); c.stroke(); c.setLineDash([]);
   c.strokeStyle = '#b0452a'; c.lineWidth = 3; c.beginPath(); c.moveTo(64, 34); c.lineTo(76, 46); c.moveTo(76, 34); c.lineTo(64, 46); c.stroke();
+  }
   $('lootName').textContent = firstClear ? loot.name : '戦利品の魔界石';
   $('lootDesc').textContent = firstClear ? loot.desc : 'すでに制圧した場所から、魔界石を回収した。';
   const gains = [`魔界石 <b>+${res.stones}</b>`];

@@ -27,6 +27,16 @@ SOLDIERS = ['militia', 'swordsman', 'archer', 'shield', 'priest', 'rider']
 FOOT = 16  # 足元：各コマの下端から16px上
 SOLDIER_HEIGHT = 64   # ゲーム内の背丈の目安（論理ドット）
 HERO_HEIGHT = 92
+# エフェクト：名前 → (1コマの幅, 高さ, コマ数)（docs/CHATGPT_REQUEST.md）
+FX_SPEC = {
+    'summon': (256, 96, 6), 'hit': (128, 128, 4), 'slash': (192, 192, 4), 'defeat_demon': (192, 192, 6), 'defeat_human': (192, 192, 6),
+    'spell': (384, 540, 6), 'big_magic': (384, 384, 6), 'fizzle': (192, 192, 4), 'wave': (384, 256, 4), 'stun': (256, 256, 4), 'heal': (256, 128, 6),
+}
+# UI：名前 → 推奨サイズ
+UI_SPEC = {
+    'logo': (1600, 600), 'frame_card': (160, 192), 'frame_panel': (800, 500), 'button_spell': (256, 256), 'icon_mana': (96, 96), 'icon_stone': (96, 96),
+    **{f'loot_1-{i}': (192, 192) for i in range(1, 6)},
+}
 DEMON_HEIGHT = {'mass': 46, 'vanguard': 64, 'tank': 84, 'ranged': 58, 'fast': 50, 'area': 66, 'healer': 56, 'special': 58}
 
 
@@ -57,8 +67,13 @@ def spec_for(name):
     if m:
         who = m[1]
         return dict(kind='portrait', key=who, face=m[2], frame=(512, 512), frames=(1,), auto=who in ('take', 'sai', 'tiw', 'mot', 'waan', 'koi'))
-    if re.fullmatch(r'(fx|ui)/[\w-]+\.png', name):
-        return dict(kind='other', frame=None, frames=None, auto=False)
+    m = re.fullmatch(r'fx/([\w-]+)\.png', name)
+    if m and m[1] in FX_SPEC:
+        fw, fh, n = FX_SPEC[m[1]]
+        return dict(kind='fx', key=m[1], frame=(fw, fh), frames=(n, 1), auto=True)
+    m = re.fullmatch(r'ui/([\w-]+)\.png', name)
+    if m and m[1] in UI_SPEC:
+        return dict(kind='ui', key=m[1], frame=UI_SPEC[m[1]], frames=(1,), auto=True)
     return None
 
 
@@ -89,7 +104,7 @@ def check(name, data, sp):
     fr = sp.get('frame')
     if fr:
         fw, fh = fr
-        if sp['frames'] and sp['frames'] != (1,) and sp['kind'] == 'unit':
+        if sp['frames'] and sp['frames'] != (1,) and sp['kind'] in ('unit', 'fx'):
             # 1コマの高さを基準に、横に何コマあるか
             n = round(w / (h * fw / fh))
             info['frames'] = n
@@ -124,12 +139,14 @@ def main():
     zsha = hashlib.sha256(zpath.read_bytes()).hexdigest()
 
     manifest_path = root / 'js/data/approved.js'
-    approved = {'sprites': {}, 'images': {'stageBg': {}, 'base': {}, 'shrine': None, 'talkBg': {}}, 'portraits': {}}
+    approved = {'sprites': {}, 'images': {'stageBg': {}, 'base': {}, 'shrine': None, 'talkBg': {}}, 'portraits': {}, 'fx': {}, 'ui': {}}
     if manifest_path.exists():
         txt = manifest_path.read_text(encoding='utf-8')
         m = re.search(r'/\*JSON\*/(.*)/\*END\*/', txt, re.S)
         if m:
-            approved = json.loads(m[1])
+            old = json.loads(m[1])
+            approved.update(old)
+            approved.setdefault('fx', {}); approved.setdefault('ui', {})
 
     results = []
     with zipfile.ZipFile(zpath) as z:
@@ -224,6 +241,13 @@ def register(approved, sp, dst, meta):
             approved['portraits'][key] = dst
             return f'登録：portraits.{key}'
         return f'取り込みのみ。登録はプロジェクトの持ち主が skin.js の portraits に追加：`{key}: \'{dst}\'`'
+    if k == 'fx':
+        n = meta.get('frames', 1)
+        approved['fx'][sp['key']] = {'src': dst, 'frameW': round(meta['w'] / n), 'frameH': meta['h'], 'frames': n}
+        return f'登録：fx.{sp["key"]}（{n}コマ）'
+    if k == 'ui':
+        approved['ui'][sp['key']] = dst
+        return f'登録：ui.{sp["key"]}'
     return '取り込みのみ（ゲームへのつなぎこみは今後）'
 
 
