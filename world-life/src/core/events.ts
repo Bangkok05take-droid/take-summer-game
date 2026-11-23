@@ -1,4 +1,5 @@
 // イベントの抽選・選択・効果適用（純粋関数）
+import { resolveInsolvency } from './insolvency';
 import { nextRandom } from './rng';
 import { clampStat } from './stats';
 import type { EventCategory, EventChoice, EventDef, EventEffect, GameContext, GameState, NodeType, Player } from './types';
@@ -14,12 +15,20 @@ export function eventsInCategory(ctx: GameContext, category: EventCategory): Eve
   return Object.values(ctx.events).filter((e) => e.category === category);
 }
 
-/** カテゴリからイベントを1つ抽選 */
-export function drawEvent(rngState: number, ctx: GameContext, category: EventCategory): { eventId: string | null; rngState: number } {
-  const list = eventsInCategory(ctx, category);
+/** カテゴリからイベントを1つ抽選（ターン条件・重み付き） */
+export function drawEvent(rngState: number, ctx: GameContext, category: EventCategory, turn = 1): { eventId: string | null; rngState: number } {
+  const list = eventsInCategory(ctx, category).filter(
+    (e) => (e.minTurn === undefined || turn >= e.minTurn) && (e.maxTurn === undefined || turn <= e.maxTurn) && (e.weight ?? 1) > 0,
+  );
   if (list.length === 0) return { eventId: null, rngState };
   const r = nextRandom(rngState);
-  return { eventId: list[Math.floor(r.value * list.length)].id, rngState: r.state };
+  const total = list.reduce((s, e) => s + (e.weight ?? 1), 0);
+  let pick = r.value * total;
+  for (const e of list) {
+    pick -= e.weight ?? 1;
+    if (pick < 0) return { eventId: e.id, rngState: r.state };
+  }
+  return { eventId: list[list.length - 1].id, rngState: r.state };
 }
 
 export function canChoose(player: Player, choice: EventChoice): boolean {
@@ -70,13 +79,18 @@ export function resolveChoice(state: GameState, ctx: GameContext, choiceId: stri
   }
   const outcome = choice.outcomes[outcomeIndex];
   const { player: updated, applied } = applyEffect(player, outcome.effect);
-  return {
+  const after: GameState = {
     ...state,
     rngState: r.state,
     players: state.players.map((p) => (p.id === player.id ? updated : p)),
     phase: 'eventResult',
-    eventResult: { eventId: ev.id, choiceId, outcomeIndex, text: outcome.text, applied },
     log: [...state.log, `${player.name}「${ev.title}」→ ${choice.label}：${outcome.text}`].slice(-40),
+  };
+  // 負債上限を超えたら支払い不能として清算
+  const settled = resolveInsolvency(after, ctx, player.id);
+  return {
+    ...settled.state,
+    eventResult: { eventId: ev.id, choiceId, outcomeIndex, text: outcome.text, applied, ...(settled.report ? { insolvency: settled.report } : {}) },
   };
 }
 
@@ -99,7 +113,13 @@ export function aiChooseEventChoice(state: GameState, ctx: GameContext): { choic
 /** データ検証（テスト・起動時チェック用） */
 export function validateEvents(ctx: GameContext): string[] {
   const errors: string[] = [];
+  const ids = new Set<string>();
   for (const ev of Object.values(ctx.events)) {
+    if (ids.has(ev.id)) errors.push(`${ev.id}: IDが重複`);
+    ids.add(ev.id);
+    if (!ev.title || !ev.text) errors.push(`${ev.id}: タイトルまたは本文が空`);
+    if (ev.minTurn !== undefined && ev.maxTurn !== undefined && ev.minTurn > ev.maxTurn) errors.push(`${ev.id}: ターン範囲が不正`);
+    if (new Set(ev.choices.map((c) => c.id)).size !== ev.choices.length) errors.push(`${ev.id}: 選択肢IDが重複`);
     if (!ev.choices.length) errors.push(`${ev.id}: 選択肢なし`);
     if (!ev.choices.some((c) => c.requiresMoney === undefined)) errors.push(`${ev.id}: 無条件で選べる選択肢がない`);
     for (const c of ev.choices) {

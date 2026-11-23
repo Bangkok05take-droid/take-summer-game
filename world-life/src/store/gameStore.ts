@@ -81,6 +81,20 @@ export const useGame = create<Store>((set, get) => {
     if (st) saveGame(st, state);
     if (prev) emitDiff(prev, state);
     scheduleAi();
+    scheduleAutoAdvance(state);
+  }
+
+  /** 選択の必要がない着地（自分・他人の物件、空港）は少し見せてから自動で次へ */
+  let autoTimer: ReturnType<typeof setTimeout> | null = null;
+  function scheduleAutoAdvance(state: GameState): void {
+    if (autoTimer) clearTimeout(autoTimer);
+    autoTimer = null;
+    if (state.phase !== 'landed' || !currentPlayer(state).isHuman) return;
+    autoTimer = setTimeout(() => {
+      autoTimer = null;
+      const g = get().game;
+      if (g === state && !get().busy) commit(endAction(g, ctx));
+    }, get().fastForward ? 500 : 1600);
   }
 
   /** 状態の差分から演出イベントを発火 */
@@ -101,6 +115,11 @@ export const useGame = create<Store>((set, get) => {
       const a = next.eventResult.applied;
       const score = a.money / 50_000 - a.debt / 50_000 + a.fame / 4 + a.network / 4 + a.happiness / 4;
       fxBus.emit({ type: 'eventResult', playerId: cur.id, good: score >= 0, applied: a });
+      const ins = next.eventResult.insolvency;
+      if (ins) {
+        const soldNodeIds = ins.sold.map((s) => ctx.properties[s.propertyId].nodeId);
+        setTimeout(() => fxBus.emit({ type: 'insolvency', playerId: cur.id, soldNodeIds, restructured: ins.forgiven > 0 }), fast ? 0 : 700);
+      }
     }
     // 購入
     for (const pid of Object.keys(next.ownership)) {
@@ -213,7 +232,7 @@ export const useGame = create<Store>((set, get) => {
     const sp = speed();
     const base =
       g.phase === 'awaitEvent' ? sp.eventThink
-      : g.phase === 'eventResult' ? sp.eventResult
+      : g.phase === 'eventResult' ? sp.eventResult + (g.eventResult?.insolvency && !get().fastForward ? 2200 : 0)
       : g.phase === 'landed' || g.phase === 'awaitPurchase' ? sp.landing
       : sp.think;
     const delay = Math.max(base, holdUntil - performance.now());
@@ -224,6 +243,8 @@ export const useGame = create<Store>((set, get) => {
     session++;
     if (aiTimer) clearTimeout(aiTimer);
     aiTimer = null;
+    if (autoTimer) clearTimeout(autoTimer);
+    autoTimer = null;
   }
 
   const st = storage();

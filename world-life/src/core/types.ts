@@ -57,6 +57,13 @@ export interface EconomyRules {
   areaMonopolyMultiplier: number;
   /** 独占ボーナスが成立するエリア内物件数の下限（1件のみのエリアは独占扱いしない） */
   monopolyMinProperties: number;
+  /** 負債上限 = 所有物件評価額 × この割合 + debtLimitBase */
+  debtLimitPropertyRatio: number;
+  debtLimitBase: number;
+  /** 強制売却時の売却額（購入価格に対する割合） */
+  forcedSaleRatio: number;
+  /** 物件を売り尽くしても上限を超える場合の債務整理ペナルティ */
+  restructurePenalty: { fame: number; happiness: number };
 }
 
 /** ゲームが参照する静的データ一式 */
@@ -105,6 +112,11 @@ export interface EventDef {
   /** 登場人物（素材ID: character.<id>.cutin） */
   characterId?: string;
   choices: EventChoice[];
+  /** 抽選の出やすさ（省略時1） */
+  weight?: number;
+  /** 発生するターン範囲（省略時は全ターン） */
+  minTurn?: number;
+  maxTurn?: number;
   /** 仮データ（本部の本番データ待ち） */
   placeholder?: boolean;
 }
@@ -120,6 +132,24 @@ export interface EventResult {
   text: string;
   /** 実際に適用された差分（上下限で丸めた後） */
   applied: Required<EventEffect>;
+  /** 支払い不能が発生した場合の清算内容 */
+  insolvency?: InsolvencyReport;
+}
+
+/** 支払い不能（負債上限超過）の清算結果 */
+export interface InsolvencyReport {
+  debtBefore: number;
+  limitBefore: number;
+  /** 手持ち現金からの返済額 */
+  cashRepaid: number;
+  /** 強制売却した物件（売却額） */
+  sold: { propertyId: string; proceeds: number }[];
+  /** 債務整理で免除された額 */
+  forgiven: number;
+  /** 債務整理のペナルティ（適用後の実変化量） */
+  penalty: { fame: number; happiness: number };
+  debtAfter: number;
+  limitAfter: number;
 }
 
 export type StatKey = 'fame' | 'network' | 'happiness';

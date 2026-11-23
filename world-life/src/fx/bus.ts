@@ -12,6 +12,7 @@ export type FxEvent =
   | { type: 'yourTurn' }
   | { type: 'gameOver' }
   | { type: 'eventOpen'; eventId: string; human: boolean }
+  | { type: 'insolvency'; playerId: string; soldNodeIds: string[]; restructured: boolean }
   | { type: 'eventResult'; playerId: string; good: boolean; applied: { money: number; debt: number; fame: number; network: number; happiness: number } };
 
 type Listener = (e: FxEvent) => void;

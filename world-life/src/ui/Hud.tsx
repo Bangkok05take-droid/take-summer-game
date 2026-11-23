@@ -1,4 +1,4 @@
-import { computeIncome, propertiesOwnedBy } from '../core/economy';
+import { computeIncome, debtLimit, propertiesOwnedBy } from '../core/economy';
 import { ctx, useGame } from '../store/gameStore';
 import { useState } from 'react';
 import { isMuted, setMuted } from '../audio/sfx';
@@ -12,7 +12,13 @@ export function Hud() {
   return (
     <header className="hud">
       <div className="hud-top">
-        <button className="hud-menu" onClick={backToTitle} aria-label="タイトルへ">
+        <button
+          className="hud-menu"
+          onClick={() => {
+            if (game.phase === 'gameOver' || window.confirm('タイトルに戻りますか？（進行状況は自動保存されています）')) backToTitle();
+          }}
+          aria-label="タイトルへ"
+        >
           ≡
         </button>
         <div className="turn">
@@ -49,7 +55,12 @@ export function Hud() {
               </div>
               <div className="pprops">
                 🏢{owned} <small>+{money(computeIncome(game, ctx, p.id))}/T</small>
-                {p.debt > 0 && <span className="pdebt">負債{money(p.debt)}</span>}
+                {p.debt > 0 && (
+                  <span className="pdebt">
+                    負債{money(p.debt)}
+                    <small>/{money(debtLimit(game, ctx, p.id))}</small>
+                  </span>
+                )}
               </div>
             </div>
           );

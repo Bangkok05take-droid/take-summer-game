@@ -16,4 +16,10 @@ export const bangkokProperties: Record<string, PropertyDef> = Object.fromEntries
 export const defaultEconomy: EconomyRules = {
   areaMonopolyMultiplier: 1.2,
   monopolyMinProperties: 2,
+  // 負債上限 = 総物件評価額の50% + $200,000（指令 No.004）
+  debtLimitPropertyRatio: 0.5,
+  debtLimitBase: 200_000,
+  // 以下は暫定値（本部の調整待ち）
+  forcedSaleRatio: 0.7,
+  restructurePenalty: { fame: -10, happiness: -10 },
 };

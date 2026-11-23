@@ -132,7 +132,7 @@ function afterWalk(state: GameState, ctx: GameContext, remaining: number, option
   } else {
     landing = { nodeId: node.id, kind: node.type === 'start' ? 'start' : 'event' };
     const cat = categoryForNode(node.type);
-    const drawn = cat ? drawEvent(state.rngState, ctx, cat) : null;
+    const drawn = cat ? drawEvent(state.rngState, ctx, cat, state.turn) : null;
     if (drawn?.eventId) {
       return {
         ...state,

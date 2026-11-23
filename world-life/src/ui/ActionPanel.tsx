@@ -18,6 +18,14 @@ export function ActionPanel() {
   const { roll, pickBranch, buy, skip, next, setFastForward } = useGame.getState();
 
   if (game.phase === 'gameOver') return null;
+  // イベント表示中（人間の手番）は画面を広く使うため最小表示
+  if ((game.phase === 'awaitEvent' || game.phase === 'eventResult') && currentPlayer(game).isHuman) {
+    return (
+      <footer className="action-panel compact">
+        <div className="ap-log">{game.log[game.log.length - 1]}</div>
+      </footer>
+    );
+  }
   const player = currentPlayer(game);
   const node = ctx.map.nodes[player.position];
   const lastLog = game.log[game.log.length - 1];

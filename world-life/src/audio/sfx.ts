@@ -15,7 +15,8 @@ export type SfxId =
   | 'gameOver'
   | 'eventOpen'
   | 'eventGood'
-  | 'eventBad';
+  | 'eventBad'
+  | 'insolvency';
 
 const MUTE_KEY = 'worldlife.muted';
 
@@ -68,7 +69,7 @@ export function unlockAudio(): void {
 }
 
 async function loadFiles(): Promise<void> {
-  const ids: SfxId[] = ['tap', 'diceRoll', 'diceResult', 'step', 'land', 'branch', 'purchase', 'income', 'turnStart', 'yourTurn', 'gameOver', 'eventOpen', 'eventGood', 'eventBad'];
+  const ids: SfxId[] = ['tap', 'diceRoll', 'diceResult', 'step', 'land', 'branch', 'purchase', 'income', 'turnStart', 'yourTurn', 'gameOver', 'eventOpen', 'eventGood', 'eventBad', 'insolvency'];
   await Promise.all(
     ids.map(async (id) => {
       try {
@@ -211,6 +212,15 @@ export function play(id: SfxId, param = 0): void {
     case 'eventGood':
       [783.99, 987.77, 1174.66, 1567.98].forEach((f, i) => tone(f, t + i * 0.07, 0.5, { type: 'triangle', vol: 0.1 }));
       break;
+    case 'insolvency':
+      // 警報音
+      for (let i = 0; i < 3; i++) {
+        tone(880, t + i * 0.28, 0.14, { type: 'square', vol: 0.05 });
+        tone(622.25, t + i * 0.28 + 0.14, 0.14, { type: 'square', vol: 0.05 });
+      }
+      tone(55, t, 0.9, { type: 'sawtooth', vol: 0.06 });
+      noise(t + 0.85, 0.5, { vol: 0.12, freq: 400, sweepTo: 120, q: 1, type: 'lowpass' });
+      break;
     case 'eventBad':
       tone(392, t, 0.35, { type: 'sawtooth', vol: 0.05, glideTo: 330 });
       tone(311.13, t + 0.18, 0.5, { type: 'sawtooth', vol: 0.05, glideTo: 233 });
@@ -276,6 +286,10 @@ export function initSfx(): () => void {
         break;
       case 'eventOpen':
         play('eventOpen');
+        break;
+      case 'insolvency':
+        play('insolvency');
+        vibrate([60, 40, 60, 40, 120]);
         break;
       case 'eventResult':
         play(e.good ? 'eventGood' : 'eventBad');

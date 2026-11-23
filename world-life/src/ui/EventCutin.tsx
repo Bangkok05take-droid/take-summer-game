@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { characterCutinUrl, eventBgUrl } from '../assets/manifest';
 import { canChoose } from '../core/events';
+import type { InsolvencyReport } from '../core/types';
 import { currentPlayer } from '../core/game';
 import { CHARACTERS } from '../data/characters';
 import { EVENT_CATEGORY_META } from '../data/eventCategories';
@@ -57,6 +58,33 @@ function Chips({ a }: { a: { money: number; debt: number; fame: number; network:
           {t}
         </span>
       ))}
+    </div>
+  );
+}
+
+function Insolvency({ r }: { r: InsolvencyReport }) {
+  return (
+    <div className="ec-insolvency">
+      <div className="ins-title">⚠ 支払い不能</div>
+      <div className="ins-sub">
+        負債 {money(r.debtBefore)} が上限 {money(r.limitBefore)} を超えたため清算しました
+      </div>
+      <ul>
+        {r.cashRepaid > 0 && <li>現金で返済 {money(r.cashRepaid)}</li>}
+        {r.sold.map((s) => (
+          <li key={s.propertyId}>
+            強制売却：{ctx.properties[s.propertyId].name} <b>{money(s.proceeds)}</b>
+          </li>
+        ))}
+        {r.forgiven > 0 && (
+          <li>
+            債務整理：{money(r.forgiven)} 免除（名声 {r.penalty.fame}、幸福度 {r.penalty.happiness}）
+          </li>
+        )}
+      </ul>
+      <div className="ins-after">
+        清算後の負債 {money(r.debtAfter)} ／ 上限 {money(r.limitAfter)}
+      </div>
     </div>
   );
 }
@@ -129,6 +157,7 @@ export function EventCutin() {
             <div className="ec-choice-made">▶ {ev.choices.find((c) => c.id === result.choiceId)?.label}</div>
             <p className="ec-text strong">{result.text}</p>
             <Chips a={result.applied} />
+            {result.insolvency && <Insolvency r={result.insolvency} />}
             {player.isHuman && (
               <button className="btn gold ec-next" onClick={press(next)}>
                 次へ

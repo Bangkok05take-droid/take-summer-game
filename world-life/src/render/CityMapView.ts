@@ -436,6 +436,23 @@ export class CityMapView {
     else this.fx.ripple(t.x, t.y, 0xff4d6d, 20, 90, 6, 600);
   }
 
+  /** 支払い不能：売却された物件に赤い波紋、駒に警告 */
+  fxInsolvency(playerId: string, soldNodeIds: string[]): void {
+    if (!this.ready) return;
+    soldNodeIds.forEach((id, i) => {
+      const n = this.ctx.map.nodes[id];
+      setTimeout(() => {
+        this.fx.ripple(n.pos.x, n.pos.y, 0xff3355, NODE_R, NODE_R * 2.8, 10, 900);
+        this.fx.floatText(n.pos.x, n.pos.y - 70, 'SOLD', 0xff6b80, 30, 1600);
+      }, i * 260);
+    });
+    const t = this.tokens.get(playerId);
+    if (t) {
+      this.fx.ripple(t.x, t.y, 0xff3355, 20, 140, 8, 900);
+      this.fx.floatText(t.x, t.y - 90, '支払い不能', 0xff3355, 32, 1800);
+    }
+  }
+
   focusNode(nodeId: string): void {
     if (!this.ready) return;
     const p = this.ctx.map.nodes[nodeId].pos;

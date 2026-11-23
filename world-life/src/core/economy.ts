@@ -42,3 +42,13 @@ export function netWorth(state: GameState, ctx: GameContext, playerId: string): 
   if (!player) return 0;
   return player.money - player.debt + propertiesOwnedBy(state, playerId).reduce((s, pid) => s + (ctx.properties[pid]?.price ?? 0), 0);
 }
+
+/** 所有物件の評価額合計（購入価格ベース） */
+export function propertyValue(state: GameState, ctx: GameContext, playerId: string): number {
+  return propertiesOwnedBy(state, playerId).reduce((s, pid) => s + (ctx.properties[pid]?.price ?? 0), 0);
+}
+
+/** 負債上限 = 総物件評価額 × 割合 + 基本枠 */
+export function debtLimit(state: GameState, ctx: GameContext, playerId: string): number {
+  return Math.round(propertyValue(state, ctx, playerId) * ctx.economy.debtLimitPropertyRatio + ctx.economy.debtLimitBase);
+}
