@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#140a1f">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <title>魔王軍の世界侵略（仮）試作</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='18' r='12' fill='%238b5cf6'/%3E%3Cpath d='M8 10 L11 2 L14 9 M24 10 L21 2 L18 9' fill='%238b5cf6'/%3E%3Ccircle cx='12' cy='17' r='2.5' fill='%23fff'/%3E%3Ccircle cx='20' cy='17' r='2.5' fill='%23fff'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="game" aria-label="魔王軍の世界侵略 試作">
+    <canvas id="field"></canvas>
+
+    <!-- 上：祠・魔力・拠点 -->
+    <div id="top">
+      <div class="hpbox shrine"><span class="lbl">封印の祠</span><div class="bar"><i id="shrineBar"></i></div><span class="num" id="shrineNum"></span></div>
+      <div class="manabox"><span class="lbl">魔力</span><span class="num" id="manaNum">0</span><span class="max" id="manaMax">/1000</span><div class="bar"><i id="manaBar"></i></div></div>
+      <div class="hpbox base"><span class="lbl">人間軍の拠点</span><div class="bar"><i id="baseBar"></i></div><span class="num" id="baseNum"></span></div>
+      <div class="ctrl">
+        <button id="btnSpeed" type="button" aria-label="速度">×1</button>
+        <button id="btnPause" type="button" aria-label="一時停止">Ⅱ</button>
+      </div>
+    </div>
+    <div id="cap"><span id="capNum">0</span>/<span id="capMax">30</span></div>
+
+    <!-- 下：魔力炉・召喚ボタン・魔王の呪文 -->
+    <div id="bottom">
+      <button id="btnFurnace" class="side" type="button">
+        <span class="t">魔力炉</span><span class="lv" id="furnaceLv">Lv1</span><span class="cost" id="furnaceCost">150</span>
+      </button>
+      <div id="slots"></div>
+      <button id="btnSpell" class="side spell" type="button">
+        <span class="t">魔王の呪文</span><span class="lv" id="spellPct">0%</span><i class="fill" id="spellFill"></i>
+      </button>
+    </div>
+
+    <div id="toast" role="status" aria-live="polite"></div>
+
+    <!-- 開始 -->
+    <div id="ovStart" class="overlay show">
+      <div class="panel">
+        <p class="chap" id="startChap"></p>
+        <h1 id="startTitle"></h1>
+        <p class="talk" id="startTalk"></p>
+        <ul class="howto">
+          <li>下のボタンで魔物を召喚。魔物は自動で右へ進んで戦います</li>
+          <li>人間軍の拠点（右端）を壊せば勝ち。封印の祠（左端）を壊されたら負け</li>
+          <li>戦場はドラッグで左右に動かせます。上の小さな地図をタップしてもOK</li>
+          <li class="pc">PC：1〜4 召喚／Q 魔力炉／Space 呪文／←→ 移動／S 速度／P 一時停止</li>
+        </ul>
+        <button class="big" id="btnStart" type="button">出撃！</button>
+      </div>
+    </div>
+
+    <!-- 一時停止 -->
+    <div id="ovPause" class="overlay">
+      <div class="panel">
+        <h2>一時停止</h2>
+        <div class="row">
+          <button class="big" id="btnResume" type="button">つづける</button>
+          <button class="big sub" id="btnRetryP" type="button">やりなおす</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 結果 -->
+    <div id="ovResult" class="overlay">
+      <div class="panel">
+        <h2 id="resTitle"></h2>
+        <p id="resText"></p>
+        <dl id="resStats"></dl>
+        <div class="row">
+          <button class="big" id="btnRetry" type="button">もう一度</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 縦持ちの案内 -->
+  <div id="rotate">
+    <div class="phone"></div>
+    <p>スマホを<b>横向き</b>にしてください</p>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

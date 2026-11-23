@@ -1,0 +1,12 @@
+{
+  "name": "maougun-invasion",
+  "private": true,
+  "type": "module",
+  "description": "魔王軍の世界侵略（仮）— ビルド不要の静的ゲーム。依存パッケージなし。",
+  "scripts": {
+    "test": "node --test tests/battle.test.js",
+    "balance": "node tests/balance.js",
+    "serve": "node tests/serve.js 8080",
+    "e2e": "node tests/e2e.test.js"
+  }
+}
