@@ -36,5 +36,14 @@ fi
 git commit -q -m "WORLD LIFE 試遊版を更新 ($(git -C "$REPO_DIR" rev-parse --short HEAD))" \
   -m "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
 Claude-Session: https://claude.ai/code/session_016ffhdMYYhjCmMftFgF5JgE"
+# 既存ゲームのファイル（world-life/ 以外の全項目）が公開前と同一か確認
+for entry in $(git ls-tree --name-only HEAD~1); do
+  [ "$entry" = "world-life" ] && continue
+  if [ "$(git rev-parse "HEAD~1:$entry")" != "$(git rev-parse "HEAD:$entry")" ]; then
+    echo "既存ファイル $entry が変化したため中止します" >&2
+    exit 1
+  fi
+done
+echo "既存ゲームのファイルは変更なし"
 git push origin "HEAD:$PAGES_BRANCH"
 echo "公開: https://bangkok05take-droid.github.io/take-summer-game/world-life/"

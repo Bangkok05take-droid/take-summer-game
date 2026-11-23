@@ -12,6 +12,7 @@ import {
   type MoveResult,
 } from '../core/game';
 import { computeIncome, ownsWholeArea } from '../core/economy';
+import { aiChooseEventChoice, resolveChoice } from '../core/events';
 import { clearSave, loadGame, saveGame, type KeyValueStorage } from '../core/save';
 import type { GameState } from '../core/types';
 import { bangkokContext } from '../data/config';
@@ -26,8 +27,8 @@ export interface ViewPort {
 }
 
 const SPEED = {
-  normal: { dice: 900, step: 220, think: 500, landing: 750 },
-  fast: { dice: 110, step: 70, think: 60, landing: 120 },
+  normal: { dice: 900, step: 220, think: 500, landing: 750, eventThink: 1400, eventResult: 1900 },
+  fast: { dice: 110, step: 70, think: 60, landing: 120, eventThink: 80, eventResult: 260 },
 };
 
 function storage(): KeyValueStorage | null {
@@ -60,6 +61,7 @@ interface Store {
   buy(): void;
   skip(): void;
   next(): void;
+  chooseEvent(choiceId: string): void;
 }
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -90,6 +92,16 @@ export const useGame = create<Store>((set, get) => {
       fxBus.emit({ type: 'land', playerId: cur.id, nodeId: cur.position, human: cur.isHuman });
     }
     if (next.phase === 'awaitBranch' && prev.phase !== 'awaitBranch' && cur.isHuman) fxBus.emit({ type: 'branchPrompt' });
+    // イベント
+    if (next.phase === 'awaitEvent' && prev.phase !== 'awaitEvent' && next.pendingEvent) {
+      const eventId = next.pendingEvent.eventId;
+      setTimeout(() => fxBus.emit({ type: 'eventOpen', eventId, human: cur.isHuman }), fast ? 0 : 350);
+    }
+    if (next.phase === 'eventResult' && prev.phase === 'awaitEvent' && next.eventResult) {
+      const a = next.eventResult.applied;
+      const score = a.money / 50_000 - a.debt / 50_000 + a.fame / 4 + a.network / 4 + a.happiness / 4;
+      fxBus.emit({ type: 'eventResult', playerId: cur.id, good: score >= 0, applied: a });
+    }
     // 購入
     for (const pid of Object.keys(next.ownership)) {
       if (prev.ownership[pid]) continue;
@@ -183,7 +195,13 @@ export const useGame = create<Store>((set, get) => {
       case 'awaitPurchase':
         commit(aiWantsToBuy(g, ctx) ? buyProperty(g, ctx) : skipPurchase(g, ctx));
         break;
+      case 'awaitEvent': {
+        const c = aiChooseEventChoice(g, ctx);
+        commit(resolveChoice({ ...g, rngState: c.rngState }, ctx, c.choiceId));
+        break;
+      }
       case 'landed':
+      case 'eventResult':
         commit(endAction(g, ctx));
         break;
     }
@@ -192,7 +210,12 @@ export const useGame = create<Store>((set, get) => {
   function scheduleAi(): void {
     const { game: g, busy } = get();
     if (aiTimer || busy || !g || g.phase === 'gameOver' || currentPlayer(g).isHuman) return;
-    const base = g.phase === 'landed' || g.phase === 'awaitPurchase' ? speed().landing : speed().think;
+    const sp = speed();
+    const base =
+      g.phase === 'awaitEvent' ? sp.eventThink
+      : g.phase === 'eventResult' ? sp.eventResult
+      : g.phase === 'landed' || g.phase === 'awaitPurchase' ? sp.landing
+      : sp.think;
     const delay = Math.max(base, holdUntil - performance.now());
     aiTimer = setTimeout(aiStep, delay);
   }
@@ -271,7 +294,16 @@ export const useGame = create<Store>((set, get) => {
     },
     next() {
       const g = get().game;
-      if (g && !get().busy && g.phase === 'landed' && currentPlayer(g).isHuman) commit(endAction(g, ctx));
+      if (g && !get().busy && (g.phase === 'landed' || g.phase === 'eventResult') && currentPlayer(g).isHuman) commit(endAction(g, ctx));
+    },
+    chooseEvent(choiceId) {
+      const g = get().game;
+      if (!g || get().busy || g.phase !== 'awaitEvent' || !currentPlayer(g).isHuman) return;
+      try {
+        commit(resolveChoice(g, ctx, choiceId));
+      } catch {
+        /* 選べない選択肢（UIで無効化済み） */
+      }
     },
   };
 });

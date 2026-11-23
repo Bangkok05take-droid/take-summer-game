@@ -1,4 +1,5 @@
 import type { GameContext } from '../core/types';
+import { bangkokEvents } from './events/bangkok';
 import { bangkokMap } from './maps/bangkok';
 import { bangkokProperties, defaultEconomy } from './properties/bangkok';
 
@@ -6,6 +7,7 @@ export const bangkokContext: GameContext = {
   map: bangkokMap,
   properties: bangkokProperties,
   economy: defaultEconomy,
+  events: bangkokEvents,
 };
 
 /** 基本ルール値（指令 No.001） */

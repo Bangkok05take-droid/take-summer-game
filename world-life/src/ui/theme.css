@@ -760,3 +760,285 @@ body,
 @media (prefers-reduced-motion: reduce) {
   .btn.gold::after, .roll-btn, .pcard.active, .title-glow { animation: none; }
 }
+
+/* ======================================================
+   イベント・カットイン（仮デザイン：本番はビジュアル制作室の指定に従う）
+   ====================================================== */
+.ec-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+.ec-backdrop {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 60% 30%, color-mix(in srgb, var(--ec) 35%, transparent), rgba(5, 3, 10, 0.92) 65%);
+  animation: ecFade 0.35s ease-out both;
+}
+.ec-bg-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.55;
+  animation: ecFade 0.5s ease-out both;
+}
+.ec-rays {
+  position: absolute;
+  left: 50%;
+  top: 30%;
+  width: 160vmax;
+  height: 160vmax;
+  margin: -80vmax 0 0 -80vmax;
+  background: repeating-conic-gradient(from 0deg, color-mix(in srgb, var(--ec) 16%, transparent) 0deg 6deg, transparent 6deg 18deg);
+  mask-image: radial-gradient(circle, #000 0%, transparent 45%);
+  -webkit-mask-image: radial-gradient(circle, #000 0%, transparent 45%);
+  animation: ecSpin 24s linear infinite, ecFade 0.6s ease-out both;
+  pointer-events: none;
+}
+@keyframes ecFade {
+  from { opacity: 0; }
+}
+@keyframes ecSpin {
+  to { transform: rotate(360deg); }
+}
+.ec-portrait {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 12%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  animation: ecPortraitIn 0.6s cubic-bezier(0.2, 0.9, 0.2, 1) both;
+  pointer-events: none;
+}
+@keyframes ecPortraitIn {
+  0% { opacity: 0; transform: translateX(30%) scale(1.08); filter: brightness(3) blur(6px); }
+  60% { filter: brightness(1.3) blur(0); }
+  100% { opacity: 1; transform: none; filter: none; }
+}
+.ec-portrait-img {
+  height: 100%;
+  object-position: top center;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 0 24px color-mix(in srgb, var(--ec) 60%, transparent));
+}
+.ec-portrait-ph {
+  height: 100%;
+  aspect-ratio: 2 / 3;
+  position: relative;
+  filter: drop-shadow(0 0 18px var(--cc));
+}
+.ec-portrait-ph svg {
+  width: 100%;
+  height: 100%;
+}
+.ec-ph-label {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 36%;
+  text-align: center;
+  font-weight: 900;
+  font-size: 15px;
+  color: #fff;
+  letter-spacing: 0.1em;
+  text-shadow: 0 0 8px var(--cc);
+}
+.ec-ph-label small {
+  display: block;
+  font-size: 10px;
+  font-weight: 600;
+  opacity: 0.7;
+}
+.ec-card {
+  position: relative;
+  margin: 0 10px 10px;
+  padding: 14px 14px 12px;
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(22, 16, 38, 0.86), rgba(8, 6, 16, 0.96) 40%);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  border: 1px solid color-mix(in srgb, var(--ec) 70%, transparent);
+  box-shadow: 0 0 30px color-mix(in srgb, var(--ec) 35%, transparent), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  animation: ecCardIn 0.5s 0.12s cubic-bezier(0.2, 0.9, 0.3, 1.15) both;
+}
+@keyframes ecCardIn {
+  from { opacity: 0; transform: translateY(40px); }
+}
+.ec-cat {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--ec);
+}
+.ec-cat span {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  padding: 2px 8px;
+  border-radius: 99px;
+  color: #0b0812;
+  background: var(--ec);
+}
+.ec-cat em {
+  margin-left: auto;
+  font-style: normal;
+  font-size: 10px;
+  color: var(--muted);
+  border: 1px dashed rgba(255, 255, 255, 0.25);
+  border-radius: 6px;
+  padding: 1px 6px;
+}
+.ec-who {
+  font-size: 11px;
+  font-weight: 700;
+  margin-top: 6px;
+}
+.ec-title {
+  margin: 2px 0 4px;
+  font-size: 21px;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  background: linear-gradient(180deg, #fff, var(--gold-hi));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.ec-text {
+  margin: 0 0 10px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #e6e0f2;
+}
+.ec-text.strong {
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+}
+.ec-choices {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ec-choice {
+  width: 100%;
+  animation: apIn 0.35s both;
+}
+.ec-thinking {
+  color: var(--muted);
+  font-size: 13px;
+  animation: blink 1s ease-in-out infinite;
+}
+@keyframes blink {
+  50% { opacity: 0.4; }
+}
+.ec-result {
+  animation: apIn 0.35s both;
+}
+.ec-choice-made {
+  font-size: 12px;
+  color: var(--ec);
+  margin-bottom: 4px;
+}
+.ec-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.ec-chips span {
+  font-size: 13px;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 99px;
+  animation: popIn 0.35s cubic-bezier(0.2, 1.6, 0.4, 1) both;
+}
+.ec-chips .good {
+  color: #0b2a18;
+  background: linear-gradient(180deg, #b6ffd3, #4fd88a);
+  box-shadow: 0 0 12px rgba(79, 216, 138, 0.5);
+}
+.ec-chips .bad {
+  color: #fff;
+  background: linear-gradient(180deg, #ff7a8a, #b8243a);
+  box-shadow: 0 0 12px rgba(255, 77, 109, 0.45);
+}
+.ec-next {
+  width: 100%;
+}
+.pdebt {
+  display: block;
+  color: #ff8a8a;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+/* ---------- 素材チェック（?assets） ---------- */
+.asset-check {
+  height: 100%;
+  overflow: auto;
+  padding: 16px;
+  user-select: text;
+  -webkit-user-select: text;
+}
+.asset-check h2 {
+  color: var(--gold-hi);
+  margin: 0 0 4px;
+}
+.asset-check table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  margin: 10px 0 16px;
+}
+.asset-check th {
+  text-align: left;
+  vertical-align: top;
+  color: var(--gold-hi);
+  padding: 6px 6px 6px 0;
+  white-space: nowrap;
+}
+.asset-check td {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 5px 4px;
+  vertical-align: middle;
+}
+.asset-check td small {
+  display: block;
+  color: var(--muted);
+}
+.asset-check code {
+  word-break: break-all;
+}
+.asset-check tr.ok td {
+  background: rgba(79, 216, 138, 0.08);
+}
+.asset-check img {
+  max-width: 64px;
+  max-height: 64px;
+}
+.debug-coord {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  z-index: 4;
+  font: 12px monospace;
+  background: rgba(0, 0, 0, 0.75);
+  border: 1px solid var(--cyan);
+  color: var(--cyan);
+  padding: 4px 8px;
+  border-radius: 6px;
+  user-select: text;
+  -webkit-user-select: text;
+}

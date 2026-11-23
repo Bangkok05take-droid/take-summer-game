@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { bangkokContext as ctx, BASE_RULES } from '../../src/data/config';
+import { bangkokContext, BASE_RULES } from '../../src/data/config';
 import { aiChooseBranch, aiWantsToBuy } from '../../src/core/ai/simpleAi';
+import { aiChooseEventChoice, resolveChoice } from '../../src/core/events';
 import { computeIncome, netWorth } from '../../src/core/economy';
 import {
   buyProperty,
@@ -20,6 +21,8 @@ import { applyStatDelta, clampStat } from '../../src/core/stats';
 import type { GameState } from '../../src/core/types';
 import { GameRuleError } from '../../src/core/types';
 
+// 基本ルールのテストはイベントを無効にした状態で検証する（イベントは events.test.ts）
+const ctx = { ...bangkokContext, events: {} };
 const map = ctx.map;
 const ids = Array.from({ length: 16 }, (_, i) => `bkk_${String(i).padStart(2, '0')}`);
 
@@ -256,6 +259,11 @@ describe('物件と収益', () => {
     expect(computeIncome(both, ctx, 'p1')).toBe(Math.round((15_000 + 20_000) * 1.2));
   });
 
+  it('物件が1件だけのエリア（シーロム）は独占扱いにしない', () => {
+    const s = { ...createGame(ctx, { seed: 30 }), ownership: { prop_bkk_08: 'p1' } };
+    expect(computeIncome(s, ctx, 'p1')).toBe(32_000);
+  });
+
   it('ターン終了時に収益を一括精算し、二重精算しない', () => {
     let s = createGame(ctx, { seed: 18 });
     s = { ...s, ownership: { prop_bkk_01: 'p2' } };
@@ -316,6 +324,21 @@ describe('セーブ・ロード', () => {
     expect(b).toEqual(a);
   });
 
+  it('旧形式（v1）のセーブは負債0として読み込める', () => {
+    const v2 = createGame(ctx, { seed: 32 });
+    const v1 = {
+      ...v2,
+      saveVersion: 1,
+      players: v2.players.map(({ debt: _d, ...rest }) => rest),
+      pendingEvent: undefined,
+      eventResult: undefined,
+    };
+    const loaded = deserializeGame(JSON.stringify(v1))!;
+    expect(loaded.saveVersion).toBe(2);
+    expect(loaded.players.every((p) => p.debt === 0)).toBe(true);
+    expect(loaded.pendingEvent).toBeNull();
+  });
+
   it('壊れたデータや旧バージョンは読み込まない', () => {
     expect(deserializeGame('{broken')).toBeNull();
     expect(deserializeGame(JSON.stringify({ ...createGame(ctx), saveVersion: 999 }))).toBeNull();
@@ -346,9 +369,17 @@ describe('最終スコア', () => {
     expect(rows.map((r) => r.rank)).toEqual([1, 2, 4, 3]);
   });
 
-  it('純資産には物件価格を含む', () => {
-    const s = { ...createGame(ctx, { seed: 24 }), ownership: { prop_bkk_13: 'p1' } };
+  it('純資産 = 現金 + 物件購入価格 − 負債', () => {
+    let s = { ...createGame(ctx, { seed: 24 }), ownership: { prop_bkk_13: 'p1' } };
     expect(netWorth(s, ctx, 'p1')).toBe(1_350_000);
+    s = { ...s, players: s.players.map((p, i) => (i === 0 ? { ...p, debt: 400_000 } : p)) };
+    expect(netWorth(s, ctx, 'p1')).toBe(950_000);
+  });
+
+  it('負債で純資産がマイナスなら資産点は0', () => {
+    let s = createGame(ctx, { seed: 31 });
+    s = { ...s, players: s.players.map((p, i) => (i === 0 ? { ...p, money: 100_000, debt: 500_000 } : p)) };
+    expect(computeScores(s, ctx)[0].assetPoints).toBe(0);
   });
 
   it('全員純資産0以下でもエラーにならない', () => {
@@ -359,7 +390,8 @@ describe('最終スコア', () => {
 });
 
 describe('AI', () => {
-  it('AIだけで最後までプレイできる', () => {
+  it('AIだけで最後までプレイできる（イベントあり）', () => {
+    const ctx = bangkokContext;
     let s = createGame(ctx, { seed: 25 });
     let guard = 0;
     while (s.phase !== 'gameOver' && guard++ < 1000) {
@@ -368,9 +400,15 @@ describe('AI', () => {
         const c = aiChooseBranch(s, ctx);
         s = chooseBranch({ ...s, rngState: c.rngState }, ctx, c.choice).state;
       } else if (s.phase === 'awaitPurchase') s = aiWantsToBuy(s, ctx) ? buyProperty(s, ctx) : skipPurchase(s, ctx);
-      else s = endAction(s, ctx);
+      else if (s.phase === 'awaitEvent') {
+        const c = aiChooseEventChoice(s, ctx);
+        s = resolveChoice({ ...s, rngState: c.rngState }, ctx, c.choiceId);
+      } else s = endAction(s, ctx);
     }
     expect(s.phase).toBe('gameOver');
-    for (const p of s.players) expect(p.money).toBeGreaterThanOrEqual(0);
+    for (const p of s.players) {
+      expect(p.money).toBeGreaterThanOrEqual(0);
+      expect(p.debt).toBeGreaterThanOrEqual(0);
+    }
   });
 });

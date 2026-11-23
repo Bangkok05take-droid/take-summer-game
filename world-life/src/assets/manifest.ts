@@ -25,3 +25,21 @@ export type AssetId = keyof typeof assetManifest;
 export function assetUrl(id: AssetId): string {
   return ASSET_BASE + assetManifest[id];
 }
+
+// ---------- DOM（React）で使う素材：イベント演出 ----------
+// 画像が無い場合は CSS の仮表示になる。
+
+/** イベント用人物カットイン（推奨 1024×1536 透過 WebP） */
+export function characterCutinUrl(characterId: string): string {
+  return `${ASSET_BASE}characters/cutin/${characterId}.webp`;
+}
+
+/** イベント背景（推奨 1080×1080 WebP） */
+export function eventBgUrl(category: string): string {
+  return `${ASSET_BASE}events/bg/${category}.webp`;
+}
+
+/** 効果音（mp3）。置くと合成音の代わりに再生される */
+export function sfxUrl(id: string): string {
+  return `${ASSET_BASE}sfx/${id}.mp3`;
+}

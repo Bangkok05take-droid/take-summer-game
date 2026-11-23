@@ -16,7 +16,7 @@ export function serializeGame(state: GameState): string {
 
 export function deserializeGame(json: string): GameState | null {
   try {
-    const data = JSON.parse(json) as GameState;
+    const data = migrate(JSON.parse(json));
     if (!data || data.saveVersion !== SAVE_VERSION) return null;
     if (!Array.isArray(data.players) || data.players.length === 0) return null;
     if (typeof data.turn !== 'number' || typeof data.phase !== 'string') return null;
@@ -24,6 +24,22 @@ export function deserializeGame(json: string): GameState | null {
   } catch {
     return null;
   }
+}
+
+/** 旧バージョンのセーブを現行形式へ変換 */
+function migrate(raw: unknown): GameState | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const data = raw as GameState & { saveVersion: number };
+  if (data.saveVersion === 1) {
+    return {
+      ...data,
+      saveVersion: 2,
+      players: data.players.map((p) => ({ ...p, debt: p.debt ?? 0 })),
+      pendingEvent: null,
+      eventResult: null,
+    };
+  }
+  return data;
 }
 
 export function saveGame(storage: KeyValueStorage, state: GameState): boolean {

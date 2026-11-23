@@ -1,12 +1,13 @@
 // ゲーム進行（純粋関数）。各関数は新しい GameState を返し、不正な操作は GameRuleError を投げる。
 import { BASE_RULES, PLAYER_PRESETS } from '../data/config';
 import { canBuy, computeIncome } from './economy';
+import { categoryForNode, drawEvent } from './events';
 import { walk } from './movement';
 import { nextInt } from './rng';
 import type { GameContext, GameState, LandingInfo, Player } from './types';
 import { GameRuleError } from './types';
 
-export const SAVE_VERSION = 1;
+export const SAVE_VERSION = 2;
 const LOG_LIMIT = 40;
 
 export interface NewGameOptions {
@@ -26,6 +27,7 @@ export function createGame(ctx: GameContext, opts: NewGameOptions = {}): GameSta
     fame: BASE_RULES.initialFame,
     network: BASE_RULES.initialNetwork,
     happiness: BASE_RULES.initialHappiness,
+    debt: 0,
     position: ctx.map.startNodeId,
   }));
   return {
@@ -43,6 +45,8 @@ export function createGame(ctx: GameContext, opts: NewGameOptions = {}): GameSta
     stepsRemaining: 0,
     branchOptions: [],
     landing: null,
+    pendingEvent: null,
+    eventResult: null,
     lastSettledTurn: 0,
     actionCount: 0,
     log: ['ゲーム開始：バンコク'],
@@ -127,6 +131,20 @@ function afterWalk(state: GameState, ctx: GameContext, remaining: number, option
       : { nodeId: node.id, kind: owner === player.id ? 'property-owned-self' : 'property-owned-other', ownerId: owner };
   } else {
     landing = { nodeId: node.id, kind: node.type === 'start' ? 'start' : 'event' };
+    const cat = categoryForNode(node.type);
+    const drawn = cat ? drawEvent(state.rngState, ctx, cat) : null;
+    if (drawn?.eventId) {
+      return {
+        ...state,
+        rngState: drawn.rngState,
+        phase: 'awaitEvent',
+        stepsRemaining: 0,
+        branchOptions: [],
+        landing,
+        pendingEvent: { eventId: drawn.eventId },
+        log: pushLog(state, `${player.name} は「${node.label}」に止まった`),
+      };
+    }
   }
   return {
     ...state,
@@ -165,11 +183,13 @@ export function skipPurchase(state: GameState, ctx: GameContext): GameState {
 
 /** 手番を終了。4人全員が行動したらターン終了（収益精算→次ターン） */
 export function endAction(state: GameState, ctx: GameContext): GameState {
-  requirePhase(state, 'landed', 'awaitPurchase');
+  requirePhase(state, 'landed', 'awaitPurchase', 'eventResult');
   let next: GameState = {
     ...state,
     phase: 'awaitRoll',
     landing: null,
+    pendingEvent: null,
+    eventResult: null,
     lastRoll: null,
     actionCount: state.actionCount + 1,
   };

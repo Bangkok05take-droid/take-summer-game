@@ -1,5 +1,6 @@
 import { useGame } from '../store/gameStore';
 import { ActionPanel } from './ActionPanel';
+import { EventCutin } from './EventCutin';
 import { GameOver } from './GameOver';
 import { Hud } from './Hud';
 import { MapCanvas } from './MapCanvas';
@@ -13,6 +14,7 @@ export function GameScreen() {
       <Hud />
       <div className="map-area">
         <MapCanvas />
+        <EventCutin />
         <TurnBanner />
       </div>
       <ActionPanel />

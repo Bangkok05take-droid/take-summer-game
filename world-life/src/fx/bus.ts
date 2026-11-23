@@ -10,7 +10,9 @@ export type FxEvent =
   | { type: 'income'; playerId: string; amount: number }
   | { type: 'turnStart'; turn: number; maxTurns: number }
   | { type: 'yourTurn' }
-  | { type: 'gameOver' };
+  | { type: 'gameOver' }
+  | { type: 'eventOpen'; eventId: string; human: boolean }
+  | { type: 'eventResult'; playerId: string; good: boolean; applied: { money: number; debt: number; fame: number; network: number; happiness: number } };
 
 type Listener = (e: FxEvent) => void;
 const listeners = new Set<Listener>();

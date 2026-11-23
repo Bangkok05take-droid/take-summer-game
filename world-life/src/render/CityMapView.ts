@@ -63,6 +63,8 @@ export class CityMapView {
 
   onNodeTap: ((nodeId: string) => void) | null = null;
   onStep: ((playerId: string, nodeId: string, index: number) => void) | null = null;
+  /** 座標合わせ用（?debug） */
+  onWorldTap: ((x: number, y: number) => void) | null = null;
 
   constructor(private ctx: GameContext) {}
 
@@ -417,6 +419,23 @@ export class CityMapView {
     this.fx.burst(t.x, t.y - 20, 0xf5d77a, 10, { speed: 4, gravity: 0.2, coin: true });
   }
 
+  /** イベント結果（金額・ステータス変化）を駒の上に表示 */
+  fxEffect(playerId: string, applied: { money: number; debt: number; fame: number; network: number; happiness: number }, good: boolean): void {
+    const t = this.tokens.get(playerId);
+    if (!this.ready || !t) return;
+    const items: [string, number][] = [];
+    const k = (v: number) => `${v > 0 ? '+' : '-'}$${Math.round(Math.abs(v) / 1000)}K`;
+    const sign = (v: number) => `${v > 0 ? '+' : ''}${v}`;
+    if (applied.money) items.push([k(applied.money), applied.money > 0 ? 0x7dffb0 : 0xff8a8a]);
+    if (applied.debt) items.push([`負債${k(applied.debt)}`, applied.debt > 0 ? 0xff8a8a : 0x7dffb0]);
+    if (applied.fame) items.push([`★${sign(applied.fame)}`, applied.fame > 0 ? 0xffd36b : 0xff8a8a]);
+    if (applied.network) items.push([`⚭${sign(applied.network)}`, applied.network > 0 ? 0x9ad8ff : 0xff8a8a]);
+    if (applied.happiness) items.push([`♥${sign(applied.happiness)}`, applied.happiness > 0 ? 0xff9ccf : 0xff8a8a]);
+    items.forEach(([text, color], i) => this.fx.floatText(t.x, t.y - 50 - i * 34, text, color, 26, 1700));
+    if (good) this.fx.burst(t.x, t.y - 10, 0xfff1c2, 16, { speed: 6 });
+    else this.fx.ripple(t.x, t.y, 0xff4d6d, 20, 90, 6, 600);
+  }
+
   focusNode(nodeId: string): void {
     if (!this.ready) return;
     const p = this.ctx.map.nodes[nodeId].pos;
@@ -495,6 +514,7 @@ export class CityMapView {
   }
 
   private handleTap(wx: number, wy: number): void {
+    this.onWorldTap?.(Math.round(wx), Math.round(wy));
     for (const n of Object.values(this.ctx.map.nodes)) {
       if (Math.hypot(n.pos.x - wx, n.pos.y - wy) <= NODE_R + 24) {
         this.onNodeTap?.(n.id);

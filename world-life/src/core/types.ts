@@ -55,6 +55,8 @@ export interface PropertyDef {
 export interface EconomyRules {
   /** エリア独占時の収益倍率（1.2 = +20%） */
   areaMonopolyMultiplier: number;
+  /** 独占ボーナスが成立するエリア内物件数の下限（1件のみのエリアは独占扱いしない） */
+  monopolyMinProperties: number;
 }
 
 /** ゲームが参照する静的データ一式 */
@@ -62,6 +64,62 @@ export interface GameContext {
   map: CityMap;
   properties: Record<string, PropertyDef>;
   economy: EconomyRules;
+  events: Record<string, EventDef>;
+}
+
+// ---------- イベント ----------
+export type EventCategory = 'social' | 'romance' | 'fate' | 'vip' | 'business' | 'scandal' | 'party' | 'bigfate';
+
+/** イベントの効果（正負の増減値） */
+export interface EventEffect {
+  money?: number;
+  fame?: number;
+  network?: number;
+  happiness?: number;
+  /** 負債の増減 */
+  debt?: number;
+}
+
+export interface EventOutcome {
+  /** 抽選の重み */
+  weight: number;
+  text: string;
+  effect: EventEffect;
+}
+
+export interface EventChoice {
+  id: string;
+  label: string;
+  /** 選択に必要な所持金（不足なら選べない） */
+  requiresMoney?: number;
+  /** AIがこの選択肢を選ぶ重み（省略時1） */
+  aiWeight?: number;
+  outcomes: EventOutcome[];
+}
+
+export interface EventDef {
+  id: string;
+  category: EventCategory;
+  title: string;
+  text: string;
+  /** 登場人物（素材ID: character.<id>.cutin） */
+  characterId?: string;
+  choices: EventChoice[];
+  /** 仮データ（本部の本番データ待ち） */
+  placeholder?: boolean;
+}
+
+export interface PendingEvent {
+  eventId: string;
+}
+
+export interface EventResult {
+  eventId: string;
+  choiceId: string;
+  outcomeIndex: number;
+  text: string;
+  /** 実際に適用された差分（上下限で丸めた後） */
+  applied: Required<EventEffect>;
 }
 
 export type StatKey = 'fame' | 'network' | 'happiness';
@@ -75,6 +133,8 @@ export interface Player {
   fame: number;
   network: number;
   happiness: number;
+  /** 負債（0以上） */
+  debt: number;
   position: string;
 }
 
@@ -83,6 +143,8 @@ export type Phase =
   | 'awaitBranch'
   | 'awaitPurchase'
   | 'landed'
+  | 'awaitEvent'
+  | 'eventResult'
   | 'gameOver';
 
 export interface LandingInfo {
@@ -108,6 +170,8 @@ export interface GameState {
   stepsRemaining: number;
   branchOptions: string[];
   landing: LandingInfo | null;
+  pendingEvent: PendingEvent | null;
+  eventResult: EventResult | null;
   /** 最後に収益精算を行ったターン（二重精算防止） */
   lastSettledTurn: number;
   /** 通算の行動確定数（セーブ整合性チェック用） */

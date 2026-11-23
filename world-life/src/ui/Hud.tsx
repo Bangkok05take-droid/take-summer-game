@@ -49,6 +49,7 @@ export function Hud() {
               </div>
               <div className="pprops">
                 🏢{owned} <small>+{money(computeIncome(game, ctx, p.id))}/T</small>
+                {p.debt > 0 && <span className="pdebt">負債{money(p.debt)}</span>}
               </div>
             </div>
           );

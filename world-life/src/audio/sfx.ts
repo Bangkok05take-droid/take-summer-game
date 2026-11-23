@@ -12,7 +12,10 @@ export type SfxId =
   | 'income'
   | 'turnStart'
   | 'yourTurn'
-  | 'gameOver';
+  | 'gameOver'
+  | 'eventOpen'
+  | 'eventGood'
+  | 'eventBad';
 
 const MUTE_KEY = 'worldlife.muted';
 
@@ -65,7 +68,7 @@ export function unlockAudio(): void {
 }
 
 async function loadFiles(): Promise<void> {
-  const ids: SfxId[] = ['tap', 'diceRoll', 'diceResult', 'step', 'land', 'branch', 'purchase', 'income', 'turnStart', 'yourTurn', 'gameOver'];
+  const ids: SfxId[] = ['tap', 'diceRoll', 'diceResult', 'step', 'land', 'branch', 'purchase', 'income', 'turnStart', 'yourTurn', 'gameOver', 'eventOpen', 'eventGood', 'eventBad'];
   await Promise.all(
     ids.map(async (id) => {
       try {
@@ -199,6 +202,20 @@ export function play(id: SfxId, param = 0): void {
     case 'yourTurn':
       [783.99, 1046.5, 1567.98].forEach((f, i) => tone(f, t + i * 0.08, 0.4, { type: 'triangle', vol: 0.1 }));
       break;
+    case 'eventOpen':
+      // 幕が開くようなきらめき
+      noise(t, 0.5, { vol: 0.1, freq: 800, sweepTo: 6000, q: 1.2 });
+      [659.25, 830.61, 987.77, 1318.5].forEach((f, i) => tone(f, t + 0.05 + i * 0.05, 0.6, { type: 'sine', vol: 0.07 }));
+      tone(98, t, 0.5, { type: 'sine', vol: 0.15 });
+      break;
+    case 'eventGood':
+      [783.99, 987.77, 1174.66, 1567.98].forEach((f, i) => tone(f, t + i * 0.07, 0.5, { type: 'triangle', vol: 0.1 }));
+      break;
+    case 'eventBad':
+      tone(392, t, 0.35, { type: 'sawtooth', vol: 0.05, glideTo: 330 });
+      tone(311.13, t + 0.18, 0.5, { type: 'sawtooth', vol: 0.05, glideTo: 233 });
+      tone(65.4, t, 0.5, { type: 'sine', vol: 0.18 });
+      break;
     case 'gameOver':
       [523.25, 659.25, 783.99, 1046.5, 1318.5, 1567.98].forEach((f, i) => tone(f, t + i * 0.1, 0.9, { type: 'triangle', vol: 0.1 }));
       [130.8, 196].forEach((f) => tone(f, t + 0.5, 1.6, { type: 'sawtooth', vol: 0.03, attack: 0.1 }));
@@ -256,6 +273,14 @@ export function initSfx(): () => void {
         break;
       case 'gameOver':
         play('gameOver');
+        break;
+      case 'eventOpen':
+        play('eventOpen');
+        break;
+      case 'eventResult':
+        play(e.good ? 'eventGood' : 'eventBad');
+        if (e.good) vibrate(15);
+        else vibrate([30, 30, 30]);
         break;
     }
   });

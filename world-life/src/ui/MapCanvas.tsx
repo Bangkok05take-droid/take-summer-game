@@ -1,17 +1,21 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { CityMapView } from '../render/CityMapView';
 import { fxBus } from '../fx/bus';
 import { ctx, useGame } from '../store/gameStore';
+
+const DEBUG = new URLSearchParams(window.location.search).has('debug');
 
 /** PixiJS マップを React に埋め込む */
 export function MapCanvas() {
   const host = useRef<HTMLDivElement>(null);
   const viewRef = useRef<CityMapView | null>(null);
+  const [coord, setCoord] = useState<string | null>(null);
 
   useEffect(() => {
     const view = new CityMapView(ctx);
     viewRef.current = view;
     view.onNodeTap = (id) => useGame.getState().pickBranch(id);
+    if (DEBUG) view.onWorldTap = (x, y) => setCoord(`pos: { x: ${x}, y: ${y} }`);
     view.onStep = (playerId, nodeId, index) => {
       const human = !!useGame.getState().game?.players.find((p) => p.id === playerId)?.isHuman;
       fxBus.emit({ type: 'step', playerId, nodeId, index, human });
@@ -20,6 +24,7 @@ export function MapCanvas() {
       if (e.type === 'land') view.fxLand(e.nodeId);
       else if (e.type === 'purchase') view.fxPurchase(e.nodeId, e.color, e.price, e.monopoly);
       else if (e.type === 'income') view.fxIncome(e.playerId, e.amount);
+      else if (e.type === 'eventResult') view.fxEffect(e.playerId, e.applied, e.good);
     });
     let alive = true;
     void view.init(host.current!).then(() => {
@@ -47,6 +52,7 @@ export function MapCanvas() {
   return (
     <div className="map-wrap">
       <div ref={host} className="map-host" />
+      {DEBUG && <div className="debug-coord">{coord ?? 'タップで座標表示（?debug）'}</div>}
       <button className="map-fit" onClick={() => viewRef.current?.fit()} aria-label="全体表示">
         ⤢
       </button>

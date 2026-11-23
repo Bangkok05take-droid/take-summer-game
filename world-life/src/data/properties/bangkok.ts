@@ -15,4 +15,5 @@ export const bangkokProperties: Record<string, PropertyDef> = Object.fromEntries
 
 export const defaultEconomy: EconomyRules = {
   areaMonopolyMultiplier: 1.2,
+  monopolyMinProperties: 2,
 };

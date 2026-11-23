@@ -11,7 +11,7 @@ export function propertiesInArea(ctx: GameContext, area: AreaId): PropertyDef[] 
 /** エリアの購入可能物件をすべて所有しているか */
 export function ownsWholeArea(state: GameState, ctx: GameContext, playerId: string, area: AreaId): boolean {
   const list = propertiesInArea(ctx, area);
-  return list.length > 0 && list.every((p) => state.ownership[p.id] === playerId);
+  return list.length >= Math.max(1, ctx.economy.monopolyMinProperties) && list.every((p) => state.ownership[p.id] === playerId);
 }
 
 /** 1ターン分の収益（エリア独占ボーナス込み） */
@@ -36,9 +36,9 @@ export function canBuy(state: GameState, ctx: GameContext, playerId: string, pro
   return { ok: true };
 }
 
-/** 純資産 = 現金 + 所有物件の価格 */
+/** 純資産 = 現金 + 所有物件の購入価格 − 負債 */
 export function netWorth(state: GameState, ctx: GameContext, playerId: string): number {
   const player = state.players.find((p) => p.id === playerId);
   if (!player) return 0;
-  return player.money + propertiesOwnedBy(state, playerId).reduce((s, pid) => s + (ctx.properties[pid]?.price ?? 0), 0);
+  return player.money - player.debt + propertiesOwnedBy(state, playerId).reduce((s, pid) => s + (ctx.properties[pid]?.price ?? 0), 0);
 }

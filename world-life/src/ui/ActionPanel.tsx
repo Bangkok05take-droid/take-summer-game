@@ -31,6 +31,8 @@ export function ActionPanel() {
     );
   } else if (busy) {
     body = <div className="ap-msg">{rolling ? 'サイコロを振っています…' : '移動中…'}</div>;
+  } else if (game.phase === 'awaitEvent' || game.phase === 'eventResult') {
+    body = <div className="ap-msg">✨ イベント発生中</div>;
   } else if (game.phase === 'awaitRoll') {
     body = (
       <button className="btn gold big roll-btn" onClick={roll}>
