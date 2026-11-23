@@ -469,3 +469,294 @@ body,
   color: var(--muted);
   font-size: 11px;
 }
+
+/* ======================================================
+   演出（Phase 1 磨き込み）
+   ====================================================== */
+.map-area {
+  flex: 1;
+  position: relative;
+  min-height: 0;
+}
+.map-area .map-wrap {
+  position: absolute;
+  inset: 0;
+}
+
+.hud-sound {
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  width: 34px;
+  height: 30px;
+  font-size: 15px;
+  margin-left: 6px;
+}
+.hud-sound.off {
+  opacity: 0.55;
+}
+
+/* 金額のフラッシュ */
+.pmoney {
+  transition: color 0.3s, text-shadow 0.3s;
+}
+.pmoney.flash-up {
+  color: #7dffb0;
+  text-shadow: 0 0 10px rgba(125, 255, 176, 0.8);
+}
+.pmoney.flash-down {
+  color: #ff8a8a;
+  text-shadow: 0 0 10px rgba(255, 110, 110, 0.7);
+}
+.pcard.active {
+  animation: cardPulse 1.6s ease-in-out infinite;
+}
+@keyframes cardPulse {
+  0%, 100% { box-shadow: 0 0 10px color-mix(in srgb, var(--pc) 45%, transparent); }
+  50% { box-shadow: 0 0 20px color-mix(in srgb, var(--pc) 85%, transparent), inset 0 0 12px color-mix(in srgb, var(--pc) 25%, transparent); }
+}
+
+/* パネル切替のスライドイン */
+.ap-body {
+  animation: apIn 0.28s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+@keyframes apIn {
+  from { opacity: 0; transform: translateY(12px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+
+/* ボタンの光沢スイープ */
+.btn.gold {
+  position: relative;
+  overflow: hidden;
+}
+.btn.gold::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -60%;
+  width: 40%;
+  height: 100%;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+  transform: skewX(-20deg);
+  animation: sheen 3.2s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes sheen {
+  0%, 60% { left: -60%; }
+  100% { left: 130%; }
+}
+.btn:active {
+  filter: brightness(1.15);
+}
+.roll-btn {
+  animation: breathe 1.8s ease-in-out infinite;
+  letter-spacing: 0.08em;
+}
+@keyframes breathe {
+  0%, 100% { box-shadow: 0 0 0 1px #ffe9a3 inset, 0 4px 18px rgba(212, 175, 55, 0.35); }
+  50% { box-shadow: 0 0 0 1px #ffe9a3 inset, 0 4px 32px rgba(212, 175, 55, 0.75), 0 0 0 4px rgba(212, 175, 55, 0.15); }
+}
+
+/* ---------- 3D サイコロ ---------- */
+.die-stage {
+  width: 64px;
+  height: 64px;
+  perspective: 320px;
+  position: relative;
+}
+.die {
+  --s: 46px;
+  position: absolute;
+  left: 9px;
+  top: 9px;
+  width: var(--s);
+  height: var(--s);
+  transform-style: preserve-3d;
+  transition-property: transform;
+  transition-timing-function: cubic-bezier(0.15, 0.75, 0.25, 1);
+}
+.die-face {
+  position: absolute;
+  inset: 0;
+  border-radius: 9px;
+  background: radial-gradient(circle at 30% 25%, #ffffff, #ece6d6 60%, #cfc6ad);
+  box-shadow: inset 0 0 0 1.5px rgba(212, 175, 55, 0.9), inset 0 -3px 6px rgba(0, 0, 0, 0.18);
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  padding: 6px;
+  backface-visibility: hidden;
+}
+.die-face span {
+  display: block;
+  place-self: center;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.die-face span.pip {
+  background: radial-gradient(circle at 35% 35%, #3a3a3a, #000);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.3);
+}
+.die-face.one span.pip {
+  width: 13px;
+  height: 13px;
+  background: radial-gradient(circle at 35% 35%, #ff6b6b, #b00000);
+}
+.f-front { transform: translateZ(calc(var(--s) / 2)); }
+.f-back { transform: rotateY(180deg) translateZ(calc(var(--s) / 2)); }
+.f-right { transform: rotateY(90deg) translateZ(calc(var(--s) / 2)); }
+.f-left { transform: rotateY(-90deg) translateZ(calc(var(--s) / 2)); }
+.f-top { transform: rotateX(90deg) translateZ(calc(var(--s) / 2)); }
+.f-bottom { transform: rotateX(-90deg) translateZ(calc(var(--s) / 2)); }
+.die-stage::before {
+  content: '';
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: -2px;
+  height: 10px;
+  border-radius: 50%;
+  background: radial-gradient(rgba(0, 0, 0, 0.7), transparent 70%);
+}
+.die-stage.rolling .die {
+  animation: dieHop 0.3s ease-in-out infinite alternate;
+}
+@keyframes dieHop {
+  from { top: 9px; }
+  to { top: -4px; }
+}
+.die-ring {
+  opacity: 0;
+  position: absolute;
+  inset: -6px;
+  border-radius: 16px;
+  border: 2px solid var(--gold-hi);
+  animation: dieRing 0.6s ease-out forwards;
+  pointer-events: none;
+}
+@keyframes dieRing {
+  from { opacity: 1; transform: scale(0.85); }
+  to { opacity: 0; transform: scale(1.35); }
+}
+.die-result {
+  position: absolute;
+  right: -10px;
+  top: -12px;
+  min-width: 26px;
+  height: 26px;
+  border-radius: 13px;
+  background: linear-gradient(180deg, #ffe9a3, var(--gold));
+  color: #1a1305;
+  font-weight: 900;
+  font-size: 16px;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 0 12px rgba(212, 175, 55, 0.8);
+  animation: popIn 0.35s cubic-bezier(0.2, 1.6, 0.4, 1) both;
+}
+@keyframes popIn {
+  from { transform: scale(0); }
+  to { transform: scale(1); }
+}
+
+/* ---------- ターン帯 ---------- */
+.turn-banner {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  z-index: 5;
+}
+.tb-band {
+  width: 100%;
+  padding: 14px 0 12px;
+  text-align: center;
+  background: linear-gradient(90deg, transparent, rgba(10, 6, 20, 0.92) 18%, rgba(10, 6, 20, 0.92) 82%, transparent);
+  border-top: 1px solid rgba(212, 175, 55, 0.7);
+  border-bottom: 1px solid rgba(212, 175, 55, 0.7);
+  box-shadow: 0 0 30px rgba(176, 77, 255, 0.35);
+  animation: bandIn 1.3s cubic-bezier(0.2, 0.9, 0.2, 1) both;
+}
+.turn-banner.you .tb-band {
+  border-color: rgba(0, 229, 255, 0.8);
+  box-shadow: 0 0 30px rgba(0, 229, 255, 0.35);
+  animation-duration: 1.1s;
+}
+.turn-banner.final .tb-band {
+  border-color: #ff4d8d;
+  box-shadow: 0 0 40px rgba(255, 77, 141, 0.5);
+}
+.tb-title {
+  font-size: 40px;
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  background: linear-gradient(180deg, #fff6d0, var(--gold) 60%, #8a6a12);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 12px rgba(212, 175, 55, 0.6));
+  animation: titleIn 1.3s cubic-bezier(0.2, 0.9, 0.2, 1) both;
+}
+.turn-banner.you .tb-title {
+  background: linear-gradient(180deg, #e8fdff, var(--cyan) 70%, #0a7d8c);
+  -webkit-background-clip: text;
+  background-clip: text;
+  filter: drop-shadow(0 0 12px rgba(0, 229, 255, 0.7));
+}
+.turn-banner.final .tb-title {
+  background: linear-gradient(180deg, #ffe0ec, #ff4d8d 70%, #8c0a3d);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+.tb-sub {
+  font-size: 12px;
+  letter-spacing: 0.3em;
+  color: var(--text);
+  opacity: 0.85;
+  margin-top: 2px;
+}
+@keyframes bandIn {
+  0% { transform: scaleY(0); opacity: 0; }
+  15% { transform: scaleY(1); opacity: 1; }
+  80% { transform: scaleY(1); opacity: 1; }
+  100% { transform: scaleY(0.6); opacity: 0; }
+}
+@keyframes titleIn {
+  0% { transform: translateX(40%) skewX(-20deg); opacity: 0; letter-spacing: 0.6em; }
+  20% { transform: none; opacity: 1; letter-spacing: 0.18em; }
+  80% { transform: none; opacity: 1; }
+  100% { transform: translateX(-30%) skewX(-20deg); opacity: 0; }
+}
+
+/* ---------- タイトルの光 ---------- */
+.title-glow {
+  animation: glowDrift 8s ease-in-out infinite alternate;
+}
+@keyframes glowDrift {
+  from { transform: translate(-4%, 2%) scale(1); }
+  to { transform: translate(4%, -2%) scale(1.1); }
+}
+.logo {
+  animation: logoIn 1.2s cubic-bezier(0.2, 0.9, 0.2, 1) both;
+}
+@keyframes logoIn {
+  from { opacity: 0; transform: scale(1.15); filter: blur(8px) drop-shadow(0 0 18px rgba(212, 175, 55, 0.45)); }
+  to { opacity: 1; transform: none; }
+}
+.result {
+  animation: apIn 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+.result tr {
+  animation: apIn 0.4s both;
+}
+.result tr:nth-child(1) { animation-delay: 0.6s; }
+.result tr:nth-child(2) { animation-delay: 0.45s; }
+.result tr:nth-child(3) { animation-delay: 0.3s; }
+.result tr:nth-child(4) { animation-delay: 0.15s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .btn.gold::after, .roll-btn, .pcard.active, .title-glow { animation: none; }
+}

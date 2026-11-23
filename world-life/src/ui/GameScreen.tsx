@@ -3,6 +3,7 @@ import { ActionPanel } from './ActionPanel';
 import { GameOver } from './GameOver';
 import { Hud } from './Hud';
 import { MapCanvas } from './MapCanvas';
+import { TurnBanner } from './TurnBanner';
 
 export function GameScreen() {
   const game = useGame((s) => s.game);
@@ -10,7 +11,10 @@ export function GameScreen() {
   return (
     <div className="game">
       <Hud />
-      <MapCanvas />
+      <div className="map-area">
+        <MapCanvas />
+        <TurnBanner />
+      </div>
       <ActionPanel />
       {game.phase === 'gameOver' && <GameOver />}
     </div>

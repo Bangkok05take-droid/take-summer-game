@@ -1,3 +1,4 @@
+import { fxBus } from '../fx/bus';
 import { useGame } from '../store/gameStore';
 
 export function TitleScreen() {
@@ -13,11 +14,17 @@ export function TitleScreen() {
       <p className="tagline">世界を巡り、富と名声と愛をつかめ</p>
       <p className="city-tag">PROTOTYPE · BANGKOK</p>
       <div className="title-buttons">
-        <button className="btn gold" onClick={newGame}>
+        <button className="btn gold" onClick={() => {
+            fxBus.emit({ type: 'tap' });
+            newGame();
+          }}>
           新しく始める
         </button>
         {hasSave && (
-          <button className="btn ghost" onClick={continueGame}>
+          <button className="btn ghost" onClick={() => {
+              fxBus.emit({ type: 'tap' });
+              continueGame();
+            }}>
             続きから
           </button>
         )}

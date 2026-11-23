@@ -1,14 +1,18 @@
 import { canBuy, ownsWholeArea } from '../core/economy';
 import { currentPlayer } from '../core/game';
 import { ctx, useGame } from '../store/gameStore';
+import { fxBus } from '../fx/bus';
+import { Dice3D } from './Dice3D';
 import { hex, money } from './format';
 
-const DICE = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
+const tap = (fn: () => void) => () => {
+  fxBus.emit({ type: 'tap' });
+  fn();
+};
 
 export function ActionPanel() {
   const game = useGame((s) => s.game)!;
   const busy = useGame((s) => s.busy);
-  const diceFace = useGame((s) => s.diceFace);
   const rolling = useGame((s) => s.diceRolling);
   const fast = useGame((s) => s.fastForward);
   const { roll, pickBranch, buy, skip, next, setFastForward } = useGame.getState();
@@ -29,8 +33,8 @@ export function ActionPanel() {
     body = <div className="ap-msg">{rolling ? 'サイコロを振っています…' : '移動中…'}</div>;
   } else if (game.phase === 'awaitRoll') {
     body = (
-      <button className="btn gold big" onClick={roll}>
-        🎲 サイコロを振る
+      <button className="btn gold big roll-btn" onClick={roll}>
+        サイコロを振る
       </button>
     );
   } else if (game.phase === 'awaitBranch') {
@@ -41,7 +45,7 @@ export function ActionPanel() {
         </div>
         <div className="ap-row">
           {game.branchOptions.map((id, i) => (
-            <button key={id} className={`btn ${i === 0 ? 'gold' : 'neon'}`} onClick={() => pickBranch(id)}>
+            <button key={id} className={`btn ${i === 0 ? 'gold' : 'neon'}`} onClick={tap(() => pickBranch(id))}>
               {i === 0 ? '通常ルート' : '近道'}
               <small>→ {ctx.map.nodes[id].label}</small>
             </button>
@@ -67,7 +71,7 @@ export function ActionPanel() {
           <button className="btn gold" disabled={!check.ok} onClick={buy}>
             {check.ok ? '購入する' : '資金不足'}
           </button>
-          <button className="btn ghost" onClick={skip}>
+          <button className="btn ghost" onClick={tap(skip)}>
             見送る
           </button>
         </div>
@@ -86,7 +90,7 @@ export function ActionPanel() {
       <div className="ap-landed">
         <div className="ap-title">「{node.label}」</div>
         <div className="ap-sub">{text}</div>
-        <button className="btn gold" onClick={next}>
+        <button className="btn gold" onClick={tap(next)}>
           次へ
         </button>
       </div>
@@ -96,13 +100,15 @@ export function ActionPanel() {
   return (
     <footer className="action-panel">
       <div className="ap-left">
-        <div className={`dice${rolling ? ' rolling' : ''}`}>{diceFace ? DICE[diceFace - 1] : '🎲'}</div>
-        <button className={`ff${fast ? ' on' : ''}`} onClick={() => setFastForward(!fast)}>
-          ⏩ {fast ? '早送り中' : '早送り'}
+        <Dice3D />
+        <button className={`ff${fast ? ' on' : ''}`} onClick={tap(() => setFastForward(!fast))}>
+          ⏩ 早送り
         </button>
       </div>
       <div className="ap-main">
-        {body}
+        <div className="ap-body" key={`${game.phase}-${game.currentPlayerIndex}-${busy}`}>
+          {body}
+        </div>
         <div className="ap-log">{lastLog}</div>
       </div>
     </footer>

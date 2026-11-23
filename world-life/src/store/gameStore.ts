@@ -11,9 +11,11 @@ import {
   skipPurchase,
   type MoveResult,
 } from '../core/game';
+import { computeIncome, ownsWholeArea } from '../core/economy';
 import { clearSave, loadGame, saveGame, type KeyValueStorage } from '../core/save';
 import type { GameState } from '../core/types';
 import { bangkokContext } from '../data/config';
+import { fxBus } from '../fx/bus';
 
 export const ctx = bangkokContext;
 
@@ -24,7 +26,7 @@ export interface ViewPort {
 }
 
 const SPEED = {
-  normal: { dice: 650, step: 260, think: 550, landing: 700 },
+  normal: { dice: 900, step: 220, think: 500, landing: 750 },
   fast: { dice: 110, step: 70, think: 60, landing: 120 },
 };
 
@@ -42,6 +44,8 @@ interface Store {
   busy: boolean;
   diceFace: number | null;
   diceRolling: boolean;
+  /** サイコロを振るたびに増える（演出のトリガー） */
+  diceRollId: number;
   fastForward: boolean;
   hasSave: boolean;
   view: ViewPort | null;
@@ -65,12 +69,63 @@ let session = 0;
 
 export const useGame = create<Store>((set, get) => {
   const speed = () => (get().fastForward ? SPEED.fast : SPEED.normal);
+  /** ターン開始演出の間、AIを待たせる時刻 */
+  let holdUntil = 0;
 
   function commit(state: GameState): void {
+    const prev = get().game;
     set({ game: state });
     const st = storage();
     if (st) saveGame(st, state);
+    if (prev) emitDiff(prev, state);
     scheduleAi();
+  }
+
+  /** 状態の差分から演出イベントを発火 */
+  function emitDiff(prev: GameState, next: GameState): void {
+    const fast = get().fastForward;
+    const cur = currentPlayer(next);
+    // 着地
+    if ((prev.phase === 'awaitRoll' || prev.phase === 'awaitBranch') && (next.phase === 'landed' || next.phase === 'awaitPurchase')) {
+      fxBus.emit({ type: 'land', playerId: cur.id, nodeId: cur.position, human: cur.isHuman });
+    }
+    if (next.phase === 'awaitBranch' && prev.phase !== 'awaitBranch' && cur.isHuman) fxBus.emit({ type: 'branchPrompt' });
+    // 購入
+    for (const pid of Object.keys(next.ownership)) {
+      if (prev.ownership[pid]) continue;
+      const owner = next.players.find((p) => p.id === next.ownership[pid])!;
+      const prop = ctx.properties[pid];
+      fxBus.emit({
+        type: 'purchase',
+        playerId: owner.id,
+        nodeId: prop.nodeId,
+        price: prop.price,
+        color: owner.color,
+        monopoly: ownsWholeArea(next, ctx, owner.id, prop.area),
+      });
+    }
+    // 収益精算
+    let delay = 0;
+    if (next.lastSettledTurn > prev.lastSettledTurn) {
+      delay = 350;
+      next.players.forEach((p) => {
+        const amount = computeIncome(next, ctx, p.id);
+        if (amount <= 0) return;
+        setTimeout(() => fxBus.emit({ type: 'income', playerId: p.id, amount }), delay);
+        delay += fast ? 60 : 220;
+      });
+    }
+    if (next.phase === 'gameOver' && prev.phase !== 'gameOver') {
+      setTimeout(() => fxBus.emit({ type: 'gameOver' }), delay + 200);
+      return;
+    }
+    if (next.turn > prev.turn) {
+      setTimeout(() => fxBus.emit({ type: 'turnStart', turn: next.turn, maxTurns: next.maxTurns }), delay);
+      holdUntil = performance.now() + delay + (fast ? 300 : 1500);
+    }
+    if (cur.isHuman && next.phase === 'awaitRoll' && (prev.currentPlayerIndex !== next.currentPlayerIndex || prev.phase === 'gameOver')) {
+      setTimeout(() => fxBus.emit({ type: 'yourTurn' }), next.turn > prev.turn ? delay + 1300 : 0);
+    }
   }
 
   async function runMove(sid: number, playerId: string, res: MoveResult): Promise<void> {
@@ -84,17 +139,18 @@ export const useGame = create<Store>((set, get) => {
     const g = get().game;
     if (!g || g.phase !== 'awaitRoll' || get().busy) return;
     const sid = session;
-    set({ busy: true, diceRolling: true });
     const res = rollDice(g, ctx);
-    // サイコロ演出
-    const end = performance.now() + speed().dice;
-    while (performance.now() < end) {
-      set({ diceFace: 1 + Math.floor(Math.random() * 6) });
-      await sleep(60);
-      if (sid !== session) return;
-    }
-    set({ diceFace: res.roll, diceRolling: false });
-    await sleep(get().fastForward ? 0 : 150);
+    const dur = speed().dice;
+    const human = currentPlayer(g).isHuman;
+    // サイコロ演出（結果は先に確定し、3Dダイスがその面で止まる）
+    set({ busy: true, diceRolling: true, diceFace: res.roll, diceRollId: get().diceRollId + 1 });
+    fxBus.emit({ type: 'diceRoll', value: res.roll, durationMs: dur, human });
+    await sleep(dur);
+    if (sid !== session) return;
+    set({ diceRolling: false });
+    fxBus.emit({ type: 'diceResult', value: res.roll });
+    await sleep(get().fastForward ? 30 : 260);
+    if (sid !== session) return;
     await runMove(sid, currentPlayer(g).id, res);
     if (sid === session) set({ busy: false });
     scheduleAi();
@@ -136,7 +192,8 @@ export const useGame = create<Store>((set, get) => {
   function scheduleAi(): void {
     const { game: g, busy } = get();
     if (aiTimer || busy || !g || g.phase === 'gameOver' || currentPlayer(g).isHuman) return;
-    const delay = g.phase === 'landed' || g.phase === 'awaitPurchase' ? speed().landing : speed().think;
+    const base = g.phase === 'landed' || g.phase === 'awaitPurchase' ? speed().landing : speed().think;
+    const delay = Math.max(base, holdUntil - performance.now());
     aiTimer = setTimeout(aiStep, delay);
   }
 
@@ -153,6 +210,7 @@ export const useGame = create<Store>((set, get) => {
     busy: false,
     diceFace: null,
     diceRolling: false,
+    diceRollId: 0,
     fastForward: false,
     hasSave: !!(st && loadGame(st)),
     view: null,
@@ -162,8 +220,10 @@ export const useGame = create<Store>((set, get) => {
     newGame() {
       reset();
       const g = createGame(ctx);
-      set({ screen: 'game', busy: false, diceFace: null, diceRolling: false });
+      set({ screen: 'game', game: null, busy: false, diceFace: null, diceRolling: false });
       commit(g);
+      setTimeout(() => fxBus.emit({ type: 'turnStart', turn: 1, maxTurns: g.maxTurns }), 300);
+      setTimeout(() => fxBus.emit({ type: 'yourTurn' }), 1600);
     },
 
     continueGame() {

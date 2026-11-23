@@ -1,10 +1,14 @@
 import { computeIncome, propertiesOwnedBy } from '../core/economy';
 import { ctx, useGame } from '../store/gameStore';
+import { useState } from 'react';
+import { isMuted, setMuted } from '../audio/sfx';
+import { AnimatedMoney } from './AnimatedMoney';
 import { hex, money } from './format';
 
 export function Hud() {
   const game = useGame((s) => s.game)!;
   const backToTitle = useGame((s) => s.backToTitle);
+  const [muted, setM] = useState(isMuted());
   return (
     <header className="hud">
       <div className="hud-top">
@@ -16,6 +20,16 @@ export function Hud() {
           <small>/{game.maxTurns}</small>
         </div>
         <div className="city">{ctx.map.name}</div>
+        <button
+          className={`hud-sound${muted ? ' off' : ''}`}
+          onClick={() => {
+            setMuted(!muted);
+            setM(!muted);
+          }}
+          aria-label="サウンド"
+        >
+          {muted ? '🔇' : '🔊'}
+        </button>
       </div>
       <div className="players">
         {game.players.map((p, i) => {
@@ -27,7 +41,7 @@ export function Hud() {
                 <i />
                 {p.name}
               </div>
-              <div className="pmoney">{money(p.money)}</div>
+              <AnimatedMoney value={p.money} />
               <div className="pstats">
                 <span title="名声">★{p.fame}</span>
                 <span title="人脈">⚭{p.network}</span>
