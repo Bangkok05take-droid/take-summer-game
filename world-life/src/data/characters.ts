@@ -18,4 +18,6 @@ export const CHARACTERS: Record<string, CharacterDef> = {
   reporter: { id: 'reporter', name: '記者', color: 0xff6b4a },
   tycoon: { id: 'tycoon', name: '大富豪', color: 0xf5d77a },
   dealer: { id: 'dealer', name: '伝説のディーラー', color: 0x2fd6c8 },
+  // チュートリアル案内役
+  concierge: { id: 'concierge', name: 'コンシェルジュ', color: 0xf5d77a },
 };

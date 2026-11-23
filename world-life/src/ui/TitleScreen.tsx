@@ -1,5 +1,12 @@
+import { useState } from 'react';
+import { TITLE_BG_URL } from '../assets/manifest';
 import { fxBus } from '../fx/bus';
 import { useGame } from '../store/gameStore';
+
+function TitleBg() {
+  const [ok, setOk] = useState(true);
+  return ok ? <img className="title-bg" src={TITLE_BG_URL} alt="" onError={() => setOk(false)} draggable={false} /> : null;
+}
 
 export function TitleScreen() {
   const hasSave = useGame((s) => s.hasSave);
@@ -7,6 +14,7 @@ export function TitleScreen() {
   const continueGame = useGame((s) => s.continueGame);
   return (
     <div className="title">
+      <TitleBg />
       <div className="title-glow" />
       <h1 className="logo">
         WORLD<span>LIFE</span>

@@ -18,6 +18,17 @@ export const assetManifest = {
   'token.p2': 'characters/tokens/p2.webp',
   'token.p3': 'characters/tokens/p3.webp',
   'token.p4': 'characters/tokens/p4.webp',
+  // マス種別アイコン（推奨 128×128 透過 WebP）。物件マスは建物画像があればそちらを優先
+  'icon.node.start': 'icons/nodes/start.webp',
+  'icon.node.property': 'icons/nodes/property.webp',
+  'icon.node.social': 'icons/nodes/social.webp',
+  'icon.node.romance': 'icons/nodes/romance.webp',
+  'icon.node.fate': 'icons/nodes/fate.webp',
+  'icon.node.vip': 'icons/nodes/vip.webp',
+  'icon.node.business': 'icons/nodes/business.webp',
+  'icon.node.scandal': 'icons/nodes/scandal.webp',
+  'icon.node.party': 'icons/nodes/party.webp',
+  'icon.node.bigfate': 'icons/nodes/bigfate.webp',
 } as const;
 
 export type AssetId = keyof typeof assetManifest;
@@ -38,6 +49,14 @@ export function characterCutinUrl(characterId: string): string {
 export function eventBgUrl(category: string): string {
   return `${ASSET_BASE}events/bg/${category}.webp`;
 }
+
+/** HUD・順位表のプレイヤー顔アイコン（推奨 256×256 透過 WebP、駒と同じ人物） */
+export function avatarUrl(playerId: string): string {
+  return `${ASSET_BASE}characters/avatars/${playerId}.webp`;
+}
+
+/** タイトル背景（推奨 1080×1920 WebP） */
+export const TITLE_BG_URL = `${ASSET_BASE}ui/title_bg.webp`;
 
 /** 効果音（mp3）。置くと合成音の代わりに再生される */
 export function sfxUrl(id: string): string {

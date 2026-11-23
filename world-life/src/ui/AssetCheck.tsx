@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ASSET_BASE, assetManifest, characterCutinUrl, eventBgUrl, sfxUrl } from '../assets/manifest';
+import { ASSET_BASE, assetManifest, avatarUrl, characterCutinUrl, eventBgUrl, sfxUrl, TITLE_BG_URL } from '../assets/manifest';
 import { CHARACTERS } from '../data/characters';
 import { EVENT_CATEGORY_META } from '../data/eventCategories';
 
@@ -17,9 +17,19 @@ const SFX_IDS = ['tap', 'diceRoll', 'diceResult', 'step', 'land', 'branch', 'pur
 function rows(): Row[] {
   const r: Row[] = [];
   for (const [id, path] of Object.entries(assetManifest)) {
-    const spec = id.endsWith('.bg') ? '1000:1440比 (例1500×2160) WebP' : id.startsWith('token') ? '256×256 透過WebP' : '512×512 透過WebP 下端中央接地';
+    const spec = id.endsWith('.bg')
+      ? '1000:1440比 (例1500×2160) WebP'
+      : id.startsWith('token')
+        ? '256×256 透過WebP'
+        : id.startsWith('icon')
+          ? '128×128 透過WebP'
+          : '512×512 透過WebP 下端中央接地';
     r.push({ group: 'マップ', id, url: ASSET_BASE + path, spec, kind: 'image' });
   }
+  for (const p of ['p1', 'p2', 'p3', 'p4']) {
+    r.push({ group: 'プレイヤー顔', id: `characters/avatars/${p}.webp`, url: avatarUrl(p), spec: '256×256 透過WebP（駒と同じ人物）', kind: 'image' });
+  }
+  r.push({ group: 'UI', id: 'ui/title_bg.webp', url: TITLE_BG_URL, spec: '1080×1920 WebP', kind: 'image' });
   for (const c of Object.values(CHARACTERS)) {
     r.push({ group: '人物カットイン', id: `characters/cutin/${c.id}.webp（${c.name}）`, url: characterCutinUrl(c.id), spec: '1024×1536 透過WebP', kind: 'image' });
   }

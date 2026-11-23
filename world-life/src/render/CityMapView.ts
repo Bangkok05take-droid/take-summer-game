@@ -232,10 +232,18 @@ export class CityMapView {
       s.position.set(0, 18);
       root.addChild(s);
     } else {
-      const glyph = new Text({ text: NODE_GLYPH[n.type], style: { fontSize: n.type === 'start' ? 34 : 38, fontFamily: 'sans-serif' } });
-      glyph.anchor.set(0.5);
-      glyph.position.set(0, -2);
-      root.addChild(glyph);
+      const icon = await tryLoadTexture(`icon.node.${n.type}` as AssetId);
+      if (icon) {
+        const s = new Sprite(icon);
+        s.anchor.set(0.5);
+        s.width = s.height = 64;
+        root.addChild(s);
+      } else {
+        const glyph = new Text({ text: NODE_GLYPH[n.type], style: { fontSize: n.type === 'start' ? 34 : 38, fontFamily: 'sans-serif' } });
+        glyph.anchor.set(0.5);
+        glyph.position.set(0, -2);
+        root.addChild(glyph);
+      }
     }
 
     const label = new Text({

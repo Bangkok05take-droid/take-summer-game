@@ -3,6 +3,7 @@ import { ctx, useGame } from '../store/gameStore';
 import { useState } from 'react';
 import { isMuted, setMuted } from '../audio/sfx';
 import { AnimatedMoney } from './AnimatedMoney';
+import { Avatar } from './Avatar';
 import { hex, money } from './format';
 
 export function Hud() {
@@ -44,7 +45,7 @@ export function Hud() {
           return (
             <div key={p.id} className={`pcard${active ? ' active' : ''}`} style={{ ['--pc' as string]: hex(p.color) }}>
               <div className="pname">
-                <i />
+                <Avatar player={p} size={18} />
                 {p.name}
               </div>
               <AnimatedMoney value={p.money} />
