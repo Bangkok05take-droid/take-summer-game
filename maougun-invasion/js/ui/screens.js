@@ -137,13 +137,7 @@ export function renderUnlock(key) {
   $('unlockEyebrow').textContent = boss ? '幹部を呼び戻せるようになった！' : '新しい魔物が仲間になった！';
   $('unlockName').textContent = SKIN.names[key];
   $('unlockRole').textContent = boss ? `${def.role}（第2章から召喚できます。同じ幹部は同時に1体まで）` : def.role;
-  const c = $('unlockArt');
-  const ctx = c.getContext('2d');
-  ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.clearRect(0, 0, c.width, c.height);
-  ctx.translate(c.width / 2, c.height - 16);
-  const k = 2.6 / Math.max(1, def.size);
-  ctx.scale(-k, k);
-  drawUnit(ctx, key, { size: def.size, flash: false, t: 0.5, pose: 'idle' });
+  Renderer.thumb($('unlockArt'), key, def.size);
   const rows = [['魔力', def.cost], ['HP', def.hp], ['攻撃', def.atk], ['射程', def.range], ['再召喚', def.cooldown + '秒']];
   $('unlockStats').innerHTML = rows.map(([a, b]) => `<dt>${a}</dt><dd>${b}</dd>`).join('');
 }
