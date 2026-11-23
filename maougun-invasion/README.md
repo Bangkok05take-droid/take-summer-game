@@ -16,7 +16,9 @@
 | ファイル | 内容 |
 |---|---|
 | [docs/SURVEY.md](docs/SURVEY.md) | 既存ゲームのモンスター・ボス・魔法・素材の調査結果と、再利用できるものの一覧 |
-| [docs/PROPOSAL.md](docs/PROPOSAL.md) | 新ゲームの基本構成（ゲームの仕組み・技術構成・フォルダ構成・開発の順番）と、決めてほしいこと |
+| [docs/PROPOSAL.md](docs/PROPOSAL.md) | 新ゲームの基本構成（ゲームの仕組み・技術構成・フォルダ構成・開発の順番）と決定事項 |
+| [docs/UNITS.md](docs/UNITS.md) | 魔王軍ユニット案（通常15種の分類・上位ユニット・幹部＝レア召喚・大魔王） |
+| [docs/STAGES.md](docs/STAGES.md) | 人間軍（兵士・勇者たけ／サイ）と第1章の敵構成 |
 
 ## フォルダ（予定）
 ```
