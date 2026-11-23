@@ -1,4 +1,8 @@
-name: WORLD LIFE - Test & Deploy (GitHub Pages)
+name: WORLD LIFE - Test & Build
+
+# 注意：このリポジトリの GitHub Pages は既存ゲームが使用中のため、
+# ここでは公開（deploy）は行わず、テストとビルドのみ実行する。
+# 試遊URLの公開方法はユーザー決定後に追加する。
 
 on:
   push:
@@ -8,12 +12,6 @@ on:
 
 permissions:
   contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: world-life-pages
-  cancel-in-progress: true
 
 jobs:
   build:
@@ -31,16 +29,7 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run build
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
+          name: world-life-dist
           path: world-life/dist
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@v4
