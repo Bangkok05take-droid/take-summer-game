@@ -230,7 +230,11 @@ export class Renderer {
 
   // 承認済みの建物画像（{ src, width, footY }）。足元の中央を拠点の位置にそろえる
   drawApproved(def, s, side) {
-    const img = def && getImage(def.src);
+    if (!def) return false;
+    const ratio = s.hp / s.maxHp;
+    const st = def.stages || [];
+    const src = (ratio < 0.33 && st[2]) || (ratio < 0.66 && st[1]) || st[0] || def.src;
+    const img = getImage(src) || getImage(def.src);
     if (!img) return false;
     const ctx = this.ctx;
     const k = def.width / img.naturalWidth; const w = def.width; const h = img.naturalHeight * k;
@@ -239,7 +243,7 @@ export class Renderer {
     ctx.imageSmoothingEnabled = true;
     ctx.drawImage(img, s.x - w / 2 + hit, GROUND_Y + 12 - foot, w, h);
     ctx.imageSmoothingEnabled = false;
-    this.damageMarks(ctx, s.x, GROUND_Y + 12 - foot, w, foot, s.hp / s.maxHp, side === 'demon' ? '#c26bff' : '#ff9a3a');
+    if (!(st[1] && st[2])) this.damageMarks(ctx, s.x, GROUND_Y + 12 - foot, w, foot, ratio, side === 'demon' ? '#c26bff' : '#ff9a3a'); // 壊れ方の絵が無いときだけ
     return true;
   }
 
@@ -294,8 +298,9 @@ export class Renderer {
 
     const px = unitSprite(e.key);
     const sz = d.size * UNIT_SCALE;
-    const sw = px ? px.w * PIX : 32 * sz; // 影・バーの幅の目安
-    const sh = px ? px.h * PIX : 62 * sz;
+    const apr = spriteFor(e.key); // 承認済みの絵（あれば優先）
+    const sw = apr ? apr.frameW * apr.scale * 0.6 : px ? px.w * PIX : 32 * sz; // 影・バーの幅の目安
+    const sh = apr ? apr.footY * apr.scale : px ? px.h * PIX : 62 * sz;
     const age = this.time - (e.seen ?? (e.seen = this.time));
     // 待機・移動の動き（見た目だけ）
     const t = this.time * 1 + e.id * 0.37;
@@ -304,7 +309,7 @@ export class Renderer {
       if (BOUNCY[e.key]) { const ph = Math.abs(Math.sin(t * 7)); bob = ph * 5; squash = (1 - ph) * 0.12; }
       else { bob = Math.abs(Math.sin(t * 9)) * 2; }
     } else if (pose !== 'dead' && pose !== 'kb') bob = (Math.sin(t * 3) + 1) * 1; // 待機：小さく上下
-    const float = (FLOATING[e.key] || 0) * PIX + (FLOATING[e.key] ? Math.sin(t * 4) * 3 : 0);
+    const float = apr ? 0 : (FLOATING[e.key] || 0) * PIX + (FLOATING[e.key] ? Math.sin(t * 4) * 3 : 0);
     // 召喚：魔法陣から下からせり上がる（0.35秒）
     const summon = e.side === 'demon' ? Math.min(1, age / 0.35) : 1;
 
@@ -324,12 +329,15 @@ export class Renderer {
     ctx.translate(x + push * e.dir, y - rise - bob - float + (1 - summon) * sh);
     const sp = spriteFor(e.key);
     if (sp) {
-      ctx.scale(e.dir * sz, sz); ctx.rotate(lean);
+      ctx.scale(e.dir * (1 + squash), 1 - squash); ctx.rotate(lean * 0.6);
       const fr = sp.frames;
       const idx = pose === 'windup' ? fr.windup : pose === 'strike' ? fr.attack : fr.walk[Math.floor((this.time + e.id) / 0.2) % fr.walk.length];
       const flip = sp.facing === 'left' ? -1 : 1;
       ctx.scale(flip * (sp.scale || 0.5), sp.scale || 0.5);
+      ctx.imageSmoothingEnabled = true;
       ctx.drawImage(sp.img, idx * sp.frameW, 0, sp.frameW, sp.frameH, -sp.frameW / 2, -sp.footY, sp.frameW, sp.frameH);
+      if (e.flash > 0) { ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = a * 0.6; ctx.drawImage(sp.img, idx * sp.frameW, 0, sp.frameW, sp.frameH, -sp.frameW / 2, -sp.footY, sp.frameW, sp.frameH); ctx.globalCompositeOperation = 'source-over'; }
+      ctx.imageSmoothingEnabled = false;
     } else if (px) {
       ctx.scale(e.dir * (1 + squash), 1 - squash); ctx.rotate(lean * 0.6);
       if (pose === 'windup') ctx.scale(0.94, 1.06);
@@ -533,6 +541,13 @@ export class Renderer {
     c.imageSmoothingEnabled = false;
     const sp = spriteFor(key);
     const px = unitSprite(key);
+    if (sp) { // 承認済みの絵：歩きAのコマを、枠に収まる大きさで（向きは素材のまま＝魔王軍は左・人間軍は右）
+      c.imageSmoothingEnabled = true;
+      const k = Math.min((canvas.width - 4) / sp.frameW, (canvas.height - 2) / sp.footY);
+      c.translate(canvas.width / 2, canvas.height - 2);
+      c.drawImage(sp.img, sp.frames.walk[0] * sp.frameW, 0, sp.frameW, sp.frameH, -sp.frameW * k / 2, -sp.footY * k, sp.frameW * k, sp.frameH * k);
+      return;
+    }
     if (!sp && px) {
       // ドット絵：枠に収まる最大の整数倍で、足元をそろえて描く（魔物は左向き）
       const k = Math.max(1, Math.floor(Math.min((canvas.width - 4) / px.w, (canvas.height - 4) / px.h)));

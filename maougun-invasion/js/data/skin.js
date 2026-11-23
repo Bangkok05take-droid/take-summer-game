@@ -1,3 +1,5 @@
+import { APPROVED } from './approved.js';
+
 /* 見た目の設定（表示名・色・絵）。ゲームの数値・ルールとは独立。
  *
  * - names：ユニットの枠ごとの表示名。既定は役割名（仮）。
@@ -53,3 +55,11 @@ export const SKIN = {
     sai: ['#f5f0ff', '#6a5a9a'],
   },
 };
+
+// 承認済み素材（tools/accept_assets.py が書いた js/data/approved.js）を重ねる。手で書いた登録より優先
+Object.assign(SKIN.sprites, APPROVED.sprites);
+Object.assign(SKIN.portraits, APPROVED.portraits);
+Object.assign(SKIN.images.stageBg, APPROVED.images.stageBg);
+Object.assign(SKIN.images.base, APPROVED.images.base);
+Object.assign(SKIN.images.talkBg, APPROVED.images.talkBg);
+if (APPROVED.images.shrine) SKIN.images.shrine = APPROVED.images.shrine;

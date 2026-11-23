@@ -196,9 +196,9 @@ const images = {};
 export function spriteFor(key) {
   const s = SKIN.sprites[key];
   if (!s) return null;
-  if (!images[key]) {
+  if (!images[key] || images[key].src !== s.src) {
     const img = new Image();
-    images[key] = { img, ok: false };
+    images[key] = { img, ok: false, src: s.src };
     img.onload = () => { images[key].ok = true; };
     img.src = s.src;
   }

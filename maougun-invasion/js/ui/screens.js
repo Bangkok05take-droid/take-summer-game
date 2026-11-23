@@ -5,7 +5,8 @@ import { UNITS, BOSSES, UNIT_ORDER } from '../data/units.js';
 import { LOOT } from '../data/story.js';
 import { UPGRADES, unitLevelCost, MAX_UNIT_LEVEL, resolveUnit, isStageOpen, nextStage, lordLevel } from '../data/progress.js';
 import { Renderer } from '../render/renderer.js';
-import { drawPortrait, drawUnit } from '../render/shapes.js';
+import { drawPortrait } from '../render/shapes.js';
+import { getImage, preload } from '../render/images.js';
 
 const $ = (id) => document.getElementById(id);
 const fmtTime = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
@@ -61,6 +62,7 @@ const HUMAN_SPEAKERS = ['take', 'sai', 'tiw', 'mot', 'waan', 'koi', 'yanai'];
 
 export class TalkPlayer {
   constructor() {
+    preload(Object.values(SKIN.portraits));
     this.lines = []; this.i = 0; this.done = null;
     $('scTalk').addEventListener('click', (ev) => { if (ev.target.id !== 'btnSkip') this.next(); });
     $('btnSkip').addEventListener('click', (ev) => { ev.stopPropagation(); this.finish(); });
@@ -92,10 +94,11 @@ export class TalkPlayer {
       const c = side === 'left' ? $('ptLeft') : $('ptRight');
       const key = l.who + ':' + (l.face || 'normal');
       if (this.shown[side] !== key) {
-        const img = SKIN.portraits[l.who];
-        drawPortrait(c.getContext('2d'), l.who, l.face, c.width, c.height);
-        if (img) { /* 顔絵の素材が届いたら、ここで画像を描く（docs/ART_SPEC.md） */ }
-        this.shown[side] = key;
+        const src = SKIN.portraits[`${l.who}_${l.face || 'normal'}`] || SKIN.portraits[`${l.who}_normal`] || SKIN.portraits[l.who];
+        const img = getImage(src);
+        const g = c.getContext('2d');
+        if (img) { g.clearRect(0, 0, c.width, c.height); g.drawImage(img, 0, 0, c.width, c.height); this.shown[side] = key; }
+        else { drawPortrait(g, l.who, l.face, c.width, c.height); this.shown[side] = src ? null : key; } // 読み込み中なら次の行で描き直す
       }
       c.hidden = false;
       $('ptLeft').classList.toggle('dim', side !== 'left');

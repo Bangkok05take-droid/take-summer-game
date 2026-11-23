@@ -7,6 +7,8 @@
     "test": "node --test tests/battle.test.js",
     "balance": "node tests/balance.js",
     "serve": "node tests/serve.js 8080",
-    "e2e": "node tests/e2e.test.js"
+    "e2e": "node tests/e2e.test.js",
+    "accept": "python3 -I tools/accept_assets.py",
+    "test:accept": "node tests/accept.test.mjs"
   }
 }
