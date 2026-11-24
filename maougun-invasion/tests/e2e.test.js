@@ -49,6 +49,10 @@ try {
 
   // ---- 1-1 の操作 ----
   check('初期の召喚カードは4種', (await page.locator('.slot').count()) === 4);
+  await page.waitForFunction(async () => { const { spriteFor } = await import('./js/render/shapes.js'); return !!spriteFor('mass'); });
+  const gumi = await ev(async () => { const { spriteFor } = await import('./js/render/shapes.js'); const sp = spriteFor('mass'); const cv = document.querySelector('.slot[data-key="mass"] canvas'); const px = cv && cv.getContext('2d').getImageData(cv.width / 2, cv.height - 8, 1, 1).data; return { label: document.querySelector('.slot[data-key="mass"]').textContent, w: sp.img.width, src: sp.src, px: px && [...px] }; });
+  check('グミ：名前が「グミ」・承認済みの画像が読み込まれる', gumi.label.includes('グミ') && gumi.src === 'assets/approved/units/mass.png', JSON.stringify({ label: gumi.label, w: gumi.w }));
+  check('グミ：召喚カードのアイコンが承認済みの画像（水色）になる', gumi.px && gumi.px[2] > gumi.px[0] + 40, JSON.stringify(gumi.px));
   const slotBox = await page.locator('.slot[data-key="mass"]').boundingBox();
   check('召喚カードが指で押せる大きさ（44px以上）', slotBox.width >= 44 && slotBox.height >= 44, `${slotBox.width.toFixed(0)}×${slotBox.height.toFixed(0)}px`);
   await page.tap('.slot[data-key="mass"]');

@@ -21,7 +21,7 @@ node tests/serve.js 8080      # → http://localhost:8080/
 ## テスト
 ```sh
 npm test               # 戦闘ロジック・進行・セーブ（31件）
-npm run e2e            # 第1章を通しで操作（Playwright・43件）。node tests/e2e.test.js <保存先> でスクリーンショットも保存
+npm run e2e            # 第1章を通しで操作（Playwright・45件）。node tests/e2e.test.js <保存先> でスクリーンショットも保存
 npm run balance        # ボットで全5ステージのクリア時間を確認
 ```
 

@@ -79,11 +79,12 @@ try {
   const st = await page.evaluate(async () => {
     const { spriteFor } = await import('./js/render/shapes.js');
     const { SKIN } = await import('./js/data/skin.js');
-    return { sprite: !!spriteFor('militia'), mass: !!SKIN.sprites.mass, base: !!(SKIN.images.base.tower && SKIN.images.base.tower.src) };
+    return { sprite: !!spriteFor('militia'), massSrc: SKIN.sprites.mass && SKIN.sprites.mass.src, base: !!(SKIN.images.base.tower && SKIN.images.base.tower.src) };
   });
   check('ブラウザで兵士の絵が読み込まれ、仮の絵と差し替わる', st.sprite);
   check('見張り小屋の絵が登録されている', st.base);
-  check('魔王軍のユニットは登録されていない（仮の表示のまま）', !st.mass);
+  // 魔王軍のユニットは受け入れツールでは自動登録しない。登録は skin.js の手動登録（承認済みのグミ）だけ
+  check('魔王軍のユニットは自動登録されない（グミの手動登録だけ）', st.massSrc === 'assets/approved/units/mass.png', String(st.massSrc));
   const ui = await page.evaluate(() => ({ logo: !!document.querySelector('.logo img.logoImg'), card: document.getElementById('game').classList.contains('ui-card'), panel: document.getElementById('game').classList.contains('ui-panel') }));
   check('タイトルロゴとカード枠の画像が当たる（未着のパネル枠は今のまま）', ui.logo && ui.card && !ui.panel, JSON.stringify(ui));
   const fx = await page.evaluate(() => { const r = window.__game.renderer; return { hit: !!r.fxImage('hit'), summon: !!r.fxImage('summon'), slash: !!r.fxImage('slash') }; });

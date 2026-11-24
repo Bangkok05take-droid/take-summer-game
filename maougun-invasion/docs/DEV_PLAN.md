@@ -44,3 +44,26 @@
 | F | ユニット進化（`evolvesTo` を使う）・強化項目の追加 | セーブ形式は後方互換を保つ |
 
 各段階の終わりに `npm test` / `npm run e2e` / `npm run balance` / `npm run test:accept` を実行する。
+
+## 5. 進捗（2026-11-24：モンスター画像の実装テスト）
+
+- 量産型（mass）の表示名を「グミ」に統一（`js/data/skin.js`）。
+- グミ（`assets/approved/units/mass.png`・1330×1182・静止画1枚）を 1-1 で確認：向き（左）・足元・大きさは人間軍の兵士とそろっている。
+  画像は変えず、ゲーム側の動きだけ：歩き（跳ねて伸び縮み）・攻撃の構え（縮む）・攻撃（伸びて踏み込み）・被弾（白く光る）・ノックバック・撃破（浮いて消える）。
+- 大きな原画は読み込み時に、表示に必要な大きさ（高精細画面の分を見込んで3倍）まで縮小したコピーを使う（スマホの負荷対策。原画ファイルは変更しない）。
+- 召喚カードのアイコンが、画像の読み込み後にグミの画像に切り替わるよう修正。
+- 受け入れテストの古い期待値を修正（19/19）。e2e にグミの確認を2件追加（45/45）。
+
+### 残り7体の画像登録状況（すべて未登録・仮のドット絵で表示中）
+
+| キー | 表示名 | 不足ファイル（納品時の ZIP 内パス → 保存先） |
+|---|---|---|
+| vanguard | 闇の騎士 | `units/vanguard.png` → `assets/approved/units/vanguard.png` |
+| tank | 岩男 | `units/tank.png` → `assets/approved/units/tank.png` |
+| ranged | 弓ゴブリン | `units/ranged.png` → `assets/approved/units/ranged.png` |
+| fast | こうもり | `units/fast.png` → `assets/approved/units/fast.png` |
+| area | 魔法使い | `units/area.png` → `assets/approved/units/area.png` |
+| healer | ホーリークラゲ | `units/healer.png` → `assets/approved/units/healer.png` |
+| special | 悪魔くん | `units/special.png` → `assets/approved/units/special.png` |
+
+仕様（ASSET_MAP.md）：透過PNG・左向き・1コマ256×256×4コマ（歩きA・歩きB・攻撃準備・攻撃発動）。グミと同じく**静止画1枚でも受け入れ可能**（動きはゲーム側で付ける）。

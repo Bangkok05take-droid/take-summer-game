@@ -191,18 +191,46 @@ export function drawUnit(ctx, key, opts) {
   ctx.restore();
 }
 
-/* 絵（スプライト）があればそれで描く。無ければ false を返す */
+/* 絵（スプライト）があればそれで描く。無ければ null を返す。
+ * 大きな原画（例：1330×1182 を 0.045 倍で表示）は、読み込み時に表示に必要な大きさ（画面の高精細分を見込んで3倍）まで
+ * 段階的に縮小したコピーを作って使う。原画の絵柄・色は変えない（スマホで毎フレーム巨大画像を縮小する負荷とギザギザを防ぐ） */
 const images = {};
+const SPRITE_HEADROOM = 3;
+function downscale(img, s) {
+  const k = (s.scale || 0.5) * SPRITE_HEADROOM;
+  if (k >= 0.75 || typeof document === 'undefined') return { img, k: 1 };
+  let src = img; let w = img.width; let h = img.height;
+  const tw = Math.max(1, Math.round(img.width * k)); const th = Math.max(1, Math.round(img.height * k));
+  while (w / 2 > tw) { // 半分ずつ縮める（1回で大きく縮めると細部がつぶれる）
+    const c = document.createElement('canvas'); c.width = Math.round(w / 2); c.height = Math.round(h / 2);
+    const g = c.getContext('2d'); g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high';
+    g.drawImage(src, 0, 0, c.width, c.height); src = c; w = c.width; h = c.height;
+  }
+  const c = document.createElement('canvas'); c.width = tw; c.height = th;
+  const g = c.getContext('2d'); g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high';
+  g.drawImage(src, 0, 0, tw, th);
+  return { img: c, k: tw / img.width };
+}
 export function spriteFor(key) {
   const s = SKIN.sprites[key];
   if (!s) return null;
   if (!images[key] || images[key].src !== s.src) {
     const img = new Image();
-    images[key] = { img, ok: false, src: s.src };
-    img.onload = () => { images[key].ok = true; };
+    const rec = images[key] = { img, ok: false, src: s.src, waiters: [] };
+    img.onload = () => {
+      try { const d = downscale(img, s); rec.view = { ...s, img: d.img, frameW: s.frameW * d.k, frameH: s.frameH * d.k, footY: s.footY * d.k, scale: (s.scale || 0.5) / d.k }; }
+      catch { rec.view = { ...s, img }; }
+      rec.ok = true; const w = rec.waiters; rec.waiters = []; w.forEach((f) => f());
+    };
     img.src = s.src;
   }
-  return images[key].ok ? { ...s, img: images[key].img } : null;
+  return images[key].ok ? images[key].view : null;
+}
+/* 絵の読み込みが終わったら fn を呼ぶ（召喚カードなど、一度だけ描く場所の描き直し用）。登録の無い枠では呼ばない */
+export function whenSpriteReady(key, fn) {
+  if (!SKIN.sprites[key]) return;
+  if (spriteFor(key)) { fn(); return; }
+  images[key].waiters.push(fn);
 }
 
 /* 会話の顔（仮）。w×h の枠の中に、胸から上を描く。face：'normal' | 'angry' | 'happy' | 'sad' */

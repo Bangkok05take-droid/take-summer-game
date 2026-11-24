@@ -1,6 +1,6 @@
 /* 戦場の描画（Canvas 2D）。論理 960×540 の座標で描き、端末の解像度に合わせて拡大する。
  * 左：人間軍の拠点 ／ 右：魔王軍の封印の祠。ロジックからは battle（読むだけ）と battle.events（出来事）を受け取る。 */
-import { drawUnit, spriteFor } from './shapes.js';
+import { drawUnit, spriteFor, whenSpriteReady } from './shapes.js';
 import { unitSprite, PIX, FLOATING, BOUNCY } from './pixelart.js';
 import { backdrop, shrineArt, baseArt, BASE_KIND, BG_PIX, PARALLAX } from './backdrop.js';
 import { getImage, preload } from './images.js';
@@ -339,6 +339,10 @@ export class Renderer {
       const idx = pose === 'windup' ? fr.windup : pose === 'strike' ? fr.attack : fr.walk[Math.floor((this.time + e.id) / 0.2) % fr.walk.length];
       const flip = sp.facing === 'left' ? -1 : 1;
       ctx.scale(flip * (sp.scale || 0.5), sp.scale || 0.5);
+      if (fr.walk.length === 1 && fr.windup === fr.attack) { // 1コマだけの絵：構えで縮み、攻撃で伸びる（見た目だけ）
+        if (pose === 'windup') ctx.scale(1.06, 0.92);
+        else if (pose === 'strike') ctx.scale(0.94, 1.08);
+      }
       ctx.imageSmoothingEnabled = true;
       ctx.drawImage(sp.img, idx * sp.frameW, 0, sp.frameW, sp.frameH, -sp.frameW / 2, -sp.footY, sp.frameW, sp.frameH);
       if (e.flash > 0) { ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = a * 0.6; ctx.drawImage(sp.img, idx * sp.frameW, 0, sp.frameW, sp.frameH, -sp.frameW / 2, -sp.footY, sp.frameW, sp.frameH); ctx.globalCompositeOperation = 'source-over'; }
@@ -584,6 +588,7 @@ export class Renderer {
     c.imageSmoothingEnabled = false;
     const sp = spriteFor(key);
     const px = unitSprite(key);
+    if (!sp) whenSpriteReady(key, () => Renderer.thumb(canvas, key, size, pose, face)); // 承認済みの絵が届いたら描き直す
     if (sp) { // 承認済みの絵：歩きAのコマを、枠に収まる大きさで（向きは素材のまま＝魔王軍は左・人間軍は右）
       c.imageSmoothingEnabled = true;
       const k = Math.min((canvas.width - 4) / sp.frameW, (canvas.height - 2) / sp.footY);
