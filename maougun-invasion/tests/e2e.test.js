@@ -190,7 +190,7 @@ try {
   const playStage = async (id, unlockName) => {
     const { recon, form } = await sortie(id);
     if (id === '1-2') {
-      check('偵察報告：側近の1行報告と、敵の兵種カード（1-2：自警団・見習い剣士・弓兵）', recon.text.includes('弓兵') && recon.enemies === 3 && await page.locator('#reconWho').textContent() === '側近', JSON.stringify(recon));
+      check('偵察報告：側近の1行報告と、敵の兵種カード（1-2：自警団・見習い剣士・弓兵）', recon.text.includes('弓兵') && recon.enemies === 3 && await page.locator('#reconWho').textContent() === 'ヴェイル', JSON.stringify(recon));
       check('編成：通常5枠＋6枠目は鍵・幹部1枠＋2枠目は鍵（1-2 の時点で控えはなし）', form.units === 5 && form.locked === 1 && form.bossLocked === 1 && form.pool === 0, JSON.stringify(form));
       await shot(page, '12_formation');
       await page.tap('#btnEnemyInfo');
@@ -227,7 +227,7 @@ try {
   };
   await playStage('1-2', 'こうもり');
   await playStage('1-3', '森のお化け');
-  await playStage('1-4', '悪魔くん');
+  await playStage('1-4', 'プチデビル');
   await playStage('1-5', '幹部・突進');
   const prof = await ev(() => window.__game.app.profile);
   check('第1章の全5ステージを制圧', ['1-1', '1-2', '1-3', '1-4', '1-5'].every((id) => prof.stages[id] && prof.stages[id].cleared) && prof.loot.length === 5);

@@ -221,7 +221,7 @@ button:focus-visible { outline: calc(var(--u) * 3) solid var(--gold2); outline-o
     linear-gradient(180deg, #1a0a30, #2c1250 60%, #120620);
 }
 .talkBg.field { background: linear-gradient(180deg, rgba(10, 4, 24, .15), rgba(10, 4, 24, .55)); }
-.portrait { position: absolute; bottom: calc(var(--u) * 120); width: calc(var(--u) * 210); height: calc(var(--u) * 210); transition: opacity .2s, transform .2s; filter: drop-shadow(0 calc(var(--u) * 4) calc(var(--u) * 8) rgba(0,0,0,.6)); }
+.portrait { position: absolute; bottom: calc(var(--u) * 112); width: calc(var(--u) * 300); height: calc(var(--u) * 300); transition: opacity .2s, transform .2s; filter: drop-shadow(0 calc(var(--u) * 4) calc(var(--u) * 8) rgba(0,0,0,.6)); }
 .portrait.left { left: calc(var(--u) * 40); }
 .portrait.right { right: calc(var(--u) * 40); transform: scaleX(1); }
 .portrait.dim { opacity: .45; transform: scale(.94); }

@@ -14,12 +14,12 @@ export const SKIN = {
   names: {
     // 2026-11-24：ユーザー指定の名前
     mass: 'グミ', vanguard: '闇の騎士', tank: '岩男', ranged: '弓ゴブリン',
-    fast: 'こうもり', area: '魔法使い', healer: '森のお化け', special: '悪魔くん',
+    fast: 'こうもり', area: '魔法使い', healer: '森のお化け', special: 'プチデビル', // 2026-11-24：「悪魔くん」は既存の漫画作品名と同じため変更
     charger: '幹部・突進', elemental: '幹部・炎氷', trickster: '幹部・罠', thunder: '幹部・落雷', mist: '幹部・霧',
     lord: '大魔王', lordAwakened: '大魔王（真の姿）',
   },
   speakers: {
-    lord: '大魔王', aide: '側近', narr: '',
+    lord: '大魔王', aide: 'ヴェイル', narr: '', // aide：影の側近（2026-11-24 命名。既存作品の名前に近い「ミスト」を避けた）
     tiw: 'ティウ', mot: 'モッ', waan: 'ワーン', koi: 'コイ', take: '勇者たけ', sai: '勇者サイ', yanai: 'マスター・ヤナイ',
   },
   sprites: {
@@ -38,7 +38,11 @@ export const SKIN = {
     // 2026-11-24：森のお化け（回復支援。ユーザー承認のオリジナルデザイン・チャットで受け取った画像 11442.png。1254×1254・静止画1枚・左向き。足があるので浮かせず地面に立たせる。見た目は変えず、倍率と足元だけ指定）
     healer: { src: 'assets/approved/units/healer.png', frameW: 1254, frameH: 1254, frames: { walk: [0], windup: 0, attack: 0 }, footY: 1196, facing: 'left', scale: 0.045 },
   },
-  portraits: {},
+  // 会話の立ち絵（2026-11-24 ユーザー承認。大魔王は左枠・右向き、影の側近は右枠・左向き）。表情差分が無いときは _normal を使う
+  portraits: {
+    lord_normal: 'assets/approved/talk/lord_normal.png',
+    aide_normal: 'assets/approved/talk/aide_normal.png',
+  },
   /* 画面の各場所に入れる承認済み画像（場所と仕様の一覧：docs/ASSET_MAP.md）。
    * 未登録・読み込み失敗のときは、今の仮の表示に戻る。見た目は変えず、拡大縮小と位置だけ指定する。 */
   images: {
