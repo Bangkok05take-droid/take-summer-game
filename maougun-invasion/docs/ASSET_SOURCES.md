@@ -33,3 +33,4 @@
 | 2026-11-24 | — | — | — | `assets/approved/units/fast.png`・`area.png` | — | **取り下げ**：既存作品のキャラクターに近いデザインのため削除（ユーザー了承）。仮のドット絵に戻した |
 | 2026-11-24 | `deccc71f-maougun_background_fix.zip`（ZIP SHA256 `8acf30b0be80b43d…`。承認はユーザーのメッセージで受領） | `bg/village_small.png` | `ae6ce9d3a7b24fb6…` | `assets/approved/bg/village_small.png` | `ae6ce9d3a7b24fb6…` | 加工なし。1-1 の背景を見張り台を消した修正版に差し替え |
 | 2026-11-24 | 同上 | `bg/village_town.png` | `a9cd1a7ed0c96a3f…` | `assets/approved/bg/village_town.png` | `a9cd1a7ed0c96a3f…` | 加工なし。1-2 の背景（祠を消した修正版） |
+| 2026-11-24 | （チャットで受け取った画像 village_small.png） | — | `3eb60ee407483e43…` | `assets/approved/bg/village_small.png` | `3eb60ee407483e43…` | 加工なし。1-1 の背景を継ぎ目を直した再修正版に差し替え（1920×1080） |
