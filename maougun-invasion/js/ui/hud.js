@@ -25,7 +25,7 @@ export class Hud {
     this.slots = battle.deck.map((d, i) => {
       const b = document.createElement('button');
       b.type = 'button';
-      b.className = 'slot';
+      b.className = 'slot' + (d.unique ? ' boss' : '');
       b.dataset.key = d.key;
       b.setAttribute('aria-label', `${SKIN.names[d.key]}を召喚（魔力${d.cost}）キー${i + 1}`);
       const cv = document.createElement('canvas'); cv.width = 128; cv.height = 108;
@@ -66,13 +66,15 @@ export class Hud {
       const chk = b.canSummon(s.key);
       const state = chk.ok ? 'ready' : chk.reason;
       if (state !== s.state) {
-        s.el.classList.remove('ready', 'mana', 'cooldown', 'cap', 'alive', 'ended');
+        s.el.classList.remove('ready', 'mana', 'cooldown', 'cap', 'alive', 'bossOut', 'furnace', 'ended');
         s.el.classList.add(state);
         s.state = state;
       }
-      const w = b.cooldowns[s.key] || 0;
-      s.cd.style.transform = `scaleY(${s.def.cooldown ? w / s.def.cooldown : 0})`;
-      s.why.textContent = state === 'cooldown' ? `${w.toFixed(1)}秒` : state === 'mana' ? '魔力不足' : state === 'cap' ? '上限' : state === 'alive' ? '出撃中' : '';
+      const w = state === 'cooldown' ? chk.wait : 0;
+      s.cd.style.transform = `scaleY(${s.def.cooldown ? Math.min(1, w / s.def.cooldown) : 0})`;
+      // 押せない理由をカードに出す（魔力不足・魔力炉Lv不足・再召喚待ち・幹部の出撃中）
+      s.why.textContent = state === 'cooldown' ? `${w.toFixed(1)}秒` : state === 'mana' ? '魔力不足' : state === 'cap' ? '上限'
+        : state === 'alive' || state === 'bossOut' ? '出撃中' : state === 'furnace' ? `炉Lv${chk.lv}` : '';
     }
 
     const fc = b.furnaceCost();
@@ -115,7 +117,9 @@ export function reasonText(chk, cap) {
     case 'mana': return `魔力が足りません（あと ${Math.ceil(chk.need)}）`;
     case 'cooldown': return `再召喚まで あと ${chk.wait.toFixed(1)} 秒`;
     case 'cap': return `出撃上限です（同時に ${cap} 体まで）`;
-    case 'alive': return '出撃中です（同じ幹部は同時に1体まで）';
+    case 'alive': return 'この幹部は出撃中です（戦場の幹部は1体まで）';
+    case 'bossOut': return `ほかの幹部（${SKIN.names[chk.who] || '幹部'}）が出撃中です。戦場の幹部は1体まで`;
+    case 'furnace': return `魔力炉を Lv${chk.lv} まで上げると召喚できます`;
     case 'charging': return '魔王の呪文はまだたまっていません';
     case 'noTarget': return '呪文を当てる相手がいません';
     case 'max': return '魔力炉は最大です';

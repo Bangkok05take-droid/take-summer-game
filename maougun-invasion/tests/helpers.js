@@ -3,17 +3,16 @@ import { createBattle, STEP } from '../js/core/battle.js';
 import { UNITS, ALL_DEMONS, UNIT_ORDER } from '../js/data/units.js';
 import { HUMANS } from '../js/data/humans.js';
 import { STAGES, CONFIG, CHAPTER1 } from '../js/data/stages.js';
-import { newProfile, buildDeck, resolveMana, resolveUnit } from '../js/data/progress.js';
+import { newProfile, buildDeck, resolveMana, resolveUnit, applyResult } from '../js/data/progress.js';
 
 export { STEP, UNITS, ALL_DEMONS, UNIT_ORDER, HUMANS, STAGES, CONFIG, CHAPTER1, newProfile };
 
-// その時点までのステージをクリアした状態のプロフィール（強化なし）
+// その時点までのステージを、ふつうに遊んでクリアした状態のプロフィール（強化なし・編成は自動で入った魔物のまま）
 // upgraded：それまでの初回クリア報酬を、主力の強化に使った想定（1-1 0石 → 1-5 約730石）
 export function profileFor(stageId, upgraded = false) {
   const p = newProfile();
-  const order = { '1-1': [], '1-2': ['ranged'], '1-3': ['ranged', 'fast'], '1-4': ['ranged', 'fast', 'healer'], '1-5': ['ranged', 'fast', 'healer', 'special'] };
-  for (const k of order[stageId] || []) p.units[k].unlocked = true;
-  for (const id of CHAPTER1.stages) { if (id === stageId) break; p.stages[id] = { cleared: true, clears: 1, bestTime: 200 }; }
+  for (const id of CHAPTER1.stages) { if (id === stageId) break; applyResult(p, id, 'win', 200); }
+  p.stones = 0;
   if (upgraded) {
     const plan = { '1-1': [], '1-2': ['vanguard'], '1-3': ['vanguard', 'area'], '1-4': ['vanguard', 'area', 'vanguard'], '1-5': ['vanguard', 'area', 'vanguard', 'tank', 'area'] };
     for (const k of plan[stageId] || []) p.units[k].level++;

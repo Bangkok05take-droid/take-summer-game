@@ -1,9 +1,14 @@
 /* 戦闘以外の画面：ステージ選択・会話・戦利品・ユニット解放・強化 */
 import { SKIN } from '../data/skin.js';
 import { STAGES, CHAPTER1 } from '../data/stages.js';
-import { UNITS, BOSSES, UNIT_ORDER } from '../data/units.js';
+import { UNITS, BOSSES, UNIT_ORDER, BOSS_ORDER } from '../data/units.js';
+import { HUMANS } from '../data/humans.js';
+import { enemiesOf, reconLine } from '../data/recon.js';
 import { LOOT } from '../data/story.js';
-import { UPGRADES, unitLevelCost, MAX_UNIT_LEVEL, resolveUnit, isStageOpen, nextStage, lordLevel } from '../data/progress.js';
+import {
+  UPGRADES, UPGRADE_GROUPS, unitLevelCost, MAX_UNIT_LEVEL, resolveUnit, isStageOpen, nextStage, lordLevel,
+  slotsFor, slotUnlockLv, normalizeFormation, canForm, MAX_UNIT_SLOTS, MAX_BOSS_SLOTS, SLOTS,
+} from '../data/progress.js';
 import { Renderer } from '../render/renderer.js';
 import { drawPortrait } from '../render/shapes.js';
 import { getImage, preload } from '../render/images.js';
@@ -138,6 +143,7 @@ export function renderLoot(stageId, res, firstClear) {
   $('lootDesc').textContent = firstClear ? loot.desc : 'すでに制圧した場所から、魔界石を回収した。';
   const gains = [`魔界石 <b>+${res.stones}</b>`];
   if (firstClear) gains.push('封印がゆるみ、大魔王の魔力が戻った：最大魔力 <b>+60</b>・魔力回復 <b>+1.5/秒</b>');
+  if (res.slotsUp) gains.push(`支配力が戻った：編成枠が <b>通常${res.slotsUp.units}＋幹部${res.slotsUp.bosses}</b> に！`);
   if (res.unlocked) gains.push(`新しい魔物：<b>${SKIN.names[res.unlocked]}</b>`);
   $('lootGains').innerHTML = gains.map((g) => `<li>${g}</li>`).join('');
 }
@@ -148,9 +154,9 @@ export function renderUnlock(key) {
   const boss = !!BOSSES[key];
   $('unlockEyebrow').textContent = boss ? '幹部を呼び戻せるようになった！' : '新しい魔物が仲間になった！';
   $('unlockName').textContent = SKIN.names[key];
-  $('unlockRole').textContent = boss ? `${def.role}（第2章から召喚できます。同じ幹部は同時に1体まで）` : def.role;
+  $('unlockRole').textContent = boss ? `${def.role}（編成の幹部枠に入れて出撃。魔力炉Lv${def.needFurnace}以上で召喚できる切り札。戦場の幹部は1体まで）` : def.role;
   Renderer.thumb($('unlockArt'), key, def.size);
-  const rows = [['魔力', def.cost], ['HP', def.hp], ['攻撃', def.atk], ['射程', def.range], ['再召喚', def.cooldown + '秒']];
+  const rows = [['魔力', def.cost], ...(boss ? [['魔力炉', 'Lv' + def.needFurnace + '〜']] : []), ['HP', def.hp], ['攻撃', def.atk], ['射程', def.range], ['再召喚', def.cooldown + '秒']];
   $('unlockStats').innerHTML = rows.map(([a, b]) => `<dt>${a}</dt><dd>${b}</dd>`).join('');
 }
 
@@ -183,20 +189,107 @@ export function renderUpgrade(p, onUnit, onGlobal) {
     if (!u.unlocked) { const c = cv.getContext('2d'); c.setTransform(1, 0, 0, 1, 0, 0); c.globalCompositeOperation = 'source-atop'; c.fillStyle = '#1a1030'; c.fillRect(0, 0, cv.width, cv.height); }
   }
   const gl = $('upGlobal'); gl.innerHTML = '';
-  for (const [id, def] of Object.entries(UPGRADES)) {
-    const lv = p.upgrades[id] || 0;
-    const li = document.createElement('li'); li.className = 'noicon';
-    const max = lv >= def.max;
-    const cost = def.cost(lv);
-    li.innerHTML = `<div><div class="nm">${def.name}　Lv${lv}</div><div class="ds">${def.desc}（最大 Lv${def.max}）</div></div>`;
-    const btn = document.createElement('button'); btn.type = 'button'; btn.dataset.up = id;
-    btn.textContent = max ? 'MAX' : `強化 ${cost}`;
-    btn.disabled = max || p.stones < cost;
-    btn.addEventListener('click', () => onGlobal(id));
-    li.appendChild(btn);
-    gl.appendChild(li);
+  const head = (t) => { const h = document.createElement('li'); h.className = 'group'; h.textContent = t; gl.appendChild(h); };
+  // 支配力：大魔王Lvで自動（編成枠）
+  head('支配力（大魔王Lvで自動）');
+  const sl = slotsFor(p); const nx = SLOTS.find((x) => x.lv > lordLevel(p));
+  const dom = document.createElement('li'); dom.className = 'noicon';
+  dom.innerHTML = `<div><div class="nm">大魔王　Lv${lordLevel(p)}</div><div class="ds">編成枠：通常${sl.units}＋幹部${sl.bosses}${nx ? `　→ Lv${nx.lv}で 通常${nx.units}＋幹部${nx.bosses}` : ''}</div></div><span></span>`;
+  gl.appendChild(dom);
+  for (const [g, title] of Object.entries(UPGRADE_GROUPS)) {
+    head(title);
+    if (g === 'mana') {
+      const lord = document.createElement('li'); lord.className = 'noicon';
+      lord.innerHTML = `<div><div class="nm">封印のほころび</div><div class="ds">ステージを初めて制圧するたびに、最大魔力 +60・回復 +1.5/秒</div></div><span></span>`;
+      gl.appendChild(lord);
+    }
+    for (const [id, def] of Object.entries(UPGRADES)) {
+      if (def.group !== g) continue;
+      const lv = p.upgrades[id] || 0;
+      const li = document.createElement('li'); li.className = 'noicon';
+      const max = lv >= def.max;
+      const cost = def.cost(lv);
+      li.innerHTML = `<div><div class="nm">${def.name}　Lv${lv}</div><div class="ds">${def.desc}（最大 Lv${def.max}）</div></div>`;
+      const btn = document.createElement('button'); btn.type = 'button'; btn.dataset.up = id;
+      btn.textContent = max ? 'MAX' : `強化 ${cost}`;
+      btn.disabled = max || p.stones < cost;
+      btn.addEventListener('click', () => onGlobal(id));
+      li.appendChild(btn);
+      gl.appendChild(li);
+    }
   }
-  const lord = document.createElement('li'); lord.className = 'noicon';
-  lord.innerHTML = `<div><div class="nm">大魔王の魔力　Lv${lordLevel(p)}</div><div class="ds">ステージを初めて制圧するたびに、最大魔力 +60・回復 +1.5/秒</div></div><span></span>`;
-  gl.appendChild(lord);
+}
+
+// ---------- 偵察報告・敵軍情報 ----------
+function enemyCards(ul, stageId) {
+  ul.innerHTML = '';
+  for (const e of enemiesOf(stageId)) {
+    const li = document.createElement('li');
+    li.className = 'enemy' + (e.hero ? ' hero' : '') + (e.isNew ? ' new' : '');
+    li.dataset.enemy = e.key;
+    const cv = document.createElement('canvas'); cv.width = 96; cv.height = 80;
+    const tx = document.createElement('div');
+    tx.innerHTML = `<div class="nm"><b>${e.name}</b><small>${e.role}・${e.when}</small>${e.isNew ? '<em>NEW</em>' : ''}</div><div class="nt">${e.note}</div><div class="ct">対策：${e.counter}</div>`;
+    li.append(cv, tx);
+    ul.appendChild(li);
+    Renderer.thumb(cv, e.key, HUMANS[e.key].size, 'idle', 1);
+  }
+}
+export function renderRecon(stageId) {
+  const st = STAGES[stageId];
+  $('reconTitle').textContent = `${st.id}　${st.name}`;
+  $('reconWho').textContent = SKIN.speakers.aide;
+  $('reconText').textContent = reconLine(stageId);
+  const c = $('reconFace'); const g = c.getContext('2d');
+  const img = getImage(SKIN.portraits.aide_normal || SKIN.portraits.aide);
+  g.clearRect(0, 0, c.width, c.height);
+  if (img) g.drawImage(img, 0, 0, c.width, c.height); else drawPortrait(g, 'aide', 'normal', c.width, c.height);
+  enemyCards($('reconEnemies'), stageId);
+}
+export function renderEnemyInfo(stageId) {
+  $('ovEnemyTitle').textContent = `敵軍情報　${stageId}　${STAGES[stageId].name}`;
+  enemyCards($('ovEnemyList'), stageId);
+}
+
+// ---------- 編成 ----------
+// onToggle(key)：控え・編成の魔物をタップしたとき
+export function renderFormation(p, stageId, onToggle) {
+  const st = STAGES[stageId];
+  const f = normalizeFormation(p); const sl = slotsFor(p);
+  $('formTitle').textContent = `${st.id}　${st.name}`;
+  $('formLord').textContent = lordLevel(p);
+  $('formUnitCount').textContent = `${f.units.length}/${sl.units}`;
+  $('formBossCount').textContent = `${f.bosses.length}/${sl.bosses}`;
+  const card = (key, cls) => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'fcard ' + cls; b.dataset.key = key;
+    const d = resolveUnit(key, p); const boss = !!BOSSES[key];
+    const cv = document.createElement('canvas'); cv.width = 112; cv.height = 92;
+    b.innerHTML = '';
+    b.append(cv);
+    const nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = SKIN.names[key] || key;
+    const cs = document.createElement('span'); cs.className = 'cs'; cs.textContent = d.cost;
+    b.append(nm, cs);
+    if (boss) { const fl = document.createElement('span'); fl.className = 'fl'; fl.textContent = `炉Lv${d.needFurnace}`; b.append(fl); }
+    b.setAttribute('aria-label', `${SKIN.names[key]}（魔力${d.cost}${boss ? `・魔力炉Lv${d.needFurnace}以上` : ''}）`);
+    b.addEventListener('click', () => onToggle(key));
+    Renderer.thumb(cv, key, d.size);
+    return b;
+  };
+  const slots = (wrap, list, max, total, kind) => {
+    wrap.innerHTML = '';
+    for (let i = 0; i < total; i++) {
+      if (i < list.length) { wrap.appendChild(card(list[i], 'in')); continue; }
+      const e = document.createElement('div');
+      if (i < max) { e.className = 'fslot empty'; e.textContent = '空き'; }
+      else { e.className = 'fslot locked'; e.innerHTML = `<span class="lock" aria-hidden="true">🔒</span><span>大魔王Lv${slotUnlockLv(kind, i)}で解放</span>`; }
+      wrap.appendChild(e);
+    }
+  };
+  slots($('formUnits'), f.units, sl.units, MAX_UNIT_SLOTS, 'units');
+  slots($('formBosses'), f.bosses, sl.bosses, MAX_BOSS_SLOTS, 'bosses');
+  const pool = $('formPool'); pool.innerHTML = '';
+  const bench = [...UNIT_ORDER, ...BOSS_ORDER].filter((k) => canForm(p, k) && !f.units.includes(k) && !f.bosses.includes(k));
+  for (const k of bench) pool.appendChild(card(k, 'out' + (BOSSES[k] ? ' boss' : '')));
+  if (!bench.length) { const e = document.createElement('p'); e.className = 'poolEmpty'; e.textContent = '控えの魔物はいません（新しい魔物はステージをクリアすると仲間になります）'; pool.appendChild(e); }
+  $('btnSortie').disabled = f.units.length === 0;
 }

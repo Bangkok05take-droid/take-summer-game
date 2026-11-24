@@ -130,6 +130,13 @@ button:focus-visible { outline: calc(var(--u) * 3) solid var(--gold2); outline-o
 .slot.mana .why, .slot.cooldown .why, .slot.cap .why { display: block; }
 .slot.mana .why { color: #ffb3bb; }
 .slot.cap .why { color: #ffd0a0; }
+.slot.furnace canvas, .slot.bossOut canvas, .slot.alive canvas { filter: grayscale(.7) brightness(.6); }
+.slot.furnace .why, .slot.bossOut .why, .slot.alive .why { display: block; }
+.slot.furnace .why { color: #ffd27a; }
+.slot.bossOut .why, .slot.alive .why { color: #d8c4ff; }
+/* 幹部のカード：金の二重枠で通常と見分ける */
+.slot.boss { border-color: #ffd86a; background: radial-gradient(circle at 50% 35%, #7a3a2a 0%, #2a0f1a 78%); box-shadow: inset 0 0 0 calc(var(--u) * 2) #6b2b10, 0 calc(var(--u) * 3) 0 #0a0412; }
+.slot.boss.ready { box-shadow: inset 0 0 0 calc(var(--u) * 2) #6b2b10, 0 0 calc(var(--u) * 14) rgba(255, 190, 80, .85), 0 calc(var(--u) * 3) 0 #0a0412; }
 .slot.deny { animation: shake .25s; }
 @keyframes shake { 25% { translate: calc(var(--u) * -4) 0; } 75% { translate: calc(var(--u) * 4) 0; } }
 
@@ -180,7 +187,7 @@ button:focus-visible { outline: calc(var(--u) * 3) solid var(--gold2); outline-o
 .menu { display: flex; flex-direction: column; gap: calc(var(--u) * 10); align-items: center; margin-top: calc(var(--u) * 8); }
 .note { margin: 0; color: var(--dim); font-size: calc(var(--u) * 12); text-shadow: 0 1px 3px #000; }
 
-#scSelect, #scUpgrade { background: linear-gradient(180deg, rgba(20, 8, 40, .86), rgba(20, 8, 40, .7) 40%, rgba(20, 8, 40, .9)); justify-content: flex-start; padding: calc(var(--u) * 16) calc(var(--u) * 24); }
+#scSelect, #scUpgrade, #scRecon, #scForm { background: linear-gradient(180deg, rgba(20, 8, 40, .86), rgba(20, 8, 40, .7) 40%, rgba(20, 8, 40, .9)); justify-content: flex-start; padding: calc(var(--u) * 16) calc(var(--u) * 24); }
 .selHead { width: 100%; display: flex; justify-content: space-between; align-items: flex-end; gap: calc(var(--u) * 12); }
 .selHead h2 { margin: calc(var(--u) * 2) 0 0; font-size: calc(var(--u) * 26); text-wrap: balance; }
 .selInfo { display: flex; gap: calc(var(--u) * 8); flex-wrap: wrap; justify-content: flex-end; }
@@ -293,3 +300,60 @@ body.portrait #rotate { display: flex; }
 @media (prefers-reduced-motion: reduce) {
   .spell.full, .slot.deny, .node.next, .talkBox .next { animation: none; }
 }
+
+/* ---------- 偵察報告・敵軍情報 ---------- */
+#scRecon, #scForm { gap: calc(var(--u) * 8); }
+#scRecon .selHead { align-items: center; }
+.reconMsg {
+  width: 100%; display: flex; gap: calc(var(--u) * 14); align-items: center; padding: calc(var(--u) * 8) calc(var(--u) * 16);
+  background: rgba(255, 252, 245, .96); color: #2a1a3a; border: calc(var(--u) * 3) solid var(--gold); border-radius: calc(var(--u) * 16);
+}
+.reconMsg canvas { width: calc(var(--u) * 70); height: calc(var(--u) * 70); flex: none; }
+.reconMsg .who { display: inline-block; padding: calc(var(--u) * 2) calc(var(--u) * 12); background: linear-gradient(180deg, #6d28d9, #3b0f7a); color: #fff; border-radius: calc(var(--u) * 8); font-weight: 900; font-size: calc(var(--u) * 13); }
+.reconMsg p { margin: calc(var(--u) * 4) 0 0; font-size: calc(var(--u) * 17); line-height: 1.5; font-weight: 700; text-wrap: pretty; }
+.enemyList { list-style: none; margin: 0; padding: 0; width: 100%; flex: 1; min-height: 0; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(calc(var(--u) * 290), 1fr)); gap: calc(var(--u) * 8); align-content: start; }
+.enemy { display: grid; grid-template-columns: calc(var(--u) * 50) 1fr; gap: calc(var(--u) * 8); align-items: center; background: rgba(40, 70, 130, .55); border: calc(var(--u) * 2) solid #4f8ff0; border-radius: calc(var(--u) * 12); padding: calc(var(--u) * 4) calc(var(--u) * 10); text-align: left; line-height: 1.35; }
+.enemy canvas { width: calc(var(--u) * 50); height: calc(var(--u) * 42); }
+.enemy .nm { font-weight: 900; font-size: calc(var(--u) * 15); display: flex; align-items: baseline; gap: calc(var(--u) * 6); }
+.enemy .nm small { font-size: calc(var(--u) * 11); color: var(--dim); font-weight: 700; }
+.enemy .nm em { font-style: normal; font-size: calc(var(--u) * 10); background: #ff5a6a; color: #fff; border-radius: calc(var(--u) * 5); padding: 0 calc(var(--u) * 5); margin-left: auto; }
+.enemy .nt { font-size: calc(var(--u) * 12); }
+.enemy .ct { font-size: calc(var(--u) * 12); color: var(--ok); }
+.enemy .wh { font-size: calc(var(--u) * 11); color: var(--dim); }
+.enemy.hero { background: rgba(130, 100, 30, .55); border-color: var(--gold); }
+.enemy.new { box-shadow: 0 0 0 calc(var(--u) * 2) rgba(255, 90, 106, .5); }
+.panel.wide { width: calc(var(--u) * 900); max-width: calc(var(--u) * 900); max-height: calc(var(--u) * 510); }
+.panel.wide h2 { font-size: calc(var(--u) * 22); }
+.panel.wide .enemyList { max-height: calc(var(--u) * 360); }
+
+/* ---------- 編成 ---------- */
+.formRow { width: 100%; display: flex; gap: calc(var(--u) * 12); }
+.formGroup { background: rgba(0,0,0,.28); border: calc(var(--u) * 2) solid var(--line); border-radius: calc(var(--u) * 14); padding: calc(var(--u) * 6) calc(var(--u) * 10) calc(var(--u) * 10); }
+.formGroup.boss { border-color: #c98a2a; background: rgba(60, 20, 10, .35); }
+.formGroup h3, .formPool h3 { margin: 0 0 calc(var(--u) * 6); font-size: calc(var(--u) * 14); color: var(--gold); display: flex; gap: calc(var(--u) * 8); align-items: baseline; }
+.formGroup h3 b { color: var(--text); font-variant-numeric: tabular-nums; }
+.formPool h3 span { font-size: calc(var(--u) * 11); color: var(--dim); font-weight: 700; }
+.formSlots, .poolList { display: flex; gap: calc(var(--u) * 6); }
+.poolList { flex-wrap: wrap; }
+.fcard, .fslot {
+  position: relative; width: calc(var(--u) * 80); height: calc(var(--u) * 96); flex: none; border-radius: calc(var(--u) * 10);
+  border: calc(var(--u) * 2.5) solid var(--gold); background: radial-gradient(circle at 50% 35%, #4a2a7a 0%, #20103a 78%); padding: 0; overflow: hidden;
+}
+.fcard canvas { position: absolute; left: 50%; top: calc(var(--u) * 2); transform: translateX(-50%); width: calc(var(--u) * 64); height: calc(var(--u) * 53); }
+.fcard .nm { position: absolute; left: 0; right: 0; top: calc(var(--u) * 55); font-size: calc(var(--u) * 11); text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 calc(var(--u) * 2); }
+.fcard .cs { position: absolute; left: 0; right: 0; bottom: calc(var(--u) * 3); font-size: calc(var(--u) * 14); font-weight: 900; text-align: center; color: var(--gold2); font-variant-numeric: tabular-nums; }
+.fcard .fl { position: absolute; top: calc(var(--u) * 3); right: calc(var(--u) * 3); font-size: calc(var(--u) * 10); font-weight: 900; background: rgba(0,0,0,.75); color: #ffd27a; border-radius: calc(var(--u) * 5); padding: 0 calc(var(--u) * 4); }
+.fcard.in::after { content: "✓"; position: absolute; top: calc(var(--u) * 2); left: calc(var(--u) * 5); font-size: calc(var(--u) * 13); font-weight: 900; color: var(--ok); }
+.fcard.out { border-color: #6a5a8a; opacity: .92; }
+.fcard.boss, .formGroup.boss .fcard { border-color: #ffd86a; background: radial-gradient(circle at 50% 35%, #7a3a2a 0%, #2a0f1a 78%); }
+.fslot { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: calc(var(--u) * 4); font-size: calc(var(--u) * 11); color: var(--dim); text-align: center; padding: calc(var(--u) * 4); }
+.fslot.empty { border-style: dashed; border-color: rgba(233, 191, 90, .55); background: rgba(30, 14, 50, .6); }
+.fslot.locked { border-color: #4a3a5a; background: rgba(15, 8, 25, .75); }
+.fslot .lock { font-size: calc(var(--u) * 24); }
+.formPool { width: 100%; flex: 1; min-height: 0; overflow-y: auto; background: rgba(0,0,0,.2); border-radius: calc(var(--u) * 14); padding: calc(var(--u) * 6) calc(var(--u) * 10); }
+.poolEmpty { margin: 0; font-size: calc(var(--u) * 13); color: var(--dim); }
+.formHint { flex: 1; text-align: right; font-size: calc(var(--u) * 13); color: #ffd27a; font-weight: 800; }
+#btnSortie:disabled { filter: grayscale(.9) brightness(.6); }
+.upCol li.group { display: block; background: none; padding: calc(var(--u) * 4) 0 0; color: var(--gold); font-weight: 900; font-size: calc(var(--u) * 13); }
+.enemy .nm { flex-wrap: wrap; column-gap: calc(var(--u) * 6); row-gap: 0; }
+.enemy .nm b { white-space: nowrap; }

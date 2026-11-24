@@ -46,6 +46,7 @@ export class Battle {
     this.deck = deck; // 戦闘で使う数値に解決済みのユニット定義（key を持つ）
     this.cooldowns = Object.fromEntries(this.deck.map((d) => [d.key, 0]));
     this.spellCharge = 0;
+    this.bossSwitch = 0; // 幹部が撃破されたあと、別の幹部を出せるまでの残り秒
 
     this.spawnState = stage.spawns.map((s) => ({ nextAt: s.start ?? 0, fired: false }));
     this.pending = []; // { at, who }
@@ -61,17 +62,25 @@ export class Battle {
   queue(cmd) { this.commands.push(cmd); }
   deckDef(key) { return this.deck.find((d) => d.key === key); }
   aliveDemons() { let n = 0; for (const e of this.entities) if (e.side === 'demon' && e.state !== 'dead') n++; return n; }
+  aliveBoss() { return this.entities.find((e) => e.side === 'demon' && e.def.unique && e.state !== 'dead') || null; }
   aliveHumans() { let n = 0; for (const e of this.entities) if (e.side === 'human' && e.state !== 'dead') n++; return n; }
 
-  // 召喚できるか。{ ok, reason, wait?, need? }
+  // 召喚できるか。{ ok, reason, wait?, need?, lv? }
+  //  幹部（unique）：戦場の幹部は種類を問わず1体まで（'alive'＝同じ幹部が出撃中／'bossOut'＝別の幹部が出撃中）。
+  //  撃破後は同じ幹部が cooldown 秒、別の幹部が bossSwitch 秒（'cooldown'）。魔力炉Lvが needFurnace 未満なら 'furnace'
   canSummon(key) {
     if (this.result) return { ok: false, reason: 'ended' };
     const d = this.deckDef(key);
     if (!d) return { ok: false, reason: 'locked' };
-    if (d.unique && this.entities.some((e) => e.key === key && e.state !== 'dead')) return { ok: false, reason: 'alive' };
-    // 理由の優先：出撃上限 → 再召喚待ち → 魔力不足
+    if (d.unique) {
+      const out = this.aliveBoss();
+      if (out) return { ok: false, reason: out.key === key ? 'alive' : 'bossOut', who: out.key };
+    }
+    // 理由の優先：出撃中 → 出撃上限 → 再召喚待ち → 魔力炉Lv → 魔力不足
     if (this.aliveDemons() >= this.config.demonCap) return { ok: false, reason: 'cap' };
-    if (this.cooldowns[key] > 0) return { ok: false, reason: 'cooldown', wait: this.cooldowns[key] };
+    const wait = Math.max(this.cooldowns[key] || 0, d.unique ? this.bossSwitch : 0);
+    if (wait > 0) return { ok: false, reason: 'cooldown', wait };
+    if (d.needFurnace && this.furnaceLv < d.needFurnace) return { ok: false, reason: 'furnace', lv: d.needFurnace };
     if (this.mana < d.cost) return { ok: false, reason: 'mana', need: d.cost - this.mana };
     return { ok: true };
   }
@@ -104,6 +113,7 @@ export class Battle {
     this.mana = Math.min(this.manaMax, this.mana + this.manaRegen * dt);
     this.spellCharge = Math.min(this.config.spell.charge, this.spellCharge + dt);
     for (const k in this.cooldowns) if (this.cooldowns[k] > 0) this.cooldowns[k] = Math.max(0, this.cooldowns[k] - dt);
+    if (this.bossSwitch > 0) this.bossSwitch = Math.max(0, this.bossSwitch - dt);
 
     this.runSpawner();
 
@@ -430,7 +440,10 @@ export class Battle {
       }
     } else {
       this.stats.lost++;
-      if (o.def.unique && this.cooldowns[o.key] != null) this.cooldowns[o.key] = o.def.cooldown;
+      if (o.def.unique) {
+        if (this.cooldowns[o.key] != null) this.cooldowns[o.key] = o.def.cooldown; // 同じ幹部：撃破から cooldown 秒
+        this.bossSwitch = this.config.bossSwitch || 0; // 別の幹部への切り替え待ち
+      }
     }
   }
 

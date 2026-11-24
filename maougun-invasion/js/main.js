@@ -8,11 +8,11 @@ import { STORY } from './data/story.js';
 import { SKIN } from './data/skin.js';
 import {
   loadProfile, saveProfile, resetProfile, buildDeck, resolveMana, applyResult, isStageOpen, nextStage,
-  levelUpUnit, buyUpgrade, SAVE_KEY,
+  levelUpUnit, buyUpgrade, SAVE_KEY, resolveSpell, addToFormation, removeFromFormation, normalizeFormation,
 } from './data/progress.js';
 import { Renderer, VIEW_W, VIEW_H, MINIMAP } from './render/renderer.js';
 import { Hud, reasonText } from './ui/hud.js';
-import { TalkPlayer, renderSelect, renderLoot, renderUnlock, renderUpgrade } from './ui/screens.js';
+import { TalkPlayer, renderSelect, renderLoot, renderUnlock, renderUpgrade, renderRecon, renderEnemyInfo, renderFormation } from './ui/screens.js';
 import { applyUiSkin } from './ui/uiskin.js';
 
 const $ = (id) => document.getElementById(id);
@@ -32,11 +32,12 @@ const app = {
   lastResult: null,
 };
 
-const SCREENS = ['scTitle', 'scSelect', 'scResult', 'scLoot', 'scUnlock', 'scUpgrade'];
+const SCREENS = ['scTitle', 'scSelect', 'scRecon', 'scForm', 'scResult', 'scLoot', 'scUnlock', 'scUpgrade'];
 function show(id) {
   for (const s of SCREENS) $(s).hidden = s !== id;
   $('battleUi').hidden = id !== 'battle';
   $('ovPause').hidden = true;
+  $('ovEnemy').hidden = true;
   app.screen = id;
 }
 const save = () => saveProfile(app.profile);
@@ -96,9 +97,42 @@ function pickStage(id) {
     if (st.talk) lines.splice(1, 0, { who: 'narr', text: `――そのころ、${st.name}では……` }, ...st.talk.map((t) => ({ who: speakerKey(t.who), text: t.text })), { who: 'narr', text: '――封印の祠。' });
     makeScene(id); renderer.camX = 0;
     show(null);
-    talk.play(lines, 'field', () => { app.profile.story[key] = true; save(); startStage(id); });
-  } else startStage(id);
+    talk.play(lines, 'field', () => { app.profile.story[key] = true; save(); toRecon(id); });
+  } else toRecon(id);
 }
+
+// ---------- 偵察報告 → 編成 → 出撃 ----------
+// 偵察報告は毎回（初回は上の会話のあとに1行、2回目以降は1行だけ）。スキップで編成へ
+function toRecon(id) {
+  app.stageId = id;
+  makeScene(id); renderer.camX = 0;
+  renderRecon(id);
+  show('scRecon');
+}
+$('btnReconSkip').addEventListener('click', () => toForm(app.stageId));
+$('btnReconNext').addEventListener('click', () => toForm(app.stageId));
+$('btnReconBack').addEventListener('click', toSelect);
+
+function toForm(id) {
+  app.stageId = id;
+  if (!app.scene || app.scene.stage.id !== id) { makeScene(id); renderer.camX = 0; }
+  $('formHint').textContent = '';
+  const redraw = () => renderFormation(app.profile, id, (key) => {
+    const f = normalizeFormation(app.profile);
+    if (f.units.includes(key) || f.bosses.includes(key)) { removeFromFormation(app.profile, key); $('formHint').textContent = ''; }
+    else {
+      const r = addToFormation(app.profile, key);
+      $('formHint').textContent = r.ok ? '' : r.reason === 'full' ? '枠がいっぱいです。編成の魔物をタップして外してください' : 'この魔物はまだ編成できません';
+    }
+    save(); redraw();
+  });
+  redraw();
+  show('scForm');
+}
+$('btnSortie').addEventListener('click', () => { if (normalizeFormation(app.profile).units.length) startStage(app.stageId); });
+$('btnFormBack').addEventListener('click', () => toRecon(app.stageId));
+$('btnEnemyInfo').addEventListener('click', () => { renderEnemyInfo(app.stageId); $('ovEnemy').hidden = false; });
+$('btnEnemyClose').addEventListener('click', () => { $('ovEnemy').hidden = true; });
 const speakerKey = (name) => ({ ティウ: 'tiw', モッ: 'mot', ワーン: 'waan', コイ: 'koi' }[name] || name);
 $('btnToTitle').addEventListener('click', toTitle);
 $('btnReplayOpening').addEventListener('click', () => playOpening(toSelect));
@@ -140,7 +174,8 @@ function startStage(id) {
   app.stageId = id;
   const st = STAGES[id];
   const seed = Number(params.get('seed')) || ((Date.now() % 100000) + 1);
-  app.battle = createBattle({ stage: st, deck: buildDeck(app.profile), humanDefs: HUMANS, config: CONFIG, seed, mana: resolveMana(st.mana, app.profile) });
+  const config = { ...CONFIG, spell: resolveSpell(CONFIG.spell, app.profile) }; // 魔王の力（呪文の強化）を反映
+  app.battle = createBattle({ stage: st, deck: buildDeck(app.profile), humanDefs: HUMANS, config, seed, mana: resolveMana(st.mana, app.profile) });
   app.resultShown = false;
   renderer.fx = [];
   renderer.centerOn(app.battle, app.battle.shrine.x); // 祠（右）から始める
@@ -189,7 +224,7 @@ function showResult() {
   const btns = $('resButtons'); btns.innerHTML = '';
   const mk = (label, cls, fn, id) => { const x = document.createElement('button'); x.type = 'button'; x.className = cls; x.textContent = label; if (id) x.id = id; x.addEventListener('click', fn); btns.appendChild(x); };
   if (win) mk('報告を聞く', 'big', afterWin, 'btnReport');
-  else { mk('もう一度', 'big', () => startStage(app.stageId), 'btnRetry'); mk('ステージ選択へ', 'big sub', toSelect, 'btnBackSelect'); }
+  else { mk('もう一度', 'big', () => startStage(app.stageId), 'btnRetry'); mk('編成を見直す', 'big sub', () => toForm(app.stageId), 'btnReform'); mk('ステージ選択へ', 'big sub', toSelect, 'btnBackSelect'); }
   setTimeout(() => { if (app.screen === 'battle' || app.screen === 'scResult') { show('scResult'); } }, 800);
 }
 
@@ -302,7 +337,7 @@ function frame(now) {
 window.__game = {
   app, clock, renderer, talk, SKIN,
   get battle() { return app.battle; },
-  startStage, toSelect, toTitle,
+  startStage, toSelect, toTitle, toRecon, toForm,
 };
 
 document.addEventListener('visibilitychange', () => { if (document.hidden && app.screen === 'battle' && app.battle && !app.battle.result) setPaused(true); });

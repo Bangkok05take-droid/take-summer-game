@@ -57,21 +57,27 @@ export const UNITS = {
   },
 };
 
-/* 幹部（レア召喚）。unique：同じ種類は戦場に1体まで。倒されてから cooldown 秒で再召喚できる。
- * 第1章では召喚しない（charger は 1-5 クリアで「解放」だけ。召喚は第2章から）。 */
+/* 幹部（切り札）。戦場に出せる幹部は種類を問わず同時に1体まで（battle.js）。
+ *   cost         召喚魔力（基本範囲 1200〜2200）
+ *   needFurnace  召喚に必要な魔力炉Lv（戦闘中の魔力炉。最大Lv8）。魔力が足りていても、炉Lvが足りなければ召喚できない
+ *   cooldown     撃破されてから再召喚できるまでの秒数（60秒）。ほかの幹部への切り替えは CONFIG.bossSwitch 秒待つ
+ *   ready        能力・絵がそろって編成できる幹部。false は数値だけの構想（編成画面には「準備中」で出る）
+ * 未完成の幹部も、ここに1行足せば編成・召喚・解放の仕組みにそのまま乗る（skills・絵は後から足す）。 */
 export const BOSSES = {
   charger: {
-    role: '幹部・突進', unique: true, growth: GROWTH, chapter: 2,
-    cost: 1500, cooldown: 60, hp: 7000, atk: 160, range: 46, speed: 30,
+    role: '幹部・突進', unique: true, ready: true, growth: GROWTH,
+    cost: 1500, needFurnace: 3, cooldown: 60, hp: 7000, atk: 160, range: 46, speed: 30,
     interval: 2.8, windup: 0.7, kb: 6, attack: 'area', size: 1.6,
     skills: [{ id: 'charge', name: '突進', type: 'charge', every: 12, first: 3, windup: 0.9, recover: 0.6, reach: 220, move: 180, mult: 1.8 }],
     anim: { idle: 2, walk: 4, attack: 4, skill: 6 }, // 準備するアニメーションのコマ数（ART_SPEC）
   },
-  elemental: { role: '幹部・炎と氷', unique: true, planned: true, cost: 1400, cooldown: 70, hp: 5000, atk: 140, range: 160, speed: 28, interval: 3.0, windup: 0.8, kb: 6, attack: 'area', size: 1.5, growth: GROWTH },
-  trickster: { role: '幹部・罠と身代わり', unique: true, planned: true, cost: 1300, cooldown: 80, hp: 4500, atk: 120, range: 120, speed: 34, interval: 2.6, windup: 0.6, kb: 6, attack: 'single', size: 1.5, growth: GROWTH },
-  thunder: { role: '幹部・落雷', unique: true, planned: true, cost: 1600, cooldown: 90, hp: 6500, atk: 220, range: 140, speed: 30, interval: 3.2, windup: 0.9, kb: 6, attack: 'single', size: 1.6, growth: GROWTH },
-  mist: { role: '幹部・霧', unique: true, planned: true, cost: 1500, cooldown: 90, hp: 7000, atk: 90, range: 100, speed: 28, interval: 2.8, windup: 0.7, kb: 6, attack: 'area', size: 1.6, growth: GROWTH },
+  // ---- 構想（ready: false）。数値は仮。能力（skills）と絵ができたら ready: true にする ----
+  trickster: { role: '幹部・罠と身代わり', unique: true, ready: false, cost: 1300, needFurnace: 3, cooldown: 60, hp: 4500, atk: 120, range: 120, speed: 34, interval: 2.6, windup: 0.6, kb: 6, attack: 'single', size: 1.5, growth: GROWTH },
+  mist: { role: '幹部・霧', unique: true, ready: false, cost: 1600, needFurnace: 4, cooldown: 60, hp: 7000, atk: 90, range: 100, speed: 28, interval: 2.8, windup: 0.7, kb: 6, attack: 'area', size: 1.6, growth: GROWTH },
+  elemental: { role: '幹部・炎と氷', unique: true, ready: false, cost: 1800, needFurnace: 5, cooldown: 60, hp: 5000, atk: 140, range: 160, speed: 28, interval: 3.0, windup: 0.8, kb: 6, attack: 'area', size: 1.5, growth: GROWTH },
+  thunder: { role: '幹部・落雷', unique: true, ready: false, cost: 2200, needFurnace: 6, cooldown: 60, hp: 6500, atk: 220, range: 140, speed: 30, interval: 3.2, windup: 0.9, kb: 6, attack: 'single', size: 1.6, growth: GROWTH },
 };
+export const BOSS_ORDER = Object.keys(BOSSES);
 
 /* 大魔王（別枠）。ふだんは祠にいて「魔王の呪文」を使う。真の姿は最終章の特別ユニット（構想） */
 export const LORD = {

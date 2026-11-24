@@ -3,8 +3,11 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { makeBattle, run, botPlayer, profileFor, STEP, CONFIG, STAGES, CHAPTER1, HUMANS } from './helpers.js';
 import { createClock } from '../js/core/clock.js';
+import { createBattle } from '../js/core/battle.js';
+import { BOSSES } from '../js/data/units.js';
 import {
   newProfile, loadProfile, saveProfile, resetProfile, applyResult, isStageOpen, nextStage, buildDeck, resolveMana,
+  lordLevel, slotsFor, addToFormation, removeFromFormation, migrate, resolveSpell, resolveUnit,
   levelUpUnit, buyUpgrade, START_UNITS, SAVE_KEY,
 } from '../js/data/progress.js';
 
@@ -211,6 +214,7 @@ test('魔力炉：最大魔力と回復が上がる', () => {
 
 test('幹部：同時に1体まで・撃破時からクールタイム', () => {
   const b = makeBattle({ stage: noEnemies({ mana: { start: 5000, max: 9999, regen: 0 } }), deck: ['mass', 'charger'] });
+  b.furnaceLv = 3;
   b.queue({ type: 'summon', key: 'charger' }); b.step();
   const boss = b.entities.find((e) => e.key === 'charger');
   assert.equal(b.canSummon('charger').reason, 'alive');
@@ -280,7 +284,8 @@ test('勝利でつぎのステージとユニットが解放される（解放�
   }
   assert.equal(nextStage(p), null);
   assert.equal(p.loot.length, 5);
-  assert.deepEqual(buildDeck(p).map((d) => d.key), ALL, '第1章クリアで通常8種がそろう（幹部は第2章から）');
+  assert.equal(lordLevel(p), 6);
+  assert.deepEqual(buildDeck(p).map((d) => d.key), ['mass', 'vanguard', 'tank', 'area', 'ranged', 'healer', 'charger'], '第1章クリア：通常6枠（Lv4で6枠目に森のお化けが自動で入る）＋幹部1枠に突進');
   const again = applyResult(p, '1-1', 'win', 150);
   assert.ok(!again.firstClear && again.stones < STAGES['1-1'].reward.stones && !again.unlocked);
 });
@@ -326,4 +331,84 @@ test('壊れたセーブデータでも新しいプロフィールで始まる',
   st.setItem(SAVE_KEY, JSON.stringify({ stones: 5, units: { mass: { level: 3 } } }));
   const p = loadProfile(st);
   assert.equal(p.units.mass.level, 3); assert.ok(p.units.mass.unlocked); assert.ok(p.upgrades && p.stages && p.story);
+});
+
+// ---------- 編成・幹部・成長（2026-11-24 承認仕様） ----------
+test('編成枠：大魔王Lv1 は通常5＋幹部1、Lv4 で 6＋1、Lv9 で 6＋2', () => {
+  const p = newProfile();
+  assert.deepEqual(slotsFor(p), { units: 5, bosses: 1 });
+  for (const id of ['1-1', '1-2', '1-3']) applyResult(p, id, 'win', 100);
+  assert.equal(lordLevel(p), 4); assert.deepEqual(slotsFor(p), { units: 6, bosses: 1 });
+  for (let i = 0; i < 5; i++) p.stages['x' + i] = { cleared: true };
+  assert.equal(lordLevel(p), 9); assert.deepEqual(slotsFor(p), { units: 6, bosses: 2 });
+});
+
+test('編成：枠を超えて入れられない・外すと空く・未解放は入れられない', () => {
+  const p = newProfile();
+  for (const k of ['ranged', 'fast']) p.units[k].unlocked = true;
+  assert.ok(addToFormation(p, 'ranged').ok);
+  assert.equal(addToFormation(p, 'fast').reason, 'full');
+  assert.equal(addToFormation(p, 'special').reason, 'locked');
+  removeFromFormation(p, 'mass');
+  assert.ok(addToFormation(p, 'fast').ok);
+  assert.deepEqual(buildDeck(p).map((d) => d.key), ['vanguard', 'tank', 'area', 'ranged', 'fast']);
+  assert.equal(addToFormation(p, 'trickster').reason, 'locked', '準備中の幹部は編成できない');
+});
+
+test('編成は保存され、版1のセーブは解放済みの魔物で編成が作られる', () => {
+  const st = memStore();
+  const p = newProfile(); p.units.ranged.unlocked = true; p.units.fast.unlocked = true;
+  p.formation.units = ['fast', 'mass'];
+  saveProfile(p, st);
+  assert.deepEqual(loadProfile(st).formation.units, ['fast', 'mass']);
+  const old = { version: 1, stones: 3, units: { ranged: { unlocked: true }, fast: { unlocked: true }, healer: { unlocked: true } }, stages: {} };
+  const q = migrate(old);
+  assert.equal(q.version, 2);
+  assert.deepEqual(q.formation.units, ['mass', 'vanguard', 'tank', 'ranged', 'fast']);
+});
+
+test('幹部：魔力が足りても魔力炉Lvが足りなければ召喚できない', () => {
+  const b = makeBattle({ stage: noEnemies({ mana: { start: 5000, max: 9999, regen: 0 } }), deck: ['mass', 'charger'] });
+  assert.equal(b.canSummon('charger').reason, 'furnace');
+  assert.equal(b.canSummon('charger').lv, BOSSES.charger.needFurnace);
+  b.furnaceLv = BOSSES.charger.needFurnace;
+  assert.ok(b.canSummon('charger').ok);
+  b.mana = 0;
+  assert.equal(b.canSummon('charger').reason, 'mana');
+});
+
+test('幹部：別の幹部が出撃中は召喚できず、撃破後は別の幹部が20秒・同じ幹部が60秒待つ', () => {
+  const twin = { ...BOSSES.charger, ready: true, role: 'テスト用の幹部' };
+  const deck = [resolveUnit('charger', newProfile()), { ...twin, key: 'twin', hp: 7000 }];
+  const b = createBattle({ stage: noEnemies({ mana: { start: 9000, max: 9999, regen: 0 } }), deck, humanDefs: HUMANS, config: CONFIG, seed: 1 });
+  b.furnaceLv = 8;
+  b.queue({ type: 'summon', key: 'charger' }); b.step();
+  assert.equal(b.canSummon('twin').reason, 'bossOut');
+  assert.equal(b.canSummon('charger').reason, 'alive');
+  b.damageUnit(b.entities.find((e) => e.key === 'charger'), 1e9, null); b.step();
+  assert.equal(b.canSummon('twin').reason, 'cooldown');
+  assert.ok(b.canSummon('twin').wait <= CONFIG.bossSwitch && b.canSummon('twin').wait > CONFIG.bossSwitch - 1);
+  run(b, CONFIG.bossSwitch + 0.1);
+  assert.ok(b.canSummon('twin').ok, '20秒で別の幹部を出せる');
+  assert.equal(b.canSummon('charger').reason, 'cooldown', '同じ幹部はまだ待つ');
+  run(b, 60 - CONFIG.bossSwitch);
+  assert.ok(b.canSummon('charger').ok, '同じ幹部は60秒で、魔力を払えば何度でも');
+});
+
+test('幹部の召喚費用は 1200〜2200、必要な魔力炉Lvは 2〜8', () => {
+  for (const [k, d] of Object.entries(BOSSES)) {
+    assert.ok(d.cost >= 1200 && d.cost <= 2200, k);
+    assert.ok(d.needFurnace >= 2 && d.needFurnace <= 8, k);
+    assert.equal(d.cooldown, 60, k);
+    // 必要な炉Lvで、最大魔力が費用に届く（恒久強化なしでも）
+    assert.ok(1000 + (d.needFurnace - 1) * CONFIG.furnace.maxAdd >= d.cost, k);
+  }
+});
+
+test('魔王の力：呪文の威力とため時間が強化される', () => {
+  const p = newProfile(); p.stones = 9999;
+  const s0 = resolveSpell(CONFIG.spell, p);
+  assert.ok(buyUpgrade(p, 'spellPower').ok && buyUpgrade(p, 'spellCharge').ok);
+  const s1 = resolveSpell(CONFIG.spell, p);
+  assert.ok(s1.damage > s0.damage && s1.charge < s0.charge);
 });

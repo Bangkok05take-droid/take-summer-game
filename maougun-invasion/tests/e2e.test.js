@@ -176,9 +176,34 @@ try {
   await page.tap('#btnUpBack');
 
   // ---- 1-2〜1-5 ----
-  const playStage = async (id, unlockName) => {
+  // ステージ選択 → （初回は会話）→ 偵察報告 → 編成 → 出撃
+  const sortie = async (id) => {
     await page.tap(`.node[data-stage="${id}"]`, { force: true });
     if (await vis('#scTalk')) await page.tap('#btnSkip');
+    await page.waitForSelector('#scRecon:not([hidden])', { timeout: 3000 });
+    const recon = { text: await page.locator('#reconText').textContent(), enemies: await page.locator('#reconEnemies .enemy').count() };
+    await page.tap('#btnReconNext');
+    await page.waitForSelector('#scForm:not([hidden])', { timeout: 3000 });
+    const form = await ev(() => ({ units: document.querySelectorAll('#formUnits .fcard').length, locked: document.querySelectorAll('#formUnits .fslot.locked').length, bosses: document.querySelectorAll('#formBosses .fcard').length, bossLocked: document.querySelectorAll('#formBosses .fslot.locked').length, pool: document.querySelectorAll('#formPool .fcard').length }));
+    return { recon, form };
+  };
+  const playStage = async (id, unlockName) => {
+    const { recon, form } = await sortie(id);
+    if (id === '1-2') {
+      check('偵察報告：側近の1行報告と、敵の兵種カード（1-2：自警団・見習い剣士・弓兵）', recon.text.includes('弓兵') && recon.enemies === 3 && await page.locator('#reconWho').textContent() === '側近', JSON.stringify(recon));
+      check('編成：通常5枠＋6枠目は鍵・幹部1枠＋2枠目は鍵（1-2 の時点で控えはなし）', form.units === 5 && form.locked === 1 && form.bossLocked === 1 && form.pool === 0, JSON.stringify(form));
+      await shot(page, '12_formation');
+      await page.tap('#btnEnemyInfo');
+      check('編成画面から敵軍情報を開ける', await vis('#ovEnemy') && (await page.locator('#ovEnemyList .enemy').count()) === 3);
+      await page.tap('#btnEnemyClose');
+      // 外す → 控えに移り、保存される → もう一度入れる
+      await page.tap('#formUnits .fcard[data-key="mass"]');
+      const saved = await ev(() => JSON.parse(localStorage.getItem('maougunInvasion.save')).formation.units);
+      check('編成から外すと控えに移り、保存される', !saved.includes('mass') && (await page.locator('#formPool .fcard[data-key="mass"]').count()) === 1, JSON.stringify(saved));
+      await page.tap('#formPool .fcard[data-key="mass"]');
+    }
+    if (id === '1-4') check('大魔王Lv4（1-3クリア）で通常6枠に・森のお化けが自動で入る', form.units === 6 && form.locked === 0, JSON.stringify(form));
+    await page.tap('#btnSortie');
     await page.waitForTimeout(150);
     const ok = (await screen()) === 'battle' && (await ev(() => window.__game.app.stageId)) === id;
     const ns = await page.locator('.slot').count();
@@ -206,9 +231,17 @@ try {
   await playStage('1-5', '幹部・突進');
   const prof = await ev(() => window.__game.app.profile);
   check('第1章の全5ステージを制圧', ['1-1', '1-2', '1-3', '1-4', '1-5'].every((id) => prof.stages[id] && prof.stages[id].cleared) && prof.loot.length === 5);
-  await page.tap('.node[data-stage="1-1"]', { force: true }); await page.waitForTimeout(150);
-  check('第1章クリア後は通常8種が召喚できる', (await page.locator('.slot').count()) === 8);
-  await shot(page, '11_battle_8cards');
+  const again = await sortie('1-1');
+  check('2回目の偵察は1行だけ（会話なし）', again.recon.text.startsWith('大魔王様。') && again.recon.enemies === 2);
+  check('第1章クリア後：編成は通常6＋幹部1（突進が自動で入る）', again.form.units === 6 && again.form.bosses === 1, JSON.stringify(again.form));
+  await page.tap('#btnSortie'); await page.waitForTimeout(150);
+  check('戦闘のカードは通常6＋幹部1', (await page.locator('.slot').count()) === 7 && (await page.locator('.slot.boss').count()) === 1);
+  await ev(() => { const b = window.__game.battle; b.manaMax = 3000; b.mana = 3000; }); await page.waitForTimeout(150);
+  check('幹部カード：魔力が足りても魔力炉Lv不足なら「炉Lv3」', (await page.locator('.slot.boss .why').textContent()) === '炉Lv3');
+  await ev(() => { const b = window.__game.battle; b.furnaceLv = 3; b.manaMax = 3000; b.mana = 3000; }); await page.waitForTimeout(100);
+  await page.tap('.slot.boss'); await page.waitForTimeout(250);
+  check('魔力炉Lv3で幹部を召喚でき、出撃中は「出撃中」', (await ev(() => window.__game.battle.entities.some((e) => e.key === 'charger'))) && (await page.locator('.slot.boss .why').textContent()) === '出撃中');
+  await shot(page, '11_battle_boss');
   await page.tap('#btnPause'); await page.tap('#btnQuit');
 
   // ---- リセット ----

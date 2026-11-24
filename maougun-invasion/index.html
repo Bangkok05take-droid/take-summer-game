@@ -60,7 +60,7 @@
         <div><p class="eyebrow">第1章</p><h2>はじまりの村を侵略せよ</h2></div>
         <div class="selInfo">
           <span class="pill stone">魔界石 <b id="selStones">0</b></span>
-          <span class="pill">大魔王の魔力 Lv<b id="selLord">1</b></span>
+          <span class="pill">大魔王 Lv<b id="selLord">1</b></span>
           <span class="pill">手がかり <b id="selLoot">0</b>/5</span>
         </div>
       </header>
@@ -70,6 +70,31 @@
         <button class="small" id="btnReplayOpening" type="button">オープニングを見る</button>
         <button class="big" id="btnUpgrade" type="button">魔王軍を強化</button>
       </footer>
+    </section>
+
+    <!-- ===== 偵察報告（ステージ選択 → 偵察 → 編成 → 出撃） ===== -->
+    <section id="scRecon" class="screen" hidden>
+      <header class="selHead">
+        <div><p class="eyebrow">偵察報告</p><h2 id="reconTitle"></h2></div>
+        <button class="small" id="btnReconSkip" type="button">スキップ ≫</button>
+      </header>
+      <div class="reconMsg"><canvas id="reconFace" width="160" height="160"></canvas><div><span class="who" id="reconWho"></span><p id="reconText"></p></div></div>
+      <ul class="enemyList" id="reconEnemies"></ul>
+      <footer class="selFoot"><button class="small" id="btnReconBack" type="button">もどる</button><button class="big" id="btnReconNext" type="button">編成へ</button></footer>
+    </section>
+
+    <!-- ===== 編成 ===== -->
+    <section id="scForm" class="screen" hidden>
+      <header class="selHead">
+        <div><p class="eyebrow">出撃の編成</p><h2 id="formTitle"></h2></div>
+        <div class="selInfo"><span class="pill">大魔王 Lv<b id="formLord">1</b></span><button class="small" id="btnEnemyInfo" type="button">敵軍情報</button></div>
+      </header>
+      <div class="formRow">
+        <div class="formGroup"><h3>通常モンスター <b id="formUnitCount"></b></h3><div class="formSlots" id="formUnits"></div></div>
+        <div class="formGroup boss"><h3>幹部 <b id="formBossCount"></b></h3><div class="formSlots" id="formBosses"></div></div>
+      </div>
+      <div class="formPool"><h3>控え<span>タップで編成に入れる／編成の魔物をタップで外す</span></h3><div class="poolList" id="formPool"></div></div>
+      <footer class="selFoot"><button class="small" id="btnFormBack" type="button">もどる</button><span class="formHint" id="formHint" role="status"></span><button class="big" id="btnSortie" type="button">出撃！</button></footer>
     </section>
 
     <!-- ===== 会話 ===== -->
@@ -120,15 +145,24 @@
     <!-- ===== 強化 ===== -->
     <section id="scUpgrade" class="screen" hidden>
       <header class="selHead">
-        <div><p class="eyebrow">魔王軍を強化</p><h2>魔界石で魔物と祠を強くする</h2></div>
+        <div><p class="eyebrow">魔王軍を強化</p><h2>魔界石で魔物と大魔王を強くする</h2></div>
         <div class="selInfo"><span class="pill stone">魔界石 <b id="upStones">0</b></span></div>
       </header>
       <div class="upGrid">
         <div class="upCol"><h3>魔物</h3><ul id="upUnits"></ul></div>
-        <div class="upCol"><h3>祠と魔力</h3><ul id="upGlobal"></ul></div>
+        <div class="upCol"><h3>大魔王の力</h3><ul id="upGlobal"></ul></div>
       </div>
       <footer class="selFoot"><button class="big" id="btnUpBack" type="button">もどる</button></footer>
     </section>
+
+    <!-- ===== 敵軍情報（編成画面から） ===== -->
+    <div id="ovEnemy" class="overlay" hidden>
+      <div class="panel wide">
+        <h2 id="ovEnemyTitle">敵軍情報</h2>
+        <ul class="enemyList" id="ovEnemyList"></ul>
+        <div class="row"><button class="big" id="btnEnemyClose" type="button">とじる</button></div>
+      </div>
+    </div>
 
     <!-- ===== 一時停止・確認 ===== -->
     <div id="ovPause" class="overlay" hidden>
