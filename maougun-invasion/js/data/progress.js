@@ -3,7 +3,7 @@
  * プロフィール（localStorage の 'maougunInvasion.save' に JSON で保存）
  *   version     形式の版（移行用）
  *   stones      魔界石
- *   units[key]  { unlocked, level, form }   form：進化の段階（0 = 基本形。UNITS[key].evolvesTo をたどる）
+ *   units[key]  { unlocked, level, form, formKey }   form：進化の段階（0 = 基本形）。formKey：今の進化形のキー（分岐する進化用。無ければ基本形）
  *   upgrades    { manaMax, manaRegen, cooldown, spellPower, spellCharge } の段階
  *   formation   { units: [key…], bosses: [key…] }  出撃する編成（次のステージにも引き継ぐ）。枠の数は大魔王Lvで決まる（SLOTS）
  *   stages[id]  { cleared, clears, bestTime }
@@ -11,7 +11,7 @@
  *   story       { [scene]: true }  見た会話（opening・before:1-2・after:1-1 …）
  *   loot        集めた戦利品（手がかり）のステージID
  */
-import { ALL_DEMONS, UNIT_ORDER, BOSSES, BOSS_ORDER } from './units.js';
+import { ALL_DEMONS, UNIT_ORDER, BOSSES, BOSS_ORDER, EVOLUTIONS } from './units.js';
 import { STAGES, CHAPTER1 } from './stages.js';
 
 export const SAVE_KEY = 'maougunInvasion.save';
@@ -126,7 +126,7 @@ export function chapterCleared(p) { return CHAPTER1.stages.every((id) => p.stage
 export function applyResult(p, stageId, result, time) {
   const stage = STAGES[stageId];
   const rec = p.stages[stageId] || { cleared: false, clears: 0, bestTime: null };
-  const out = { stones: 0, firstClear: false, unlocked: null, slotsUp: null };
+  const out = { stones: 0, firstClear: false, unlocked: null, unlockedAll: [], slotsUp: null };
   const slots0 = slotsFor(p);
   if (result === 'win') {
     out.firstClear = !rec.cleared;
@@ -135,11 +135,14 @@ export function applyResult(p, stageId, result, time) {
     rec.clears++;
     rec.bestTime = rec.bestTime == null ? time : Math.min(rec.bestTime, time);
     if (!p.loot.includes(stageId)) p.loot.push(stageId);
-    const u = stage.reward.unlock;
-    if (u && p.units[u] && !p.units[u].unlocked) { p.units[u].unlocked = true; out.unlocked = u; }
+    // 解放（1つ、または配列で複数）。out.unlocked は最初の1体（互換）、out.unlockedAll は全部
+    for (const u of [].concat(stage.reward.unlock || [])) {
+      if (p.units[u] && !p.units[u].unlocked) { p.units[u].unlocked = true; out.unlockedAll.push(u); }
+    }
+    out.unlocked = out.unlockedAll[0] || null;
     p.stages[stageId] = rec; // 先に記録して、大魔王Lv（＝編成枠）に反映する
     normalizeFormation(p);
-    if (out.unlocked) addToFormation(p, out.unlocked); // 新しい仲間は空き枠があれば自動で編成に入れる
+    for (const u of out.unlockedAll) addToFormation(p, u); // 新しい仲間は空き枠があれば自動で編成に入れる
     const slots1 = slotsFor(p);
     if (slots1.units > slots0.units || slots1.bosses > slots0.bosses) out.slotsUp = slots1;
   } else {
@@ -210,7 +213,8 @@ export function resolveSpell(spell, p) {
 export function resolveUnit(key, p) {
   const u = p && p.units && p.units[key];
   let def = ALL_DEMONS[key];
-  for (let f = 0; u && f < (u.form || 0) && def.evolvesTo; f++) def = ALL_DEMONS[def.evolvesTo];
+  if (u && u.formKey && ALL_DEMONS[u.formKey]) def = ALL_DEMONS[u.formKey]; // 進化形（分岐あり）
+  else for (let f = 0; u && f < (u.form || 0) && def.evolvesTo && !Array.isArray(def.evolvesTo); f++) def = ALL_DEMONS[def.evolvesTo];
   const lv = (u && u.level) || 1;
   const g = def.growth || { hp: 0, atk: 0 };
   const cdCut = Math.min(0.4, ((p && p.upgrades.cooldown) || 0) * UPGRADES.cooldown.per);
@@ -254,4 +258,20 @@ export function buyUpgrade(p, id) {
   if (p.stones < cost) return { ok: false, reason: 'stones', need: cost - p.stones };
   p.stones -= cost; p.upgrades[id] = lv + 1;
   return { ok: true, cost };
+}
+
+// ---------- 進化（2026-11-24：データの仕組みだけ。進化画面・条件は未実装） ----------
+// 今の形から進化できる先（分岐なら複数）
+export function evolutionChoices(p, key) {
+  const def = resolveUnit(key, p);
+  return [].concat(def.evolvesTo || []).filter((k) => EVOLUTIONS[k]);
+}
+// 進化させる。{ ok, reason }：'locked' 未解放／'invalid' その形からは進化できない／'planned' 進化形がまだ準備中
+export function evolveUnit(p, key, toKey) {
+  const u = p.units[key];
+  if (!u || !u.unlocked) return { ok: false, reason: 'locked' };
+  if (!evolutionChoices(p, key).includes(toKey)) return { ok: false, reason: 'invalid' };
+  if (EVOLUTIONS[toKey].ready === false) return { ok: false, reason: 'planned' };
+  u.formKey = toKey; u.form = EVOLUTIONS[toKey].tier - 1;
+  return { ok: true };
 }

@@ -1,4 +1,5 @@
 /* 人間軍（調整用の数値。すべて仮）。項目は js/core/battle.js の先頭。
+ * line：'back' は後衛（魔王軍の後衛狙撃型に狙われる）。無ければ前衛。
  * note：偵察報告の特徴（危険な能力）／counter：対抗のヒント（編成画面の敵軍情報に出す）。
  * mana：倒したときに魔王軍が得る魔力。guard：受けるダメージの軽減率。
  * ステージごとの強さは stages.js の enemyScale（HP・攻撃にかける倍率）。 */
@@ -14,7 +15,7 @@ export const HUMANS = {
     hp: 380, atk: 26, range: 34, speed: 36, interval: 1.5, windup: 0.45, kb: 3, attack: 'single', mana: 55, size: 0.95,
   },
   archer: {
-    name: '弓兵', role: '遠距離',
+    name: '弓兵', role: '遠距離', line: 'back',
     note: '柵の後ろから矢を撃つ', counter: '足の速い魔物で近づく',
     hp: 150, atk: 22, range: 180, speed: 32, interval: 2.4, windup: 0.5, kb: 2, attack: 'single', projectile: 'arrow', mana: 45, size: 0.9,
   },
@@ -24,7 +25,7 @@ export const HUMANS = {
     hp: 750, atk: 12, range: 26, speed: 22, interval: 2.2, windup: 0.5, kb: 2, attack: 'single', guard: 0.2, mana: 80, size: 1.05,
   },
   priest: {
-    name: '見習い僧侶', role: '支援',
+    name: '見習い僧侶', role: '支援', line: 'back',
     note: 'まわりの仲間を回復する', counter: '遠くから先に倒す',
     hp: 200, atk: 6, range: 110, speed: 30, interval: 2.0, windup: 0.4, kb: 2, attack: 'single', projectile: 'bubble', mana: 70, size: 0.9,
     heal: { every: 5, ratio: 0.1, radius: 150 },
@@ -44,7 +45,7 @@ export const HUMANS = {
     skills: [{ id: 'wave', name: '飛ぶ斬撃', type: 'wave', every: 7, first: 3, windup: 0.8, recover: 0.4, reach: 340, mult: 2.2 }],
   },
   sai: {
-    name: '勇者サイ', role: '勇者', hero: true, noKbFromSmall: true,
+    name: '勇者サイ', role: '勇者', hero: true, noKbFromSmall: true, line: 'back',
     note: '仲間を回復し、光で魔物を気絶させる', counter: '遠距離で狙い、まとめて押し切る',
     hp: 3200, atk: 42, range: 190, speed: 30, interval: 2.0, windup: 0.45, kb: 5, attack: 'single', projectile: 'orb', mana: 300, size: 1.3,
     skills: [

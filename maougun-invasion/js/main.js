@@ -240,12 +240,18 @@ function afterWin() {
     show('scLoot');
   });
 }
-$('btnLootNext').addEventListener('click', () => {
-  const u = app.lastResult && app.lastResult.unlocked;
+// 解放した仲間を1体ずつ見せる（複数のときは順に）
+function nextUnlock() {
+  const q = app.unlockQueue || [];
+  const u = q.shift();
   if (u) { renderUnlock(u); app.profile.seen[u] = true; save(); show('scUnlock'); }
   else toSelect();
+}
+$('btnLootNext').addEventListener('click', () => {
+  app.unlockQueue = ((app.lastResult && app.lastResult.unlockedAll) || []).slice();
+  nextUnlock();
 });
-$('btnUnlockNext').addEventListener('click', toSelect);
+$('btnUnlockNext').addEventListener('click', nextUnlock);
 
 // ---------- 画面の大きさ ----------
 function fit() {

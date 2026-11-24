@@ -7,6 +7,7 @@
  * - 描画用の出来事は events に積む（描画側が取り出して消す）。
  *
  * ユニットの定義（js/data/units.js・humans.js）で使う項目
+ *   target('front'|'backline') line('front'|'back')   標的の選び方・自分の位置（units.js の先頭）。射程 range とは別
  *   hp atk range speed interval windup kb attack('single'|'area') projectile size
  *   hits / hitGap         1回の攻撃で何回当てるか（2連撃など）
  *   heal { every, ratio, radius }          一定時間ごとに周りの味方を回復
@@ -317,10 +318,26 @@ export class Battle {
     this.events.push({ type: 'heal', id: o.id, x: o.x, amount: Math.round(o.hp - before), side: o.side, lane: o.lane });
   }
 
+  // 後衛狙撃（target: 'backline'）が狙える相手：射程内の敵の後衛（line: 'back'）と敵拠点だけ。
+  // 回復役 → 近い順、拠点は最後。前衛には切り替えない
+  backlineTargets(list) {
+    const isHealer = (o) => !!(o.def && (o.def.heal || (o.def.skills || []).some((s) => s.type === 'heal')));
+    return list
+      .filter((t) => t.isBase || t.target.def.line === 'back')
+      .sort((a, b) => (a.isBase - b.isBase) || (isHealer(b.target) - isHealer(a.target)) || (a.dist - b.dist));
+  }
+
   resolveAttack(e) {
     const d = e.def;
-    const list = this.targetsInRange(e, 10); // 準備のあいだに少し離れても当たる
-    if (!list.length) { this.events.push({ type: 'whiff', id: e.id }); return; }
+    let list = this.targetsInRange(e, 10); // 準備のあいだに少し離れても当たる
+    if (d.target === 'backline') list = this.backlineTargets(list);
+    if (!list.length) {
+      // 空振り：攻撃の演出は続ける（飛び道具は手前に落ちる）
+      this.events.push({ type: 'whiff', id: e.id, x: e.x, side: e.side });
+      if (d.projectile) this.events.push({ type: 'shot', id: e.id, kind: d.projectile, from: e.x, to: e.x + e.dir * d.range * 0.6, side: e.side, miss: true });
+      this.events.push({ type: 'strike', id: e.id, area: false, side: e.side });
+      return;
+    }
 
     // 特殊魔法：確率で強い魔法・失敗
     let mult = 1; let area = d.attack === 'area'; let radius = 0;

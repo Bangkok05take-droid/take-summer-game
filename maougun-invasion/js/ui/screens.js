@@ -1,7 +1,7 @@
 /* 戦闘以外の画面：ステージ選択・会話・戦利品・ユニット解放・強化 */
 import { SKIN } from '../data/skin.js';
 import { STAGES, CHAPTER1 } from '../data/stages.js';
-import { UNITS, BOSSES, UNIT_ORDER, BOSS_ORDER } from '../data/units.js';
+import { UNITS, BOSSES, UNIT_ORDER, BOSS_ORDER, ATTACK_TYPES } from '../data/units.js';
 import { HUMANS } from '../data/humans.js';
 import { enemiesOf, reconLine } from '../data/recon.js';
 import { LOOT } from '../data/story.js';
@@ -149,7 +149,7 @@ export function renderLoot(stageId, res, firstClear) {
   const gains = [`魔界石 <b>+${res.stones}</b>`];
   if (firstClear) gains.push('封印がゆるみ、大魔王の魔力が戻った：最大魔力 <b>+60</b>・魔力回復 <b>+1.5/秒</b>');
   if (res.slotsUp) gains.push(`支配力が戻った：編成枠が <b>通常${res.slotsUp.units}＋幹部${res.slotsUp.bosses}</b> に！`);
-  if (res.unlocked) gains.push(`新しい魔物：<b>${SKIN.names[res.unlocked]}</b>`);
+  for (const u of res.unlockedAll || (res.unlocked ? [res.unlocked] : [])) gains.push(`新しい${BOSSES[u] ? '幹部' : '魔物'}：<b>${SKIN.names[u]}</b>`);
   $('lootGains').innerHTML = gains.map((g) => `<li>${g}</li>`).join('');
 }
 
@@ -159,7 +159,10 @@ export function renderUnlock(key) {
   const boss = !!BOSSES[key];
   $('unlockEyebrow').textContent = boss ? '幹部を呼び戻せるようになった！' : '新しい魔物が仲間になった！';
   $('unlockName').textContent = SKIN.names[key];
-  $('unlockRole').textContent = boss ? `${def.role}（編成の幹部枠に入れて出撃。魔力炉Lv${def.needFurnace}以上で召喚できる切り札。戦場の幹部は1体まで）` : def.role;
+  const at = ATTACK_TYPES[def.attackType];
+  const typeNote = def.target === 'backline' ? '敵の後衛（回復役・弓兵など）と拠点だけを狙う。前衛は狙わない' : '';
+  $('unlockRole').textContent = boss ? `${def.role}（編成の幹部枠に入れて出撃。魔力炉Lv${def.needFurnace}以上で召喚できる切り札。戦場の幹部は1体まで）`
+    : `${def.role}${at ? `・${at.name}` : ''}${typeNote ? `（${typeNote}）` : ''}`;
   Renderer.thumb($('unlockArt'), key, def.size);
   const rows = [['魔力', def.cost], ...(boss ? [['魔力炉', 'Lv' + def.needFurnace + '〜']] : []), ['HP', def.hp], ['攻撃', def.atk], ['射程', def.range], ['再召喚', def.cooldown + '秒']];
   $('unlockStats').innerHTML = rows.map(([a, b]) => `<dt>${a}</dt><dd>${b}</dd>`).join('');
@@ -275,7 +278,9 @@ export function renderFormation(p, stageId, onToggle) {
     const cs = document.createElement('span'); cs.className = 'cs'; cs.textContent = d.cost;
     b.append(nm, cs);
     if (boss) { const fl = document.createElement('span'); fl.className = 'fl'; fl.textContent = `炉Lv${d.needFurnace}`; b.append(fl); }
-    b.setAttribute('aria-label', `${SKIN.names[key]}（魔力${d.cost}${boss ? `・魔力炉Lv${d.needFurnace}以上` : ''}）`);
+    const at = ATTACK_TYPES[d.attackType];
+    if (at) { const t = document.createElement('span'); t.className = 'at at-' + d.attackType; t.textContent = at.short; t.title = at.name; b.append(t); }
+    b.setAttribute('aria-label', `${SKIN.names[key]}（${at ? at.name + '・' : ''}魔力${d.cost}${boss ? `・魔力炉Lv${d.needFurnace}以上` : ''}）`);
     b.addEventListener('click', () => onToggle(key));
     Renderer.thumb(cv, key, d.size);
     return b;

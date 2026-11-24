@@ -14,7 +14,10 @@ export const SKIN = {
   names: {
     // 2026-11-24：ユーザー指定の名前
     mass: 'グミ', vanguard: '闇の騎士', tank: '岩男', ranged: '弓ゴブリン',
-    fast: 'こうもり', area: '魔法使い', healer: '森のお化け', special: 'プチデビル', // 2026-11-24：既存作品名と重なる旧名から変更
+    fast: 'こうもり', area: '魔法使い', healer: '森のお化け',
+    special: 'プチデビル', // 2026-11-24：既存作品名と重なる旧名から変更
+    mallet: '木槌小鬼', // 2026-11-24 追加の後衛狙撃型（仮称）。正式名はビジュアル制作室で確定
+    mallet_2: '木槌小鬼（第2形態）', mallet_3a: '木槌小鬼（一撃）', mallet_3b: '木槌小鬼（連投）', // 進化形（仮称）
     charger: '幹部・突進', elemental: '幹部・炎氷', trickster: '幹部・罠', thunder: '幹部・落雷', mist: '幹部・霧',
     lord: '大魔王', lordAwakened: '大魔王（真の姿）',
   },
@@ -65,6 +68,7 @@ export const SKIN = {
     area: ['#7c3aed', '#2e0f5a'],
     healer: ['#3fb6a8', '#0f3d39'],
     special: ['#e0559a', '#4a0f30'],
+    mallet: ['#c9784a', '#5a2a10'],
     charger: ['#b4532a', '#3a1608'],
     militia: ['#e8c48a', '#6b4a22'],
     swordsman: ['#7fb2ef', '#244a7a'],

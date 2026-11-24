@@ -365,3 +365,9 @@ body.portrait #rotate { display: flex; }
 @keyframes faceAngry { 0%, 100% { translate: 0 0; } 15% { translate: calc(var(--u) * -6) 0; } 30% { translate: calc(var(--u) * 6) 0; } 45% { translate: calc(var(--u) * -4) 0; } 60% { translate: calc(var(--u) * 4) 0; } 75% { translate: calc(var(--u) * -2) 0; } }
 @keyframes faceHappy { 0%, 100% { translate: 0 0; } 30% { translate: 0 calc(var(--u) * -16); } 55% { translate: 0 0; } 75% { translate: 0 calc(var(--u) * -6); } }
 @media (prefers-reduced-motion: reduce) { .portrait.face-angry, .portrait.face-happy { animation: none; } }
+/* 攻撃タイプの印（編成カードの左下）：近・中・遠・狙 */
+.fcard .at { position: absolute; left: calc(var(--u) * 3); top: calc(var(--u) * 38); width: calc(var(--u) * 17); height: calc(var(--u) * 17); border-radius: 50%; font-size: calc(var(--u) * 10); font-weight: 900; line-height: calc(var(--u) * 17); text-align: center; color: #fff; background: #6a5a8a; box-shadow: 0 0 0 calc(var(--u) * 1.5) rgba(0,0,0,.5); }
+.fcard .at-melee { background: #c0392b; }
+.fcard .at-mid { background: #7c3aed; }
+.fcard .at-long { background: #2a7ab8; }
+.fcard .at-sniper { background: #d88a1a; }

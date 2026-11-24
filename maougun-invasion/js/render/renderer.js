@@ -74,7 +74,7 @@ export class Renderer {
         case 'healCast': this.add({ kind: 'ring', heal: true, x: ev.x, y: GROUND_Y + 10, color: '#7ef0b0', life: 0.7, w: ev.radius }); break;
         case 'shot': {
           const e = byId(ev.id);
-          this.add({ kind: 'shot', shot: ev.kind, from: ev.from, to: ev.to, y: laneY(e ? e.lane : 0.5) - 32, side: ev.side, big: ev.big, life: ev.kind === 'arrow' ? 0.22 : 0.26 });
+          this.add({ kind: 'shot', shot: ev.kind, from: ev.from, to: ev.to, y: laneY(e ? e.lane : 0.5) - 32, side: ev.side, big: ev.big, life: ev.kind === 'arrow' ? 0.22 : ev.kind === 'hammer' ? 0.5 : 0.26 });
           break;
         }
         case 'strike': {
@@ -411,7 +411,14 @@ export class Renderer {
         case 'shot': {
           const x = f.from + (f.to - f.from) * p;
           const arc = Math.sin(p * Math.PI) * (f.shot === 'arrow' ? 22 : 10);
-          if (f.shot === 'arrow') {
+          if (f.shot === 'hammer') { // 投げた木槌（仮の絵）：回りながら山なりに飛ぶ
+            const hy = f.y - Math.sin(p * Math.PI) * 46;
+            ctx.save(); ctx.translate(x, hy); ctx.rotate(p * Math.PI * 4 * Math.sign(f.to - f.from));
+            ctx.fillStyle = '#7a4a22'; ctx.fillRect(-2, -2, 16, 4);
+            ctx.fillStyle = '#a8703a'; ctx.fillRect(-10, -8, 12, 16);
+            ctx.fillStyle = '#5a5a66'; ctx.fillRect(-10, -6, 12, 2); ctx.fillRect(-10, 4, 12, 2);
+            ctx.restore();
+          } else if (f.shot === 'arrow') {
             ctx.strokeStyle = f.side === 'human' ? '#5a3a1a' : '#ffe9b0'; ctx.lineWidth = 2;
             const s = Math.sign(f.to - f.from);
             ctx.beginPath(); ctx.moveTo(x - 12 * s, f.y - arc); ctx.lineTo(x, f.y - arc); ctx.stroke();

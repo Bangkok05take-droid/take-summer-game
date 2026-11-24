@@ -217,19 +217,22 @@ try {
     await page.tap('#btnReport');
     if (await vis('#scTalk')) await page.tap('#btnSkip');
     await page.tap('#btnLootNext');
-    const unl = (await vis('#scUnlock')) ? await page.locator('#unlockName').textContent() : null;
-    if (unl) await page.tap('#btnUnlockNext');
+    const names = [];
+    while (await vis('#scUnlock')) { names.push(await page.locator('#unlockName').textContent()); await page.tap('#btnUnlockNext'); await page.waitForTimeout(50); }
+    const unl = names.join('＋') || null;
     check(`${id}：開始・勝利・解放（${unlockName}）`, ok && unl === unlockName, `カード ${ns} 枚`);
   };
   await playStage('1-2', 'こうもり');
   await playStage('1-3', '森のお化け');
   await playStage('1-4', 'プチデビル');
-  await playStage('1-5', '幹部・突進');
+  await playStage('1-5', '幹部・突進＋木槌小鬼');
   const prof = await ev(() => window.__game.app.profile);
   check('第1章の全5ステージを制圧', ['1-1', '1-2', '1-3', '1-4', '1-5'].every((id) => prof.stages[id] && prof.stages[id].cleared) && prof.loot.length === 5);
   const again = await sortie('1-1');
   check('2回目の偵察は1行だけ（会話なし）', again.recon.text.startsWith('大魔王様。') && again.recon.enemies === 2);
-  check('第1章クリア後：編成は通常6＋幹部1（突進が自動で入る）', again.form.units === 6 && again.form.bosses === 1, JSON.stringify(again.form));
+  check('第1章クリア後：編成は通常6＋幹部1（突進が自動で入る）・木槌小鬼は控え', again.form.units === 6 && again.form.bosses === 1 && (await page.locator('#formPool .fcard[data-key="mallet"]').count()) === 1, JSON.stringify(again.form));
+  check('編成カードに攻撃タイプの印（木槌小鬼＝狙）', (await page.locator('#formPool .fcard[data-key="mallet"] .at').textContent()) === '狙');
+  await shot(page, '13_formation_mallet');
   await page.tap('#btnSortie'); await page.waitForTimeout(150);
   check('戦闘のカードは通常6＋幹部1', (await page.locator('.slot').count()) === 7 && (await page.locator('.slot.boss').count()) === 1);
   await ev(() => { const b = window.__game.battle; b.manaMax = 3000; b.mana = 3000; }); await page.waitForTimeout(150);

@@ -133,7 +133,7 @@ export const STAGES = {
       { trigger: { baseBelow: 0.4 }, hero: 'sai', wave: [{ who: 'sai', count: 1 }, { who: 'priest', count: 1 }, { who: 'shield', count: 1 }], gap: 0.8 },
       { trigger: { baseBelow: 0.15 }, wave: [{ who: 'rider', count: 3 }, { who: 'swordsman', count: 3 }, { who: 'archer', count: 2 }], gap: 0.5 },
     ],
-    reward: { stones: 400, unlock: 'charger' },
+    reward: { stones: 400, unlock: ['charger', 'mallet'] }, // 2026-11-24：木槌小鬼（仮称）も解放（解放のステージは仮）
     talk: [
       { who: 'ワーン', text: 'みんな、広場まで下がって！ 勇者さまたちが来てくれるまで、ふんばるよ！' },
       { who: 'ティウ', text: '勇者たけとサイが帰ってきたら、魔物なんてあっという間さ！ ……たぶん。' },

@@ -11,7 +11,7 @@ export function enemiesOf(stageId) {
     if (!HUMANS[who]) return;
     if (seen.has(who)) return;
     const h = HUMANS[who];
-    const e = { key: who, name: h.name, role: h.role, note: h.note || '', counter: h.counter || '', hero: !!(hero || h.hero), when };
+    const e = { key: who, name: h.name, role: h.role + (h.line === 'back' ? '・後衛' : ''), back: h.line === 'back', note: h.note || '', counter: h.counter || '', hero: !!(hero || h.hero), when };
     seen.set(who, e); list.push(e);
   };
   const rows = (st.spawns || []).slice().sort((a, b) => (a.start ?? 1e9) - (b.start ?? 1e9));

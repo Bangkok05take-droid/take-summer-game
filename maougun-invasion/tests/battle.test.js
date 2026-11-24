@@ -4,10 +4,10 @@ import assert from 'node:assert/strict';
 import { makeBattle, run, botPlayer, profileFor, STEP, CONFIG, STAGES, CHAPTER1, HUMANS } from './helpers.js';
 import { createClock } from '../js/core/clock.js';
 import { createBattle } from '../js/core/battle.js';
-import { BOSSES } from '../js/data/units.js';
+import { BOSSES, UNITS, EVOLUTIONS, ATTACK_TYPES } from '../js/data/units.js';
 import {
   newProfile, loadProfile, saveProfile, resetProfile, applyResult, isStageOpen, nextStage, buildDeck, resolveMana,
-  lordLevel, slotsFor, addToFormation, removeFromFormation, migrate, resolveSpell, resolveUnit,
+  lordLevel, slotsFor, addToFormation, removeFromFormation, migrate, resolveSpell, resolveUnit, evolutionChoices, evolveUnit,
   levelUpUnit, buyUpgrade, START_UNITS, SAVE_KEY,
 } from '../js/data/progress.js';
 
@@ -411,4 +411,85 @@ test('魔王の力：呪文の威力とため時間が強化される', () => {
   assert.ok(buyUpgrade(p, 'spellPower').ok && buyUpgrade(p, 'spellCharge').ok);
   const s1 = resolveSpell(CONFIG.spell, p);
   assert.ok(s1.damage > s0.damage && s1.charge < s0.charge);
+});
+
+// ---------- 攻撃タイプ・後衛狙撃・木槌小鬼（2026-11-24） ----------
+test('全ユニットに攻撃タイプと標的の選び方がある（射程とは別）', () => {
+  for (const [k, d] of Object.entries({ ...UNITS, ...BOSSES, ...EVOLUTIONS })) {
+    assert.ok(ATTACK_TYPES[d.attackType], k);
+    assert.ok(['front', 'backline'].includes(d.target), k);
+    assert.equal(d.target === 'backline', d.attackType === 'sniper', k);
+  }
+  assert.equal(UNITS.special.attackType, 'long');
+  assert.ok(UNITS.special.range >= UNITS.ranged.range, 'プチデビルは遠距離型（弓ゴブリン以上の射程）');
+});
+
+const sniperBattle = () => {
+  const b = makeBattle({ stage: noEnemies(), deck: ['mallet'] });
+  const m = b.spawn('demon', b.deckDef('mallet'), 1400); m.x = 1400;
+  return { b, m };
+};
+test('後衛狙撃：前衛を無視して、射程内の後衛（回復役を優先）を狙う', () => {
+  const { b, m } = sniperBattle();
+  const front = b.spawnHuman('shield'); front.x = 1300;
+  const archer = b.spawnHuman('archer'); archer.x = 1120;
+  const priest = b.spawnHuman('priest'); priest.x = 1100;
+  const hp = [front.hp, archer.hp, priest.hp];
+  b.resolveAttack(m);
+  assert.equal(front.hp, hp[0], '前衛には当てない');
+  assert.equal(archer.hp, hp[1], '回復役を優先');
+  assert.ok(priest.hp < hp[2]);
+});
+test('後衛狙撃：後衛がいなければ前衛に切り替えず空振り（演出は出る）', () => {
+  const { b, m } = sniperBattle();
+  const front = b.spawnHuman('swordsman'); front.x = 1300; const hp = front.hp;
+  b.events.length = 0;
+  b.resolveAttack(m);
+  assert.equal(front.hp, hp);
+  assert.ok(b.events.some((e) => e.type === 'whiff') && b.events.some((e) => e.type === 'shot' && e.miss));
+});
+test('後衛狙撃：前衛が射程にいれば止まって構える（前に出すぎない）', () => {
+  const { b, m } = sniperBattle();
+  const front = b.spawnHuman('swordsman'); front.x = 1150; front.def = { ...front.def, speed: 0 };
+  const x0 = m.x; run(b, 1);
+  assert.ok(Math.abs(m.x - x0) < 1 && m.state === 'attack');
+});
+test('後衛狙撃：敵拠点が射程に入れば、後衛がいなくても拠点を攻撃する', () => {
+  const b = makeBattle({ stage: noEnemies(), deck: ['mallet'] });
+  const m = b.spawn('demon', b.deckDef('mallet'), 0); m.x = b.base.x + b.base.halfWidth + 200;
+  const front = b.spawnHuman('swordsman'); front.x = m.x - 60;
+  const hp0 = b.base.hp; const fh = front.hp;
+  b.resolveAttack(m);
+  assert.ok(b.base.hp < hp0 && front.hp === fh);
+});
+test('後衛狙撃：高火力・高コスト・低HP・長い構え（ほかの通常モンスターと比べて）', () => {
+  const others = Object.entries(UNITS).filter(([k]) => k !== 'mallet').map(([, d]) => d);
+  const m = UNITS.mallet;
+  assert.ok(m.atk > Math.max(...others.map((d) => d.atk)));
+  assert.ok(m.cost >= 400 && m.hp <= 200 && m.windup >= Math.max(...others.map((d) => d.windup)));
+});
+test('木槌小鬼：1-5 クリアで突進と一緒に解放。編成枠は増えない（控えに入る）', () => {
+  const p = newProfile();
+  for (const id of CHAPTER1.stages) applyResult(p, id, 'win', 100);
+  assert.ok(p.units.mallet.unlocked && p.units.charger.unlocked);
+  assert.deepEqual(slotsFor(p), { units: 6, bosses: 1 });
+  assert.ok(!p.formation.units.includes('mallet'), '6枠が埋まっているので控え');
+  assert.equal(addToFormation(p, 'mallet').reason, 'full');
+});
+test('進化：3段階・最終形態は2方向に分岐（データの仕組み）', () => {
+  const p = newProfile(); p.units.mallet.unlocked = true;
+  assert.deepEqual(evolutionChoices(p, 'mallet'), ['mallet_2']);
+  assert.equal(evolveUnit(p, 'mallet', 'mallet_2').reason, 'planned', '進化形は準備中');
+  p.units.mallet.formKey = 'mallet_2';
+  assert.deepEqual(evolutionChoices(p, 'mallet'), ['mallet_3a', 'mallet_3b']);
+  assert.equal(resolveUnit('mallet', p).tier, 2);
+  assert.equal(evolveUnit(p, 'mallet', 'mallet_2').reason, 'invalid');
+});
+test('後衛狙撃：後衛と拠点が両方射程にあるときは後衛を先に（拠点は最後）', () => {
+  const b = makeBattle({ stage: noEnemies(), deck: ['mallet'] });
+  const m = b.spawn('demon', b.deckDef('mallet'), 0); m.x = b.base.x + b.base.halfWidth + 250;
+  const priest = b.spawnHuman('priest'); priest.x = m.x - 100;
+  const hp0 = b.base.hp; const ph = priest.hp;
+  b.resolveAttack(m);
+  assert.ok(priest.hp < ph && b.base.hp === hp0);
 });
