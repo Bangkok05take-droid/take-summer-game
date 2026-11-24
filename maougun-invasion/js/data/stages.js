@@ -74,7 +74,7 @@ export const STAGES = {
   },
   '1-3': {
     id: '1-3', chapter: 1, name: '小川の橋', theme: 'river',
-    length: L(2400), shrineHp: 6000, baseHp: 7000, enemyScale: 1.15, mana: MANA,
+    length: L(2400), shrineHp: 6000, baseHp: 3500, enemyScale: 1.15, mana: MANA,
     spawns: [
       { who: 'militia', start: 3, every: 5, max: 6 },
       { who: 'swordsman', start: 10, every: 11, max: 3 },
