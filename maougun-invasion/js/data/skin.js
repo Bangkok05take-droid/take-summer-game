@@ -23,8 +23,8 @@ export const SKIN = {
     tiw: 'ティウ', mot: 'モッ', waan: 'ワーン', koi: 'コイ', take: '勇者たけ', sai: '勇者サイ', yanai: 'マスター・ヤナイ',
   },
   sprites: {
-    // 2026-11-24：ユーザー承認のオリジナルデザイン（グミ。静止画1枚。見た目は変えず、倍率と足元だけ指定。動きはゲーム側）
-    mass: { src: 'assets/approved/units/mass.png', frameW: 1330, frameH: 1182, frames: { walk: [0], windup: 0, attack: 0 }, footY: 1090, facing: 'left', scale: 0.045 },
+    // 2026-11-24：グミ（ユーザー承認のオリジナルデザイン・チャットで受け取った画像 11440.png に差し替え。1374×1145・静止画1枚。見た目は変えず、倍率と足元だけ指定。動きはゲーム側）
+    mass: { src: 'assets/approved/units/mass.png', frameW: 1374, frameH: 1145, frames: { walk: [0], windup: 0, attack: 0 }, footY: 975, facing: 'left', scale: 0.05 },
     // 2026-11-24：闇の騎士（ユーザー承認のオリジナルデザイン・maougun_dark_knight_test.zip。256×256・静止画1枚・左向き。見た目は変えず、倍率と足元だけ指定。倍率は人間軍の兵士と同じ）
     vanguard: { src: 'assets/approved/units/vanguard.png', frameW: 256, frameH: 256, frames: { walk: [0], windup: 0, attack: 0 }, footY: 240, facing: 'left', scale: 0.25 },
     // 2026-11-24：岩男（ユーザー承認のオリジナルデザイン・チャットで受け取った画像 11413.png。480×482・静止画1枚・左向き。見た目は変えず、倍率と足元だけ指定。闇の騎士の約1.3倍の高さ）
