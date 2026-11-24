@@ -12,7 +12,7 @@ import { APPROVED } from './approved.js';
 export const SKIN = {
   names: {
     // 2026-11-24：ユーザー指定の名前
-    mass: 'グミ', vanguard: '闇の騎士', tank: '岩男', ranged: '弓ゴブリン',
+    mass: 'スライム', vanguard: '闇の騎士', tank: '岩男', ranged: '弓ゴブリン',
     fast: 'こうもり', area: '魔法使い', healer: 'ホーリークラゲ', special: '悪魔くん',
     charger: '幹部・突進', elemental: '幹部・炎氷', trickster: '幹部・罠', thunder: '幹部・落雷', mist: '幹部・霧',
     lord: '大魔王', lordAwakened: '大魔王（真の姿）',
@@ -21,7 +21,10 @@ export const SKIN = {
     lord: '大魔王', aide: '側近', narr: '',
     tiw: 'ティウ', mot: 'モッ', waan: 'ワーン', koi: 'コイ', take: '勇者たけ', sai: '勇者サイ', yanai: 'マスター・ヤナイ',
   },
-  sprites: {},
+  sprites: {
+    // 2026-11-24：ユーザー承認のオリジナルデザイン（静止画1枚。見た目は変えず、倍率と足元だけ指定。動きはゲーム側）
+    mass: { src: 'assets/approved/units/mass.png', frameW: 1330, frameH: 1182, frames: { walk: [0], windup: 0, attack: 0 }, footY: 1090, facing: 'left', scale: 0.045 },
+  },
   portraits: {},
   /* 画面の各場所に入れる承認済み画像（場所と仕様の一覧：docs/ASSET_MAP.md）。
    * 未登録・読み込み失敗のときは、今の仮の表示に戻る。見た目は変えず、拡大縮小と位置だけ指定する。 */
