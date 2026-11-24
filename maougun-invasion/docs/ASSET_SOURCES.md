@@ -20,3 +20,4 @@
 | 2026-11-24 | `e3f61786-maougun_assets_batch01.zip` | `humans/shield.png` | `3bf69f0cd1c4a883…` | `assets/approved/humans/shield.png` | `3bf69f0cd1c4a883…` | 加工なし（そのままコピー） |
 | 2026-11-24 | `e3f61786-maougun_assets_batch01.zip` | `humans/swordsman.png` | `c136d8a88b2d54bf…` | `assets/approved/humans/swordsman.png` | `c136d8a88b2d54bf…` | 加工なし（そのままコピー） |
 | 2026-11-24 | （チャットで受け取った画像 11396.png） | — | `fcd5a72a7334dec0…` | `assets/approved/units/mass.png` | `fcd5a72a7334dec0…` | 加工なし（そのままコピー）。量産型（スライム）。1330×1182・1コマ・左向き・足元 y=1090 |
+| 2026-11-24 | `1c898d19-maougun_dark_knight_test.zip`（ZIP SHA256 `18f7c5462eb43897…`） | `units/vanguard.png` | `3d71cf126238db2e…` | `assets/approved/units/vanguard.png` | `3d71cf126238db2e…` | 加工なし（そのままコピー）。前衛（闇の騎士）。256×256・1コマ・左向き・足元 y=240 |

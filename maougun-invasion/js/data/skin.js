@@ -24,6 +24,8 @@ export const SKIN = {
   sprites: {
     // 2026-11-24：ユーザー承認のオリジナルデザイン（グミ。静止画1枚。見た目は変えず、倍率と足元だけ指定。動きはゲーム側）
     mass: { src: 'assets/approved/units/mass.png', frameW: 1330, frameH: 1182, frames: { walk: [0], windup: 0, attack: 0 }, footY: 1090, facing: 'left', scale: 0.045 },
+    // 2026-11-24：闇の騎士（ユーザー承認のオリジナルデザイン・maougun_dark_knight_test.zip。256×256・静止画1枚・左向き。見た目は変えず、倍率と足元だけ指定。倍率は人間軍の兵士と同じ）
+    vanguard: { src: 'assets/approved/units/vanguard.png', frameW: 256, frameH: 256, frames: { walk: [0], windup: 0, attack: 0 }, footY: 240, facing: 'left', scale: 0.25 },
   },
   portraits: {},
   /* 画面の各場所に入れる承認済み画像（場所と仕様の一覧：docs/ASSET_MAP.md）。

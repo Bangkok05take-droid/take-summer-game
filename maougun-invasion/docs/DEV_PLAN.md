@@ -54,11 +54,11 @@
 - 召喚カードのアイコンが、画像の読み込み後にグミの画像に切り替わるよう修正。
 - 受け入れテストの古い期待値を修正（19/19）。e2e にグミの確認を2件追加（45/45）。
 
-### 残り7体の画像登録状況（すべて未登録・仮のドット絵で表示中）
+### 残りの画像登録状況（未登録の枠は仮のドット絵で表示中）
 
 | キー | 表示名 | 不足ファイル（納品時の ZIP 内パス → 保存先） |
 |---|---|---|
-| vanguard | 闇の騎士 | `units/vanguard.png` → `assets/approved/units/vanguard.png` |
+| vanguard | 闇の騎士 | **登録済み（2026-11-24・maougun_dark_knight_test.zip。256×256・静止画1枚・倍率0.25）** |
 | tank | 岩男 | `units/tank.png` → `assets/approved/units/tank.png` |
 | ranged | 弓ゴブリン | `units/ranged.png` → `assets/approved/units/ranged.png` |
 | fast | こうもり | `units/fast.png` → `assets/approved/units/fast.png` |
@@ -67,3 +67,5 @@
 | special | 悪魔くん | `units/special.png` → `assets/approved/units/special.png` |
 
 仕様（ASSET_MAP.md）：透過PNG・左向き・1コマ256×256×4コマ（歩きA・歩きB・攻撃準備・攻撃発動）。グミと同じく**静止画1枚でも受け入れ可能**（動きはゲーム側で付ける）。
+
+- 2026-11-24：闇の騎士（vanguard）を組み込み。1-1で召喚・戦闘・勝利まで確認。e2e に2件追加（47/47）。
