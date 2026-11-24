@@ -120,7 +120,7 @@ try {
   check('戦利品の画面', await vis('#scLoot') && (await page.locator('#lootName').textContent()).length > 0);
   await shot(page, '06_loot');
   await page.tap('#btnLootNext');
-  check('ユニット解放の画面（1-1 → 遠距離）', await vis('#scUnlock') && (await page.locator('#unlockName').textContent()) === '遠距離');
+  check('ユニット解放の画面（1-1 → 弓ゴブリン）', await vis('#scUnlock') && (await page.locator('#unlockName').textContent()) === '弓ゴブリン');
   await shot(page, '07_unlock');
   await page.tap('#btnUnlockNext');
   check('ステージ選択に戻り、1-2 が解放される', await vis('#scSelect') && !(await page.locator('.node[data-stage="1-2"]').isDisabled()) && await page.locator('.node[data-stage="1-3"]').isDisabled());
@@ -166,9 +166,9 @@ try {
     if (unl) await page.tap('#btnUnlockNext');
     check(`${id}：開始・勝利・解放（${unlockName}）`, ok && unl === unlockName, `カード ${ns} 枚`);
   };
-  await playStage('1-2', '高速型');
-  await playStage('1-3', '回復');
-  await playStage('1-4', '特殊魔法');
+  await playStage('1-2', 'こうもり');
+  await playStage('1-3', 'ホーリークラゲ');
+  await playStage('1-4', '悪魔くん');
   await playStage('1-5', '幹部・突進');
   const prof = await ev(() => window.__game.app.profile);
   check('第1章の全5ステージを制圧', ['1-1', '1-2', '1-3', '1-4', '1-5'].every((id) => prof.stages[id] && prof.stages[id].cleared) && prof.loot.length === 5);

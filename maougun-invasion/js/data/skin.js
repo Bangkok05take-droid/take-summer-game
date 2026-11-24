@@ -11,8 +11,9 @@ import { APPROVED } from './approved.js';
  */
 export const SKIN = {
   names: {
-    mass: '量産型', vanguard: '前衛', tank: 'タンク', ranged: '遠距離',
-    fast: '高速型', area: '範囲魔法', healer: '回復', special: '特殊魔法',
+    // 2026-11-24：ユーザー指定の名前
+    mass: 'グミ', vanguard: '闇の騎士', tank: '岩男', ranged: '弓ゴブリン',
+    fast: 'こうもり', area: '魔法使い', healer: 'ホーリークラゲ', special: '悪魔くん',
     charger: '幹部・突進', elemental: '幹部・炎氷', trickster: '幹部・罠', thunder: '幹部・落雷', mist: '幹部・霧',
     lord: '大魔王', lordAwakened: '大魔王（真の姿）',
   },
