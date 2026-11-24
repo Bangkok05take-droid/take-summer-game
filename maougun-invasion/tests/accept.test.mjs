@@ -43,6 +43,9 @@ with zipfile.ZipFile(sys.argv[1], 'w') as z:
 // 2) プロジェクトのコピーに受け入れる
 const proj = path.join(tmp, 'proj');
 fs.cpSync(ROOT, proj, { recursive: true, filter: (s) => !s.includes(`${path.sep}.git`) && !s.includes('node_modules') });
+// 本物の承認済み素材は使わず、空の登録から始める（ダミーだけで確かめる）
+fs.rmSync(path.join(proj, 'assets/approved'), { recursive: true, force: true });
+fs.writeFileSync(path.join(proj, 'js/data/approved.js'), 'export const APPROVED = /*JSON*/{"sprites":{},"images":{"stageBg":{},"base":{},"shrine":null,"talkBg":{}},"portraits":{},"fx":{},"ui":{}}/*END*/;\n');
 let out = '';
 try { out = execFileSync('python3', ['-I', path.join(proj, 'tools/accept_assets.py'), zip, '--root', proj], { encoding: 'utf8' }); }
 catch (e) { out = e.stdout; } // 不合格があると終了コード1

@@ -6,3 +6,16 @@
 |---|---|---|---|---|---|---|
 <!-- ZIP SHA256: 293235bd46b897cddb36d7d235ad831c7448023711b8a203069aa7d97db7e351 -->
 | 2026-11-23 | `e480f039-maougun_APPROVED_DESIGNS_MASTER_v1.zip` | `02_APPROVED_SCENES/village_background_reference.png` | `1795086ad8306161…` | `assets/approved/bg/ch1_village.webp` | `366b954007450f0c…` | WebP（品質92）へ変換のみ。寸法 1672×941 のまま、描き直し・色の変更なし |
+<!-- ZIP SHA256: f11254098ef77bcf11cdb9082acae291d7dc5cb9b2a625a3bf93a090c206b296 -->
+| 2026-11-24 | `e3f61786-maougun_assets_batch01.zip` | `bases/shrine_0.png` | `99ce20ecfad588d2…` | `assets/approved/bases/shrine_0.png` | `99ce20ecfad588d2…` | 加工なし（そのままコピー） |
+| 2026-11-24 | `e3f61786-maougun_assets_batch01.zip` | `bases/shrine_1.png` | `50f7a84462efc213…` | `assets/approved/bases/shrine_1.png` | `50f7a84462efc213…` | 加工なし（そのままコピー） |
+| 2026-11-24 | `e3f61786-maougun_assets_batch01.zip` | `bases/shrine_2.png` | `1c1e03cb407a7135…` | `assets/approved/bases/shrine_2.png` | `1c1e03cb407a7135…` | 加工なし（そのままコピー） |
+| 2026-11-24 | `e3f61786-maougun_assets_batch01.zip` | `bases/watchtower_0.png` | `02e6179909911e2e…` | `assets/approved/bases/watchtower_0.png` | `02e6179909911e2e…` | 加工なし（そのままコピー） |
+| 2026-11-24 | `e3f61786-maougun_assets_batch01.zip` | `bases/watchtower_1.png` | `b1308878bc872108…` | `assets/approved/bases/watchtower_1.png` | `b1308878bc872108…` | 加工なし（そのままコピー） |
+| 2026-11-24 | `e3f61786-maougun_assets_batch01.zip` | `bases/watchtower_2.png` | `552cba47f79bd6be…` | `assets/approved/bases/watchtower_2.png` | `552cba47f79bd6be…` | 加工なし（そのままコピー） |
+| 2026-11-24 | `e3f61786-maougun_assets_batch01.zip` | `humans/archer.png` | `7a938ec4e687e62d…` | `assets/approved/humans/archer.png` | `7a938ec4e687e62d…` | 加工なし（そのままコピー） |
+| 2026-11-24 | `e3f61786-maougun_assets_batch01.zip` | `humans/militia.png` | `60036273c9839442…` | `assets/approved/humans/militia.png` | `60036273c9839442…` | 加工なし（そのままコピー） |
+| 2026-11-24 | `e3f61786-maougun_assets_batch01.zip` | `humans/priest.png` | `089257b5ab2026e4…` | `assets/approved/humans/priest.png` | `089257b5ab2026e4…` | 加工なし（そのままコピー） |
+| 2026-11-24 | `e3f61786-maougun_assets_batch01.zip` | `humans/rider.png` | `9da11f6bbad17004…` | `assets/approved/humans/rider.png` | `9da11f6bbad17004…` | 加工なし（そのままコピー） |
+| 2026-11-24 | `e3f61786-maougun_assets_batch01.zip` | `humans/shield.png` | `3bf69f0cd1c4a883…` | `assets/approved/humans/shield.png` | `3bf69f0cd1c4a883…` | 加工なし（そのままコピー） |
+| 2026-11-24 | `e3f61786-maougun_assets_batch01.zip` | `humans/swordsman.png` | `c136d8a88b2d54bf…` | `assets/approved/humans/swordsman.png` | `c136d8a88b2d54bf…` | 加工なし（そのままコピー） |

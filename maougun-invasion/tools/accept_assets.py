@@ -110,6 +110,17 @@ def check(name, data, sp):
             info['frames'] = n
             if n not in sp['frames'] or abs(w - n * h * fw / fh) > max(2, w * 0.01):
                 problems.append(f'コマ数・比率が仕様と合いません（{w}×{h}：1コマ{fw}×{fh}を横に{"・".join(map(str, sp["frames"]))}コマ）')
+        elif sp['kind'] == 'building':
+            # 建物は縦長〜正方形まで受け入れる（2026-11-24：承認済みの batch01 が 384×384）。足元は絵の一番下から測る
+            if not (0.5 <= w / h <= 1.25):
+                problems.append(f'縦横比が建物として受け入れられる範囲（縦長〜正方形）を外れています（{w}×{h}）')
+            bb = im.convert('RGBA').getchannel('A').point(lambda v: 255 if v > 20 else 0).getbbox()
+            if bb:
+                info['footY'] = bb[3]
+                if h - bb[3] > h * 0.08:
+                    problems.append(f'足元の下に余白が多すぎます（{h - bb[3]}px）')
+            if w < 256:
+                problems.append('小さすぎます（256px 以上）')
         else:
             if abs(w / h - fw / fh) > 0.02:
                 problems.append(f'縦横比が仕様（{fw}×{fh}）と合いません（{w}×{h}）')
@@ -216,15 +227,17 @@ def register(approved, sp, dst, meta):
         return f'取り込みのみ。登録はプロジェクトの持ち主が skin.js の sprites に追加：`{sp["key"]}: {json.dumps(entry, ensure_ascii=False)}`'
     if k == 'building':
         key = sp['key']
-        width = {'shrine': 168, 'watchtower': 132, 'gate': 184, 'castle': 200}[key]
+        width = {'shrine': 210, 'watchtower': 190, 'gate': 220, 'castle': 240}[key]  # 画面での横幅（論理ドット）
         if key == 'shrine':
             cur = approved['images'].get('shrine') or {'width': width, 'stages': [None, None, None]}
+            cur['footY'] = meta.get('footY', meta['h'])
             cur['stages'][sp['stage']] = dst
             cur['src'] = cur['stages'][0] or dst
             approved['images']['shrine'] = cur
         else:
             slot = {'watchtower': 'tower'}.get(key, key)
             cur = approved['images']['base'].get(slot) or {'width': width, 'stages': [None, None, None]}
+            cur['footY'] = meta.get('footY', meta['h'])
             cur['stages'][sp['stage']] = dst
             cur['src'] = cur['stages'][0] or dst
             approved['images']['base'][slot] = cur
