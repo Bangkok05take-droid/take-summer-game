@@ -23,6 +23,7 @@ export const SKIN = {
     tiw: 'ティウ', mot: 'モッ', waan: 'ワーン', koi: 'コイ', take: '勇者たけ', sai: '勇者サイ', yanai: 'マスター・ヤナイ',
   },
   sprites: {
+    // 2026-11-24：こうもり（fast）・魔法使い（area）は既存作品に近いデザインのため画像を外し、仮のドット絵に戻した（新デザイン待ち）
     // 2026-11-24：グミ（ユーザー承認のオリジナルデザイン・チャットで受け取った画像 11440.png に差し替え。1374×1145・静止画1枚。見た目は変えず、倍率と足元だけ指定。動きはゲーム側）
     mass: { src: 'assets/approved/units/mass.png', frameW: 1374, frameH: 1145, frames: { walk: [0], windup: 0, attack: 0 }, footY: 975, facing: 'left', scale: 0.05 },
     // 2026-11-24：闇の騎士（ユーザー承認のオリジナルデザイン・maougun_dark_knight_test.zip。256×256・静止画1枚・左向き。見た目は変えず、倍率と足元だけ指定。倍率は人間軍の兵士と同じ）
@@ -31,10 +32,6 @@ export const SKIN = {
     tank: { src: 'assets/approved/units/tank.png', frameW: 480, frameH: 482, frames: { walk: [0], windup: 0, attack: 0 }, footY: 414, facing: 'left', scale: 0.2 },
     // 2026-11-24：弓ゴブリン（ユーザー承認のオリジナルデザイン・チャットで受け取った画像 11414.png。456×456・静止画1枚・左向き。見た目は変えず、倍率と足元だけ指定。闇の騎士の約0.9倍の高さ）
     ranged: { src: 'assets/approved/units/ranged.png', frameW: 456, frameH: 456, frames: { walk: [0], windup: 0, attack: 0 }, footY: 418, facing: 'left', scale: 0.14 },
-    // 2026-11-24：こうもり（ユーザー承認のオリジナルデザイン・チャットで受け取った画像 11417.png。1200×1310・静止画1枚・左向き。見た目は変えず、倍率と足元だけ指定。空を飛ぶので仮の絵と同じ高さに浮かせる）
-    fast: { src: 'assets/approved/units/fast.png', frameW: 1200, frameH: 1310, frames: { walk: [0], windup: 0, attack: 0 }, footY: 1073, facing: 'left', scale: 0.06, hover: 25 },
-    // 2026-11-24：魔法使い（ユーザー承認のオリジナルデザイン・チャットで受け取った画像 11422.png。496×444・静止画1枚・左向き。見た目は変えず、倍率と足元だけ指定。闇の騎士とほぼ同じ高さ）
-    area: { src: 'assets/approved/units/area.png', frameW: 496, frameH: 444, frames: { walk: [0], windup: 0, attack: 0 }, footY: 412, facing: 'left', scale: 0.14 },
     // 2026-11-24：森のお化け（回復支援。ユーザー承認のオリジナルデザイン・チャットで受け取った画像 11442.png。1254×1254・静止画1枚・左向き。足があるので浮かせず地面に立たせる。見た目は変えず、倍率と足元だけ指定）
     healer: { src: 'assets/approved/units/healer.png', frameW: 1254, frameH: 1254, frames: { walk: [0], windup: 0, attack: 0 }, footY: 1196, facing: 'left', scale: 0.045 },
   },

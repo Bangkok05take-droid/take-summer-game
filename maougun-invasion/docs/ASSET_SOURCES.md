@@ -30,3 +30,4 @@
 | 2026-11-24 | `cc259592-maougun_small_village_preview.zip`（ZIP SHA256 `b8598a5e3ac5005e…`。正式承認はユーザーのメッセージで受領） | `bg/village_small.png` | `0abd487e97f98e88…` | `assets/approved/bg/village_small.png` | `0abd487e97f98e88…` | 加工なし（そのままコピー）。1-1 の戦闘背景（小さな村）。1920×1080。背景内に見張り台あり |
 | 2026-11-24 | （チャットで受け取った画像 11455.png） | — | `ee2464e8ad9603e3…` | `assets/approved/talk/lord_normal.png` | `ee2464e8ad9603e3…` | 加工なし（そのままコピー）。大魔王の会話立ち絵。1254×1254・透過 |
 | 2026-11-24 | （チャットで受け取った画像 11456.png） | — | `e014b91b7df47717…` | `assets/approved/talk/aide_normal.png` | `e014b91b7df47717…` | 加工なし（そのままコピー）。影の側近（ヴェイル）の会話立ち絵。1254×1254・透過 |
+| 2026-11-24 | — | — | — | `assets/approved/units/fast.png`・`area.png` | — | **取り下げ**：既存作品のキャラクターに近いデザインのため削除（ユーザー了承）。仮のドット絵に戻した |
