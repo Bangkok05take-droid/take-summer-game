@@ -25,6 +25,14 @@ try {
   const vis = (sel) => page.locator(sel).isVisible();
   const ev = (fn, arg) => page.evaluate(fn, arg);
   const screen = () => ev(() => window.__game.app.screen);
+  // 承認済みの絵の読み込みを待つ（waitForFunction に async 関数を渡すと Promise が真になり待たないため、ここで繰り返し確かめる）
+  const waitSprite = async (key) => {
+    for (let i = 0; i < 100; i++) {
+      if (await ev(async (k) => { const { spriteFor } = await import('./js/render/shapes.js'); return !!spriteFor(k); }, key)) return;
+      await page.waitForTimeout(100);
+    }
+    throw new Error(`絵が読み込まれない：${key}`);
+  };
 
   // ---- タイトル ----
   check('タイトル画面が出る', await vis('#scTitle'));
@@ -49,14 +57,27 @@ try {
 
   // ---- 1-1 の操作 ----
   check('初期の召喚カードは4種', (await page.locator('.slot').count()) === 4);
-  await page.waitForFunction(async () => { const { spriteFor } = await import('./js/render/shapes.js'); return !!spriteFor('mass'); });
+  await waitSprite('mass');
   const gumi = await ev(async () => { const { spriteFor } = await import('./js/render/shapes.js'); const sp = spriteFor('mass'); const cv = document.querySelector('.slot[data-key="mass"] canvas'); const px = cv && cv.getContext('2d').getImageData(cv.width / 2, cv.height - 8, 1, 1).data; return { label: document.querySelector('.slot[data-key="mass"]').textContent, w: sp.img.width, src: sp.src, px: px && [...px] }; });
   check('グミ：名前が「グミ」・承認済みの画像が読み込まれる', gumi.label.includes('グミ') && gumi.src === 'assets/approved/units/mass.png', JSON.stringify({ label: gumi.label, w: gumi.w }));
   check('グミ：召喚カードのアイコンが承認済みの画像（水色）になる', gumi.px && gumi.px[2] > gumi.px[0] + 40, JSON.stringify(gumi.px));
-  await page.waitForFunction(async () => { const { spriteFor } = await import('./js/render/shapes.js'); return !!spriteFor('vanguard'); });
+  await waitSprite('vanguard');
   const knight = await ev(async () => { const { spriteFor } = await import('./js/render/shapes.js'); const sp = spriteFor('vanguard'); const cv = document.querySelector('.slot[data-key="vanguard"] canvas'); const d = cv.getContext('2d').getImageData(0, 0, cv.width, cv.height).data; let orange = 0; for (let i = 0; i < d.length; i += 4) if (d[i + 3] > 200 && d[i] > 200 && d[i + 1] > 60 && d[i + 1] < 150 && d[i + 2] < 80) orange++; return { label: document.querySelector('.slot[data-key="vanguard"]').textContent, src: sp.src, w: sp.img.width, orange }; });
   check('闇の騎士：名前と承認済みの画像（256×256）が読み込まれる', knight.label.includes('闇の騎士') && knight.src === 'assets/approved/units/vanguard.png' && knight.w === 256, JSON.stringify(knight));
   check('闇の騎士：召喚カードのアイコンが承認済みの画像（オレンジの羽根飾り）になる', knight.orange > 20, String(knight.orange));
+  await waitSprite('tank');
+  const rock = await ev(async () => { const { spriteFor } = await import('./js/render/shapes.js'); const sp = spriteFor('tank'); const cv = document.querySelector('.slot[data-key="tank"] canvas'); const d = cv.getContext('2d').getImageData(0, 0, cv.width, cv.height).data; let brown = 0; for (let i = 0; i < d.length; i += 4) if (d[i + 3] > 200 && d[i] > 120 && d[i] - d[i + 2] > 40 && d[i + 1] > 70) brown++; return { label: document.querySelector('.slot[data-key="tank"]').textContent, src: sp.src, brown }; });
+  check('岩男：名前と承認済みの画像が読み込まれる', rock.label.includes('岩男') && rock.src === 'assets/approved/units/tank.png', JSON.stringify(rock));
+  check('岩男：召喚カードのアイコンが承認済みの画像（茶色の岩）になる', rock.brown > 50, String(rock.brown));
+  await waitSprite('ranged');
+  const gob = await ev(async () => { const { spriteFor, } = await import('./js/render/shapes.js'); const { Renderer } = await import('./js/render/renderer.js'); const sp = spriteFor('ranged'); const cv = document.createElement('canvas'); cv.width = 64; cv.height = 64; Renderer.thumb(cv, 'ranged', 0.85); const d = cv.getContext('2d').getImageData(0, 0, 64, 64).data; let green = 0; for (let i = 0; i < d.length; i += 4) if (d[i + 3] > 200 && d[i + 1] > 110 && d[i + 1] > d[i] + 15 && d[i + 1] > d[i + 2] + 40) green++; return { src: sp.src, green }; });
+  check('弓ゴブリン：承認済みの画像が読み込まれ、カード用の絵（緑の顔）になる', gob.src === 'assets/approved/units/ranged.png' && gob.green > 20, JSON.stringify(gob));
+  await waitSprite('fast');
+  const bat = await ev(async () => { const { spriteFor } = await import('./js/render/shapes.js'); const { Renderer } = await import('./js/render/renderer.js'); const sp = spriteFor('fast'); const cv = document.createElement('canvas'); cv.width = 64; cv.height = 64; Renderer.thumb(cv, 'fast', 0.8); const d = cv.getContext('2d').getImageData(0, 0, 64, 64).data; let yellow = 0; for (let i = 0; i < d.length; i += 4) if (d[i + 3] > 200 && d[i] > 200 && d[i + 1] > 170 && d[i + 2] < 120) yellow++; return { src: sp.src, hover: sp.hover, yellow }; });
+  check('こうもり：承認済みの画像が読み込まれ、カード用の絵（黄色い目）になる・浮いて飛ぶ', bat.src === 'assets/approved/units/fast.png' && bat.yellow > 3 && bat.hover > 0, JSON.stringify(bat));
+  await waitSprite('area');
+  const mage = await ev(async () => { const { spriteFor } = await import('./js/render/shapes.js'); const sp = spriteFor('area'); const cv = document.querySelector('.slot[data-key="area"] canvas'); const d = cv.getContext('2d').getImageData(0, 0, cv.width, cv.height).data; let gold = 0; for (let i = 0; i < d.length; i += 4) if (d[i + 3] > 200 && d[i] > 190 && d[i + 1] > 120 && d[i + 2] < 90) gold++; return { label: document.querySelector('.slot[data-key="area"]').textContent, src: sp.src, gold }; });
+  check('魔法使い：名前と承認済みの画像・召喚カードのアイコン（金の杖と縁取り）', mage.label.includes('魔法使い') && mage.src === 'assets/approved/units/area.png' && mage.gold > 20, JSON.stringify(mage));
   const slotBox = await page.locator('.slot[data-key="mass"]').boundingBox();
   check('召喚カードが指で押せる大きさ（44px以上）', slotBox.width >= 44 && slotBox.height >= 44, `${slotBox.width.toFixed(0)}×${slotBox.height.toFixed(0)}px`);
   await page.tap('.slot[data-key="mass"]');

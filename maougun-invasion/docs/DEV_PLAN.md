@@ -59,13 +59,18 @@
 | キー | 表示名 | 不足ファイル（納品時の ZIP 内パス → 保存先） |
 |---|---|---|
 | vanguard | 闇の騎士 | **登録済み（2026-11-24・maougun_dark_knight_test.zip。256×256・静止画1枚・倍率0.25）** |
-| tank | 岩男 | `units/tank.png` → `assets/approved/units/tank.png` |
-| ranged | 弓ゴブリン | `units/ranged.png` → `assets/approved/units/ranged.png` |
-| fast | こうもり | `units/fast.png` → `assets/approved/units/fast.png` |
-| area | 魔法使い | `units/area.png` → `assets/approved/units/area.png` |
+| tank | 岩男 | **登録済み（2026-11-24・チャットの画像 11413.png。480×482・静止画1枚・倍率0.2）** |
+| ranged | 弓ゴブリン | **登録済み（2026-11-24・チャットの画像 11414.png。456×456・静止画1枚・倍率0.14）** |
+| fast | こうもり | **登録済み（2026-11-24・チャットの画像 11417.png。1200×1310・静止画1枚・倍率0.06・25ドット浮かせる）** |
+| area | 魔法使い | **登録済み（2026-11-24・チャットの画像 11422.png。496×444・静止画1枚・倍率0.14）** |
 | healer | ホーリークラゲ | `units/healer.png` → `assets/approved/units/healer.png` |
 | special | 悪魔くん | `units/special.png` → `assets/approved/units/special.png` |
 
 仕様（ASSET_MAP.md）：透過PNG・左向き・1コマ256×256×4コマ（歩きA・歩きB・攻撃準備・攻撃発動）。グミと同じく**静止画1枚でも受け入れ可能**（動きはゲーム側で付ける）。
 
 - 2026-11-24：闇の騎士（vanguard）を組み込み。1-1で召喚・戦闘・勝利まで確認。e2e に2件追加（47/47）。
+- 2026-11-24：岩男（tank）を組み込み。1-1で召喚・戦闘・勝利まで確認。e2e に2件追加。画像の右端（x=479付近）に小さな点が数ピクセルあるが、画像は変更せずそのまま（表示ではほぼ見えない）。
+- 2026-11-24：弓ゴブリン（ranged）・こうもり（fast）・魔法使い（area）を組み込み。それぞれ1-1で召喚・戦闘・勝利まで確認。
+  - こうもりは空を飛ぶため、skin の `hover`（浮かせる高さ）を追加して仮の絵と同じ高さに浮かせ、ゆっくり上下させる（画像は変更なし）。
+  - 魔法使いの画像の左端に切れた紫の破片があるが、画像は変更せずそのまま（表示では約2ドット）。
+  - e2e の画像待ちが実際には待っていなかった不具合を修正（Playwright の waitForFunction に async 関数を渡していた）。e2e は 52/52。

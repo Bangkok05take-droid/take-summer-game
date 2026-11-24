@@ -310,7 +310,9 @@ export class Renderer {
       if (BOUNCY[e.key]) { const ph = Math.abs(Math.sin(t * 7)); bob = ph * 5; squash = (1 - ph) * 0.12; }
       else { bob = Math.abs(Math.sin(t * 9)) * 2; }
     } else if (pose !== 'dead' && pose !== 'kb') bob = (Math.sin(t * 3) + 1) * 1; // 待機：小さく上下
-    const float = apr ? 0 : (FLOATING[e.key] || 0) * PIX + (FLOATING[e.key] ? Math.sin(t * 4) * 3 : 0);
+    // 浮いている魔物：承認済みの絵は skin の hover（論理ドット）、仮のドット絵は FLOATING。ゆっくり上下する
+    const hover = apr ? (apr.hover || 0) : (FLOATING[e.key] || 0) * PIX;
+    const float = hover ? hover + Math.sin(t * 4) * 3 : 0;
     // 召喚：魔法陣から下からせり上がる（0.35秒）
     const summon = e.side === 'demon' ? Math.min(1, age / 0.35) : 1;
 

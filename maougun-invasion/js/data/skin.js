@@ -5,7 +5,8 @@ import { APPROVED } from './approved.js';
  * - names：ユニットの枠ごとの表示名。既定は役割名（仮）。
  * - speakers：会話の話し手の表示名。lord（大魔王）・aide（側近）は既定で役職名。
  * - sprites：枠ごとの絵。登録が無い・読み込めない枠は、図形の仮の絵で描く。
- *     { src, frameW, frameH, frames: { walk: [0, 1], windup: 2, attack: 3 }, footY, facing: 'right' | 'left', scale }
+ *     { src, frameW, frameH, frames: { walk: [0, 1], windup: 2, attack: 3 }, footY, facing: 'right' | 'left', scale, hover }
+ *     hover：空を飛ぶ魔物を地面から浮かせる高さ（論理ドット。省略で0）
  * - portraits：会話の顔絵 { lord: 'assets/talk/lord.png', … }。無ければ図形の仮の顔。
  *   絵の仕様は docs/ART_SPEC.md。
  */
@@ -26,6 +27,14 @@ export const SKIN = {
     mass: { src: 'assets/approved/units/mass.png', frameW: 1330, frameH: 1182, frames: { walk: [0], windup: 0, attack: 0 }, footY: 1090, facing: 'left', scale: 0.045 },
     // 2026-11-24：闇の騎士（ユーザー承認のオリジナルデザイン・maougun_dark_knight_test.zip。256×256・静止画1枚・左向き。見た目は変えず、倍率と足元だけ指定。倍率は人間軍の兵士と同じ）
     vanguard: { src: 'assets/approved/units/vanguard.png', frameW: 256, frameH: 256, frames: { walk: [0], windup: 0, attack: 0 }, footY: 240, facing: 'left', scale: 0.25 },
+    // 2026-11-24：岩男（ユーザー承認のオリジナルデザイン・チャットで受け取った画像 11413.png。480×482・静止画1枚・左向き。見た目は変えず、倍率と足元だけ指定。闇の騎士の約1.3倍の高さ）
+    tank: { src: 'assets/approved/units/tank.png', frameW: 480, frameH: 482, frames: { walk: [0], windup: 0, attack: 0 }, footY: 414, facing: 'left', scale: 0.2 },
+    // 2026-11-24：弓ゴブリン（ユーザー承認のオリジナルデザイン・チャットで受け取った画像 11414.png。456×456・静止画1枚・左向き。見た目は変えず、倍率と足元だけ指定。闇の騎士の約0.9倍の高さ）
+    ranged: { src: 'assets/approved/units/ranged.png', frameW: 456, frameH: 456, frames: { walk: [0], windup: 0, attack: 0 }, footY: 418, facing: 'left', scale: 0.14 },
+    // 2026-11-24：こうもり（ユーザー承認のオリジナルデザイン・チャットで受け取った画像 11417.png。1200×1310・静止画1枚・左向き。見た目は変えず、倍率と足元だけ指定。空を飛ぶので仮の絵と同じ高さに浮かせる）
+    fast: { src: 'assets/approved/units/fast.png', frameW: 1200, frameH: 1310, frames: { walk: [0], windup: 0, attack: 0 }, footY: 1073, facing: 'left', scale: 0.06, hover: 25 },
+    // 2026-11-24：魔法使い（ユーザー承認のオリジナルデザイン・チャットで受け取った画像 11422.png。496×444・静止画1枚・左向き。見た目は変えず、倍率と足元だけ指定。闇の騎士とほぼ同じ高さ）
+    area: { src: 'assets/approved/units/area.png', frameW: 496, frameH: 444, frames: { walk: [0], windup: 0, attack: 0 }, footY: 412, facing: 'left', scale: 0.14 },
   },
   portraits: {},
   /* 画面の各場所に入れる承認済み画像（場所と仕様の一覧：docs/ASSET_MAP.md）。
