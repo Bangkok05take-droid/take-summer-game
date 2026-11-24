@@ -31,3 +31,5 @@
 | 2026-11-24 | （チャットで受け取った画像 11455.png） | — | `ee2464e8ad9603e3…` | `assets/approved/talk/lord_normal.png` | `ee2464e8ad9603e3…` | 加工なし（そのままコピー）。大魔王の会話立ち絵。1254×1254・透過 |
 | 2026-11-24 | （チャットで受け取った画像 11456.png） | — | `e014b91b7df47717…` | `assets/approved/talk/aide_normal.png` | `e014b91b7df47717…` | 加工なし（そのままコピー）。影の側近（ヴェイル）の会話立ち絵。1254×1254・透過 |
 | 2026-11-24 | — | — | — | `assets/approved/units/fast.png`・`area.png` | — | **取り下げ**：既存作品のキャラクターに近いデザインのため削除（ユーザー了承）。仮のドット絵に戻した |
+| 2026-11-24 | `deccc71f-maougun_background_fix.zip`（ZIP SHA256 `8acf30b0be80b43d…`。承認はユーザーのメッセージで受領） | `bg/village_small.png` | `ae6ce9d3a7b24fb6…` | `assets/approved/bg/village_small.png` | `ae6ce9d3a7b24fb6…` | 加工なし。1-1 の背景を見張り台を消した修正版に差し替え |
+| 2026-11-24 | 同上 | `bg/village_town.png` | `a9cd1a7ed0c96a3f…` | `assets/approved/bg/village_town.png` | `a9cd1a7ed0c96a3f…` | 加工なし。1-2 の背景（祠を消した修正版） |
