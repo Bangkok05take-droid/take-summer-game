@@ -357,3 +357,11 @@ body.portrait #rotate { display: flex; }
 .upCol li.group { display: block; background: none; padding: calc(var(--u) * 4) 0 0; color: var(--gold); font-weight: 900; font-size: calc(var(--u) * 13); }
 .enemy .nm { flex-wrap: wrap; column-gap: calc(var(--u) * 6); row-gap: 0; }
 .enemy .nm b { white-space: nowrap; }
+
+/* 会話の表情（仮）：表情差分の立ち絵が届くまで、通常の立ち絵に動きと色を付ける（絵そのものは変えない） */
+.portrait.face-angry { animation: faceAngry .5s ease-out; filter: drop-shadow(0 0 calc(var(--u) * 14) rgba(255, 60, 60, .85)) drop-shadow(0 calc(var(--u) * 4) calc(var(--u) * 8) rgba(0,0,0,.6)); }
+.portrait.face-happy { animation: faceHappy .6s ease-out; filter: drop-shadow(0 0 calc(var(--u) * 14) rgba(255, 220, 120, .8)) drop-shadow(0 calc(var(--u) * 4) calc(var(--u) * 8) rgba(0,0,0,.6)) brightness(1.08); }
+.portrait.face-sad { translate: 0 calc(var(--u) * 10); filter: saturate(.45) brightness(.8) hue-rotate(-12deg) drop-shadow(0 calc(var(--u) * 4) calc(var(--u) * 8) rgba(0,0,0,.6)); transition: translate .4s, filter .4s; }
+@keyframes faceAngry { 0%, 100% { translate: 0 0; } 15% { translate: calc(var(--u) * -6) 0; } 30% { translate: calc(var(--u) * 6) 0; } 45% { translate: calc(var(--u) * -4) 0; } 60% { translate: calc(var(--u) * 4) 0; } 75% { translate: calc(var(--u) * -2) 0; } }
+@keyframes faceHappy { 0%, 100% { translate: 0 0; } 30% { translate: 0 calc(var(--u) * -16); } 55% { translate: 0 0; } 75% { translate: 0 calc(var(--u) * -6); } }
+@media (prefers-reduced-motion: reduce) { .portrait.face-angry, .portrait.face-happy { animation: none; } }

@@ -107,6 +107,11 @@ export class TalkPlayer {
         else { drawPortrait(g, l.who, l.face, c.width, c.height); this.shown[side] = src ? null : key; } // 読み込み中なら次の行で描き直す
       }
       c.hidden = false;
+      // 表情（仮）：その表情の立ち絵が無いときは、通常の絵のまま動きと色で表す（絵は変えない）
+      const face = l.face || 'normal';
+      const hasFace = !!SKIN.portraits[`${l.who}_${face}`];
+      c.classList.remove('face-angry', 'face-happy', 'face-sad');
+      if (face !== 'normal' && !hasFace) { void c.offsetWidth; c.classList.add('face-' + face); }
       $('ptLeft').classList.toggle('dim', side !== 'left');
       $('ptRight').classList.toggle('dim', side !== 'right');
     }

@@ -14,7 +14,7 @@ export const SKIN = {
   names: {
     // 2026-11-24：ユーザー指定の名前
     mass: 'グミ', vanguard: '闇の騎士', tank: '岩男', ranged: '弓ゴブリン',
-    fast: 'こうもり', area: '魔法使い', healer: '森のお化け', special: 'プチデビル', // 2026-11-24：「悪魔くん」は既存の漫画作品名と同じため変更
+    fast: 'こうもり', area: '魔法使い', healer: '森のお化け', special: 'プチデビル', // 2026-11-24：既存作品名と重なる旧名から変更
     charger: '幹部・突進', elemental: '幹部・炎氷', trickster: '幹部・罠', thunder: '幹部・落雷', mist: '幹部・霧',
     lord: '大魔王', lordAwakened: '大魔王（真の姿）',
   },
