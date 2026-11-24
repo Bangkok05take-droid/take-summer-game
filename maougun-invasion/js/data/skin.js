@@ -42,9 +42,12 @@ export const SKIN = {
   /* 画面の各場所に入れる承認済み画像（場所と仕様の一覧：docs/ASSET_MAP.md）。
    * 未登録・読み込み失敗のときは、今の仮の表示に戻る。見た目は変えず、拡大縮小と位置だけ指定する。 */
   images: {
-    // 戦闘の背景。ステージIDで個別に、無ければ chapter1。scale：論理画面（960×540）での倍率、offsetY：上下の位置
+    // 戦闘の背景。ステージIDで個別に、無ければ chapter1（1-2 以降は大きな町の背景）。scale：論理画面（960×540）での倍率、offsetY：上下の位置
     stageBg: {
       chapter1: { src: 'assets/approved/bg/ch1_village.webp', scale: 0.62, offsetY: -66 },
+      // 2026-11-24：小さな村（1-1・見張り小屋）。ユーザー承認の 1920×1080。画面ちょうど（960×540）に合わせて表示し、土の道が足元の列に重なる。
+      // 絵の右側の見張り台は背景の一部（拠点の当たり判定・HP・破損表示は左の拠点オブジェクトのまま。重ならないことを確認済み）
+      '1-1': { src: 'assets/approved/bg/village_small.png', scale: 0.5, offsetY: 0 },
     },
     // 人間軍の拠点（tower：1-1〜1-3、gate：1-4、castle：1-5）と、魔王軍の祠。{ src, width, footY }
     base: {},

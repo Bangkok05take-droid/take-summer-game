@@ -27,3 +27,4 @@
 | 2026-11-24 | （チャットで受け取った画像 11422.png） | — | `dbd7f560bfbefaae…` | `assets/approved/units/area.png` | `dbd7f560bfbefaae…` | 加工なし（そのままコピー）。範囲攻撃（魔法使い）。496×444・1コマ・左向き・足元 y=412。左端に切れた紫の破片あり（変更せず） |
 | 2026-11-24 | （チャットで受け取った画像 11440.png） | — | `c0429d64be13dcf7…` | `assets/approved/units/mass.png` | `c0429d64be13dcf7…` | 加工なし（そのままコピー）。量産型（グミ）を差し替え（以前の 11396.png の一つ目のグミから変更。旧画像は git の履歴に残る）。1374×1145・1コマ・足元 y=975 |
 | 2026-11-24 | （チャットで受け取った画像 11442.png） | — | `49c0d30cf15de1af…` | `assets/approved/units/healer.png` | `49c0d30cf15de1af…` | 加工なし（そのままコピー）。回復支援（森のお化け。旧名ホーリークラゲ）。1254×1254・1コマ・左向き・足元 y=1196 |
+| 2026-11-24 | `cc259592-maougun_small_village_preview.zip`（ZIP SHA256 `b8598a5e3ac5005e…`。正式承認はユーザーのメッセージで受領） | `bg/village_small.png` | `0abd487e97f98e88…` | `assets/approved/bg/village_small.png` | `0abd487e97f98e88…` | 加工なし（そのままコピー）。1-1 の戦闘背景（小さな村）。1920×1080。背景内に見張り台あり |
