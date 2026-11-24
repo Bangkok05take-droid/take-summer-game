@@ -78,6 +78,9 @@ try {
   await waitSprite('area');
   const mage = await ev(async () => { const { spriteFor } = await import('./js/render/shapes.js'); const sp = spriteFor('area'); const cv = document.querySelector('.slot[data-key="area"] canvas'); const d = cv.getContext('2d').getImageData(0, 0, cv.width, cv.height).data; let gold = 0; for (let i = 0; i < d.length; i += 4) if (d[i + 3] > 200 && d[i] > 190 && d[i + 1] > 120 && d[i + 2] < 90) gold++; return { label: document.querySelector('.slot[data-key="area"]').textContent, src: sp.src, gold }; });
   check('魔法使い：名前と承認済みの画像・召喚カードのアイコン（金の杖と縁取り）', mage.label.includes('魔法使い') && mage.src === 'assets/approved/units/area.png' && mage.gold > 20, JSON.stringify(mage));
+  await waitSprite('healer');
+  const ghost = await ev(async () => { const { spriteFor } = await import('./js/render/shapes.js'); const { Renderer } = await import('./js/render/renderer.js'); const { SKIN } = await import('./js/data/skin.js'); const sp = spriteFor('healer'); const cv = document.createElement('canvas'); cv.width = 64; cv.height = 64; Renderer.thumb(cv, 'healer', 0.85); const d = cv.getContext('2d').getImageData(0, 0, 64, 64).data; let leaf = 0; for (let i = 0; i < d.length; i += 4) if (d[i + 3] > 200 && d[i + 1] > 120 && d[i + 1] > d[i] + 20 && d[i + 1] > d[i + 2] + 60) leaf++; return { name: SKIN.names.healer, src: sp.src, leaf }; });
+  check('森のお化け：名前と承認済みの画像・カード用の絵（緑の葉）', ghost.name === '森のお化け' && ghost.src === 'assets/approved/units/healer.png' && ghost.leaf > 20, JSON.stringify(ghost));
   const slotBox = await page.locator('.slot[data-key="mass"]').boundingBox();
   check('召喚カードが指で押せる大きさ（44px以上）', slotBox.width >= 44 && slotBox.height >= 44, `${slotBox.width.toFixed(0)}×${slotBox.height.toFixed(0)}px`);
   await page.tap('.slot[data-key="mass"]');
@@ -196,7 +199,7 @@ try {
     check(`${id}：開始・勝利・解放（${unlockName}）`, ok && unl === unlockName, `カード ${ns} 枚`);
   };
   await playStage('1-2', 'こうもり');
-  await playStage('1-3', 'ホーリークラゲ');
+  await playStage('1-3', '森のお化け');
   await playStage('1-4', '悪魔くん');
   await playStage('1-5', '幹部・突進');
   const prof = await ev(() => window.__game.app.profile);

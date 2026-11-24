@@ -14,7 +14,7 @@ export const SKIN = {
   names: {
     // 2026-11-24：ユーザー指定の名前
     mass: 'グミ', vanguard: '闇の騎士', tank: '岩男', ranged: '弓ゴブリン',
-    fast: 'こうもり', area: '魔法使い', healer: 'ホーリークラゲ', special: '悪魔くん',
+    fast: 'こうもり', area: '魔法使い', healer: '森のお化け', special: '悪魔くん',
     charger: '幹部・突進', elemental: '幹部・炎氷', trickster: '幹部・罠', thunder: '幹部・落雷', mist: '幹部・霧',
     lord: '大魔王', lordAwakened: '大魔王（真の姿）',
   },
@@ -35,6 +35,8 @@ export const SKIN = {
     fast: { src: 'assets/approved/units/fast.png', frameW: 1200, frameH: 1310, frames: { walk: [0], windup: 0, attack: 0 }, footY: 1073, facing: 'left', scale: 0.06, hover: 25 },
     // 2026-11-24：魔法使い（ユーザー承認のオリジナルデザイン・チャットで受け取った画像 11422.png。496×444・静止画1枚・左向き。見た目は変えず、倍率と足元だけ指定。闇の騎士とほぼ同じ高さ）
     area: { src: 'assets/approved/units/area.png', frameW: 496, frameH: 444, frames: { walk: [0], windup: 0, attack: 0 }, footY: 412, facing: 'left', scale: 0.14 },
+    // 2026-11-24：森のお化け（回復支援。ユーザー承認のオリジナルデザイン・チャットで受け取った画像 11442.png。1254×1254・静止画1枚・左向き。足があるので浮かせず地面に立たせる。見た目は変えず、倍率と足元だけ指定）
+    healer: { src: 'assets/approved/units/healer.png', frameW: 1254, frameH: 1254, frames: { walk: [0], windup: 0, attack: 0 }, footY: 1196, facing: 'left', scale: 0.045 },
   },
   portraits: {},
   /* 画面の各場所に入れる承認済み画像（場所と仕様の一覧：docs/ASSET_MAP.md）。
