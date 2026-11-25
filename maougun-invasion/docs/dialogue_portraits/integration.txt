@@ -1,0 +1,5 @@
+maougun_full_game_latest.zip の js/main.js、js/data/story.js、js/data/stages.js、skin.js、ui/screens.js、tools/accept_assets.py と照合。
+1. talk/ のPNGをゲームの assets/approved/talk/ へ追加。
+2. portrait_registry.json の全キーと値を js/data/skin.js の SKIN.portraits に追加。既存の大魔王・側近の登録を保持。
+3. 日本語キーは台本でそのまま渡される話し手名。英語キーも併用する。王国軍には王国騎士団長、案内人は tiw、まとめ役は mot を使う。
+4. 通常表情のみ。会話表示は既存の normal フォールバックを使う。512×512 の素材を既存の 480×480 canvas に表示。

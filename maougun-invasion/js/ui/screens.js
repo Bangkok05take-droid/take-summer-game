@@ -79,7 +79,8 @@ export function renderSelect(p, onPick, ch = CHAPTER1, onChapter = null) {
 }
 
 // ---------- 会話 ----------
-const SIDE = { ord: 'right', lord: 'left', aide: 'right', take: 'right', sai: 'right', tiw: 'left', mot: 'left', waan: 'left', koi: 'left', yanai: 'left' };
+// 大魔王は左、ほかは右（2026-11-25：人間の話し手も右に。右向きの絵は左右反転して大魔王のほうを向かせる）
+const SIDE = { ord: 'right', lord: 'left', aide: 'right' };
 const HUMAN_SPEAKERS = ['take', 'sai', 'tiw', 'mot', 'waan', 'koi', 'yanai', '門番', '商人', '警備隊長', '王国兵', '王国騎士', '国王', '港の警備兵', '港の守備隊長', '海兵', '兵器技師', '人間軍兵士', '人間軍技師', '重装兵団長', '要塞司令官', '古代王', '聖騎士', '聖騎士団長', '自警団', '自警団長', '守備兵', '王国軍', '人間軍魔法使い', '魔導士団長', '大魔導士', '人間軍指揮官', '王国軍指揮官', '人間軍総司令官', '天空の守護兵', '天空の指揮官', '聖竜', '天空の守護者', 'マスター・ヤナイ', 'たけ', 'サイ'];
 
 export class TalkPlayer {
@@ -116,7 +117,7 @@ export class TalkPlayer {
     { const sc = $('scTalk'); sc.classList.remove('fx-absorb', 'fx-quake'); if (l.fx) { void sc.offsetWidth; sc.classList.add('fx-' + l.fx); } }
     if (l.revive) this.revived = true;
     if (l.who !== 'narr') {
-      const side = SIDE[l.who] || 'left';
+      const side = SIDE[l.who] || (HUMAN_SPEAKERS.includes(l.who) ? 'right' : 'left');
       const c = side === 'left' ? $('ptLeft') : $('ptRight');
       // 完全復活（エンディング）：revive の付いた行から、大魔王の顔を復活後の絵に（this.revived は TalkPlayer の外から戻す）
       const revived = l.who === 'lord' && this.revived && SKIN.portraits.lord_revived;
@@ -125,7 +126,8 @@ export class TalkPlayer {
         const src = revived ? SKIN.portraits.lord_revived : SKIN.portraits[`${l.who}_${l.face || 'normal'}`] || SKIN.portraits[`${l.who}_normal`] || SKIN.portraits[l.who];
         const img = getImage(src);
         const g = c.getContext('2d');
-        if (img) { g.clearRect(0, 0, c.width, c.height); g.drawImage(img, 0, 0, c.width, c.height); this.shown[side] = key; }
+        const flip = side === 'right' && HUMAN_SPEAKERS.includes(l.who); // 右向きの絵を右側に置くときは反転して内側を向かせる
+        if (img) { g.clearRect(0, 0, c.width, c.height); g.save(); if (flip) { g.translate(c.width, 0); g.scale(-1, 1); } g.drawImage(img, 0, 0, c.width, c.height); g.restore(); this.shown[side] = key; }
         else { drawPortrait(g, l.who, l.face, c.width, c.height); this.shown[side] = src ? null : key; } // 読み込み中なら次の行で描き直す
       }
       c.hidden = false;

@@ -1,0 +1,33 @@
+﻿話し手,台本・実行時ID,登録する全ID,対応画像
+マスター・ヤナイ,yanai,yanai | マスター・ヤナイ,talk/yanai_normal.png
+たけ,たけ,たけ | take,talk/take_normal.png
+サイ,サイ,サイ | sai,talk/sai_normal.png
+聖竜,聖竜,聖竜 | holy_dragon,talk/holy_dragon_normal.png
+古代王,古代王,古代王 | ancient_king,talk/ancient_king_normal.png
+自警団長,自警団長,自警団長 | militia_captain,talk/militia_captain_normal.png
+警備隊長,警備隊長,警備隊長 | captain,talk/captain_normal.png
+王国騎士団長,王国軍,王国軍 | knight_commander,talk/knight_commander_normal.png
+港の守備隊長,港の守備隊長,港の守備隊長 | harbor_captain,talk/harbor_captain_normal.png
+重装兵団長,重装兵団長,重装兵団長 | heavy_captain,talk/heavy_captain_normal.png
+要塞司令官,要塞司令官,要塞司令官 | commander,talk/commander_normal.png
+聖騎士団長,聖騎士団長,聖騎士団長 | holy_captain,talk/holy_captain_normal.png
+魔導士団長,魔導士団長,魔導士団長 | mage_captain,talk/mage_captain_normal.png
+大魔導士,大魔導士,大魔導士 | archmage,talk/archmage_normal.png
+王国軍指揮官,王国軍指揮官,王国軍指揮官 | royal_commander,talk/royal_commander_normal.png
+人間軍総司令官,人間軍総司令官,人間軍総司令官 | supreme_commander,talk/supreme_commander_normal.png
+天空の指揮官,天空の指揮官,天空の指揮官 | sky_commander,talk/sky_commander_normal.png
+天空の守護者,天空の守護者,天空の守護者 | sky_guardian,talk/sky_guardian_normal.png
+ティウ,tiw,tiw,talk/tiw_normal.png
+モッ,mot,mot,talk/mot_normal.png
+自警団,自警団,自警団 | militia,talk/militia_normal.png
+門番,門番,門番 | shield,talk/shield_normal.png
+守備兵,守備兵,守備兵,talk/shield_normal.png
+王国兵,王国兵,王国兵 | swordsman,talk/swordsman_normal.png
+王国騎士,王国騎士,王国騎士 | knight,talk/knight_normal.png
+港の警備兵,港の警備兵,港の警備兵 | naval_soldier,talk/naval_soldier_normal.png
+人間軍兵士,人間軍兵士,人間軍兵士,talk/swordsman_normal.png
+人間軍技師,人間軍技師,人間軍技師 | engineer,talk/engineer_normal.png
+聖騎士,聖騎士,聖騎士 | paladin,talk/paladin_normal.png
+人間軍魔法使い,人間軍魔法使い,人間軍魔法使い | mage,talk/mage_normal.png
+人間軍指揮官,人間軍指揮官,人間軍指揮官,talk/royal_commander_normal.png
+天空の守護兵,天空の守護兵,天空の守護兵 | sky_guard,talk/sky_guard_normal.png
