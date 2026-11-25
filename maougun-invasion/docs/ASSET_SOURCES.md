@@ -36,7 +36,7 @@
 | 2026-11-24 | （チャットで受け取った画像 village_small.png） | — | `3eb60ee407483e43…` | `assets/approved/bg/village_small.png` | `3eb60ee407483e43…` | 加工なし。1-1 の背景を継ぎ目を直した再修正版に差し替え（1920×1080） |
 | 2026-11-25 | `c79f59a8-maougun_panorama_backgrounds.zip`（ZIP SHA256 `ef9b84faa7daf816…`） | `bg/village_small.png`・`bg/village_town.png` | `a3165033…`・`adb14c76…` | `assets/approved/bg/pano_village_small.png`・`pano_village_town.png` | 同じ | 加工なし。1-1・1-2 の横長パノラマ背景（2172×358）。カメラの35%で動く |
 | 2026-11-25 | （チャットで受け取った画像 11496.png） | — | — | `assets/approved/units/fast.png` | — | 加工なし。こうもり（新デザイン）。1536×1024・1コマ・左向き・透過・足元 y=914 |
-| 2026-11-25 | （チャットで受け取った画像 11497.png） | — | — | `assets/approved/units/area.png` | — | 加工なし。魔法使い（新デザイン）。1312×1199・1コマ・右向き（ゲームで反転）・透過・足元 y=1118 |
+| 2026-11-25 | （チャットで受け取った画像 11497.png） | — | — | `assets/approved/units/area.png` | — | 加工なし。魔法使い（新デザイン）。1312×1199・1コマ・左向き・透過・足元 y=1118（11-25 向きの設定を修正） |
 | 2026-11-25 | `7ef70110-maougun_mage_fireball_fx.zip` | `fx/mage_fireball_charge.png`・`projectile.png`・`impact.png` | — | `assets/approved/fx/mage_fireball_*.png` | — | 加工なし。魔法使いの火球（溜め・発射・着弾）。見た目だけで戦闘の数値は変えない |
 | 2026-11-25 | `326203d9-maougun_goblin_arrow_fx.zip` | `fx/goblin_arrow.png` | — | `assets/approved/fx/goblin_arrow.png` | — | 加工なし。弓ゴブリンの放物線の矢（192×48・左向き） |
 | 2026-11-25 | `5940322f-maougun_remaining_unit_fx.zip` | `fx/` 9点（gummy_splash・knight_slash・rock_impact・bat_dive・forest_heal・forest_seed・imp_magic・imp_jackpot・imp_fizzle） | — | `assets/approved/fx/` | — | 加工なし。基本6タイプの戦闘エフェクト |

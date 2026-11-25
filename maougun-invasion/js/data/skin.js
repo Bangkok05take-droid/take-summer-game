@@ -28,8 +28,8 @@ export const SKIN = {
   sprites: {
     // 2026-11-25：木槌小鬼（ユーザー承認のデザイン・画像 11481.png）。元画像は背景の市松模様が焼き込まれていたため、端からつながる白・薄灰だけを透明にした（キャラクターは加工なし）。1312×1199・左向き
     mallet: { src: 'assets/approved/units/mallet.png', frameW: 1312, frameH: 1199, frames: { walk: [0], windup: 0, attack: 0 }, footY: 1180, facing: 'left', scale: 0.046 },
-    // 2026-11-25：魔法使い（新デザイン・画像 11497.png。1312×1199・静止画1枚・透過）。絵は右向きなので facing: 'right'（ゲームで左向きに反転）
-    area: { src: 'assets/approved/units/area.png', frameW: 1312, frameH: 1199, frames: { walk: [0], windup: 0, attack: 0 }, footY: 1118, facing: 'right', scale: 0.06 },
+    // 2026-11-25：魔法使い（新デザイン・画像 11497.png。1312×1199・静止画1枚・透過）。絵は左向き（敵のいる左を向く）
+    area: { src: 'assets/approved/units/area.png', frameW: 1312, frameH: 1199, frames: { walk: [0], windup: 0, attack: 0 }, footY: 1118, facing: 'left', scale: 0.06 },
     // 2026-11-25：こうもり（新デザイン・画像 11496.png。1536×1024・静止画1枚・左向き・透過）。空を飛ぶので浮かせる
     fast: { src: 'assets/approved/units/fast.png', frameW: 1536, frameH: 1024, frames: { walk: [0], windup: 0, attack: 0 }, footY: 914, facing: 'left', scale: 0.065, hover: 25 },
     // 2026-11-24：グミ（ユーザー承認のオリジナルデザイン・チャットで受け取った画像 11440.png に差し替え。1374×1145・静止画1枚。見た目は変えず、倍率と足元だけ指定。動きはゲーム側）
