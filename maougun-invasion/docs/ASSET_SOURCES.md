@@ -40,3 +40,6 @@
 | 2026-11-25 | `7ef70110-maougun_mage_fireball_fx.zip` | `fx/mage_fireball_charge.png`・`projectile.png`・`impact.png` | — | `assets/approved/fx/mage_fireball_*.png` | — | 加工なし。魔法使いの火球（溜め・発射・着弾）。見た目だけで戦闘の数値は変えない |
 | 2026-11-25 | `326203d9-maougun_goblin_arrow_fx.zip` | `fx/goblin_arrow.png` | — | `assets/approved/fx/goblin_arrow.png` | — | 加工なし。弓ゴブリンの放物線の矢（192×48・左向き） |
 | 2026-11-25 | `5940322f-maougun_remaining_unit_fx.zip` | `fx/` 9点（gummy_splash・knight_slash・rock_impact・bat_dive・forest_heal・forest_seed・imp_magic・imp_jackpot・imp_fizzle） | — | `assets/approved/fx/` | — | 加工なし。基本6タイプの戦闘エフェクト |
+| 2026-11-25 | （チャットで受け取った画像 11481.png） | — | — | `assets/approved/units/mallet.png` | — | **背景のみ透明化**：焼き込まれた市松模様（端からつながる白・薄灰）を透明にし、縁を1px整えた。キャラクターの絵・色は加工なし。木槌小鬼・1312×1199・左向き |
+| 2026-11-25 | `7bb948b1-maougun_mallet_throw_fx.zip` | `fx/mallet_projectile.png`・`fx/mallet_impact.png` | — | `assets/approved/fx/` | — | 加工なし。木槌小鬼の木槌投げ |
+| 2026-11-25 | `628dddca-maougun_kaiser_phoenix_fx.zip` | `fx/phoenix_charge.png`・`phoenix_flight.png`・`phoenix_impact.png` | — | `assets/approved/fx/` | — | 加工なし。大魔王の呪文の不死鳥。ゲーム内の名前は「魔王の呪文」（既存作品の技名は使わない） |

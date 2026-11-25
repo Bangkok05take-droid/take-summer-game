@@ -52,7 +52,8 @@ export class Battle {
     this.spawnState = stage.spawns.map((s) => ({ nextAt: s.start ?? 0, fired: false }));
     this.pending = []; // { at, who }
     this.spawnT = 0;
-    this.inFlight = [];       // 飛んでいる最中の攻撃 { at, hits, dmg, src }          // 敵の出現の時計（spawnerOff の間は進まない）
+    this.inFlight = [];       // 飛んでいる最中の攻撃 { at, hits, dmg, src }
+    this.pendingSpells = [];  // 飛んでいる最中の魔王の呪文 { at, cx, damage, radius }          // 敵の出現の時計（spawnerOff の間は進まない）
     this.spawnerOff = false;  // true：敵が出てこない（チュートリアル用）
   }
 
@@ -123,6 +124,10 @@ export class Battle {
     if (!this.spawnerOff) { this.runSpawner(); this.spawnT += dt; }
 
     for (const e of this.entities) { e.px = e.x; this.updateEntity(e, dt); }
+    if (this.pendingSpells.length) {
+      const due = this.pendingSpells.filter((f) => f.at <= this.t + 1e-9);
+      if (due.length) { this.pendingSpells = this.pendingSpells.filter((f) => f.at > this.t + 1e-9); for (const f of due) this.landSpell(f); }
+    }
     if (this.inFlight.length) { // 届いた飛び道具のダメージ
       const due = this.inFlight.filter((f) => f.at <= this.t + 1e-9);
       if (due.length) { this.inFlight = this.inFlight.filter((f) => f.at > this.t + 1e-9); for (const f of due) this.applyHits(f.hits, f.dmg, f.src); }
@@ -498,16 +503,26 @@ export class Battle {
     return best;
   }
 
+  // 2026-11-25：祠の上で炎をため（charge 秒）→ 不死鳥が密集地点へ飛び（距離で flight 秒）→ 着いた瞬間にダメージ。
+  //   当たる範囲は着いた時点で、狙った地点 x から radius 以内の人間軍
   castSpell() {
     const sp = this.config.spell;
     const cx = this.spellCenter();
     this.spellCharge = 0;
     this.stats.spells++;
-    this.events.push({ type: 'spell', x: cx, radius: sp.radius });
+    const charge = sp.fxCharge ?? 0.2;
+    const [lo, hi] = sp.fxFlight || [0.28, 0.4];
+    const flight = lo + (hi - lo) * Math.max(0, Math.min(1, (this.shrine.x - cx) / Math.max(1, this.stage.length)));
+    const delay = charge + flight;
+    this.events.push({ type: 'spell', x: cx, radius: sp.radius, charge, flight, delay });
+    this.pendingSpells.push({ at: this.t + delay, cx, damage: sp.damage, radius: sp.radius });
+  }
+  landSpell(s) {
+    this.events.push({ type: 'spellHit', x: s.cx, radius: s.radius });
     for (const o of this.entities) {
       if (o.side !== 'human' || o.state === 'dead') continue;
-      if (Math.abs(o.x - cx) > sp.radius) continue;
-      this.damageUnit(o, sp.damage, null, true);
+      if (Math.abs(o.x - s.cx) > s.radius) continue;
+      this.damageUnit(o, s.damage, null, true);
     }
   }
 

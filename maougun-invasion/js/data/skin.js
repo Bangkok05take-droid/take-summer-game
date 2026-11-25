@@ -26,6 +26,8 @@ export const SKIN = {
     tiw: 'ティウ', mot: 'モッ', waan: 'ワーン', koi: 'コイ', take: '勇者たけ', sai: '勇者サイ', yanai: 'マスター・ヤナイ',
   },
   sprites: {
+    // 2026-11-25：木槌小鬼（ユーザー承認のデザイン・画像 11481.png）。元画像は背景の市松模様が焼き込まれていたため、端からつながる白・薄灰だけを透明にした（キャラクターは加工なし）。1312×1199・左向き
+    mallet: { src: 'assets/approved/units/mallet.png', frameW: 1312, frameH: 1199, frames: { walk: [0], windup: 0, attack: 0 }, footY: 1180, facing: 'left', scale: 0.046 },
     // 2026-11-25：魔法使い（新デザイン・画像 11497.png。1312×1199・静止画1枚・透過）。絵は右向きなので facing: 'right'（ゲームで左向きに反転）
     area: { src: 'assets/approved/units/area.png', frameW: 1312, frameH: 1199, frames: { walk: [0], windup: 0, attack: 0 }, footY: 1118, facing: 'right', scale: 0.06 },
     // 2026-11-25：こうもり（新デザイン・画像 11496.png。1536×1024・静止画1枚・左向き・透過）。空を飛ぶので浮かせる
@@ -95,6 +97,19 @@ export const SKIN = {
       jackpot: { src: 'assets/approved/fx/imp_jackpot.png', ax: 160, ay: 133, w: 96, life: 0.4, anim: 'pop' },
       fizzle: { src: 'assets/approved/fx/imp_fizzle.png', ax: 96, ay: 122, w: 42, life: 0.6, anim: 'rise' },
     },
+  },
+  /* 木槌小鬼の木槌投げ（2026-11-25・maougun_mallet_throw_fx.zip）。手元からゆるい弧で約1回転し、命中で閃光と木くず・土煙（約0.24秒） */
+  malletThrow: {
+    keys: ['mallet'],
+    shot: { src: 'assets/approved/fx/mallet_projectile.png', ax: 160, ay: 160, w: 34, lift: 34 },
+    impact: { src: 'assets/approved/fx/mallet_impact.png', ax: 160, ay: 140, w: 88, life: 0.24 },
+  },
+  /* 大魔王の呪文の演出（2026-11-25）。祠の上で炎が集まり（charge）→ 不死鳥が左下へ飛び（flight）→ 炎の輪（impact・約0.27秒）。
+   * ゲーム内の呪文名は「魔王の呪文」のまま（既存作品の技名は使わない） */
+  spellPhoenix: {
+    charge: { src: 'assets/approved/fx/phoenix_charge.png', ax: 160, ay: 174, w: 120 },
+    flight: { src: 'assets/approved/fx/phoenix_flight.png', ax: 89, ay: 349, w: 190, angle: Math.atan2(349 - 120, 89 - 330) },
+    impact: { src: 'assets/approved/fx/phoenix_impact.png', ax: 256, ay: 223, life: 0.27 },
   },
   colors: {
     mass: ['#8b5cf6', '#3b1d74'],

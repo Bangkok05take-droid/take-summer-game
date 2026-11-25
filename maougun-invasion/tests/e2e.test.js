@@ -135,7 +135,7 @@ try {
   await ev(() => { window.__game.battle.spellCharge = 999; });
   check('呪文がたまるとボタンが光る', await page.locator('#btnSpell.full').count() === 1 || (await page.waitForTimeout(100), await page.locator('#btnSpell.full').count()) === 1);
   const hp0 = await ev(() => window.__game.battle.entities.filter((e) => e.side === 'human' && e.state !== 'dead').reduce((a, e) => a + e.hp, 0));
-  await page.tap('#btnSpell'); await page.waitForTimeout(150);
+  await page.tap('#btnSpell'); await page.waitForTimeout(900); // 不死鳥が着弾するまで
   const hp1 = await ev(() => window.__game.battle.entities.filter((e) => e.side === 'human' && e.state !== 'dead').reduce((a, e) => a + e.hp, 0));
   check('魔王の呪文で人間軍にダメージ', hp1 < hp0, `${hp0} → ${hp1}`);
 

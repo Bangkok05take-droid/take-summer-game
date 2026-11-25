@@ -77,6 +77,7 @@ export const UNITS = {
     role: '後衛狙撃', attackType: 'sniper', target: 'backline', line: 'back', tier: 1, evolvesTo: 'mallet_2', growth: GROWTH,
     cost: 450, cooldown: 18, hp: 160, atk: 190, range: 330, speed: 30,
     interval: 3.6, windup: 1.4, kb: 2, attack: 'single', projectile: 'hammer', size: 0.8,
+    flight: [0.42, 0.56], // 2026-11-25：投げた木槌が届いた瞬間にダメージ（演出の飛翔時間に合わせる）
   },
 };
 

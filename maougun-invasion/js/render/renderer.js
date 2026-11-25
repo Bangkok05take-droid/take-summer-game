@@ -9,6 +9,9 @@ import { SKIN } from '../data/skin.js';
 // 魔法使いの火球の画像は先に読み込んでおく（最初の1発から出るように）
 if (SKIN.mageFire) preload([SKIN.mageFire.charge.src, SKIN.mageFire.shot.src, SKIN.mageFire.impact.src]);
 if (SKIN.goblinArrow) preload([SKIN.goblinArrow.src]);
+if (SKIN.malletThrow) preload([SKIN.malletThrow.shot.src, SKIN.malletThrow.impact.src]);
+if (SKIN.spellPhoenix) preload([SKIN.spellPhoenix.charge.src, SKIN.spellPhoenix.flight.src, SKIN.spellPhoenix.impact.src]);
+const phoenixReady = () => { const s = SKIN.spellPhoenix; return !!(s && getImage(s.charge.src) && getImage(s.flight.src) && getImage(s.impact.src)); };
 if (SKIN.unitFx) preload(Object.values(SKIN.unitFx).flatMap((u) => Object.values(u).filter((v) => v && v.src).map((v) => v.src)));
 // ユニット別エフェクトの設定（画像が読めていれば返す）
 const ufx = (key, on) => { const d = SKIN.unitFx && SKIN.unitFx[key] && SKIN.unitFx[key][on]; return d && getImage(d.src) ? d : null; };
@@ -96,6 +99,16 @@ export class Renderer {
           if (e && ev.big && ufx(e.key, 'jackpot')) { const d = ufx(e.key, 'jackpot'); this.add({ kind: 'ufx', d, x: ev.to, y: laneY(ev.toLane ?? e.lane) - 30, flip: 1, life: d.life }); break; }
           // 森のお化けの種・悪魔くんの小弾：まっすぐ飛ぶ専用の弾
           if (e && ufx(e.key, 'shot')) { const d = ufx(e.key, 'shot'); const y0 = laneY(e.lane) - 32; this.add({ kind: 'ufxShot', d, from: e.x + e.dir * 10, to: ev.to, y: y0, ty: ev.toLane != null ? laneY(ev.toLane) - 30 : y0, life: ev.delay || 0.26 }); break; }
+          // 木槌小鬼の木槌：手元からゆるい弧で約1回転して飛び、届いたら閃光と木くず・土煙
+          const mt = SKIN.malletThrow;
+          if (e && mt && mt.keys.includes(e.key) && getImage(mt.shot.src)) {
+            const sx = e.x + e.dir * 10; const sy = laneY(e.lane) - this.headDrop(e) * 0.65;
+            const ex = ev.to; const ey = ev.miss ? laneY(e.lane) - 6 : ev.toLane != null ? laneY(ev.toLane) - 22 : GROUND_Y - 50;
+            const fl = ev.delay || 0.45;
+            this.add({ kind: 'mThrow', sx, sy, ex, ey, life: fl });
+            if (getImage(mt.impact.src)) this.add({ kind: 'ufx', d: { ...mt.impact, anim: 'ground' }, x: ex, y: ey + 14, flip: 1, delay: fl, life: fl + mt.impact.life });
+            break;
+          }
           // 弓ゴブリンの矢：弓の位置から放物線で飛び、届いたら黄緑の火花
           const ga = SKIN.goblinArrow;
           if (e && ga && ga.keys.includes(e.key) && getImage(ga.src)) {
@@ -144,7 +157,12 @@ export class Renderer {
           break;
         case 'baseHit': this.baseShake = this.baseShake || { human: 0, demon: 0 }; this.baseShake[ev.side] = 0.15; this.shake = Math.max(this.shake, 2.5); this.add({ kind: 'spark', x: ev.x + (ev.side === 'human' ? 40 : -40), y: GROUND_Y - 60 - Math.random() * 70, color: '#fff', life: 0.25 }); break;
         case 'spell':
+          // 不死鳥：祠の上でため → 狙った地点へ飛ぶ。フラッシュ・揺れ・ダメージは着弾（spellHit）で
+          if (phoenixReady()) { this.add({ kind: 'phx', sx: b.shrine.x - 20, sy: GROUND_Y - 175, tx: ev.x, ty: GROUND_Y + 6, charge: ev.charge, flight: ev.flight, life: ev.charge + ev.flight }); break; }
           this.add({ kind: 'spell', x: ev.x, r: ev.radius, life: 1.2 });
+          break;
+        case 'spellHit':
+          if (phoenixReady()) this.add({ kind: 'phxRing', x: ev.x, y: GROUND_Y + 12, w: Math.max(260, ev.radius * 1.9), life: SKIN.spellPhoenix.impact.life + 0.25 });
           this.shake = 12; this.flashScreen = 0.5;
           break;
         case 'furnace': this.add({ kind: 'ring', x: b.shrine.x, y: GROUND_Y - 90, color: '#ffd36b', life: 0.8, w: 40 }); break;
@@ -451,7 +469,7 @@ export class Renderer {
 
   drawFx(ctx, screen, b) {
     for (const f of this.fx) {
-      const p = f.age / f.life;
+      let p = f.age / f.life;
       if ((f.kind === 'banner') !== screen) continue;
       if (this.approvedFx(ctx, f, p)) continue; // 承認済みのエフェクト画像があれば、そちらで描く
       switch (f.kind) {
@@ -463,8 +481,47 @@ export class Renderer {
           ctx.drawImage(img, -d.ax * k, -d.ay * k, img.naturalWidth * k, img.naturalHeight * k); ctx.restore();
           break;
         }
+        case 'mThrow': { // ゆるい弧＋約1回転。同じ絵を薄く短く重ねて残像
+          const d = SKIN.malletThrow.shot; const img = getImage(d.src); if (!img) break;
+          const pos = (u) => [f.sx + (f.ex - f.sx) * u, f.sy + (f.ey - f.sy) * u - 4 * d.lift * u * (1 - u)];
+          const k = d.w / img.naturalWidth;
+          for (const [lag, al] of [[0.1, 0.18], [0.05, 0.32], [0, 1]]) {
+            const u = Math.max(0, p - lag); const [x, y] = pos(u);
+            ctx.save(); ctx.globalAlpha = al; ctx.translate(x, y); ctx.rotate(-u * Math.PI * 2); ctx.scale(k, k);
+            ctx.drawImage(img, -d.ax, -d.ay); ctx.restore();
+          }
+          break;
+        }
+        case 'phx': { // ため（祠の上で小さく出て広がる）→ 飛翔（左下へ。尾の方向に短い残像）
+          const S = SKIN.spellPhoenix;
+          if (f.age < f.charge) {
+            const img = getImage(S.charge.src); const q = f.age / f.charge;
+            const k = S.charge.w * (0.35 + 0.65 * q) / img.naturalWidth;
+            ctx.save(); ctx.globalAlpha = 0.5 + 0.5 * q; ctx.translate(f.sx, f.sy); ctx.scale(k, k); ctx.drawImage(img, -S.charge.ax, -S.charge.ay); ctx.restore();
+          } else {
+            const img = getImage(S.flight.src); const q = (f.age - f.charge) / f.flight;
+            const ease = q * q * (3 - 2 * q);
+            const k = S.flight.w / img.naturalWidth;
+            const ang = Math.atan2(f.ty - f.sy, f.tx - f.sx) - S.flight.angle;
+            for (const [lag, al] of [[0.16, 0.2], [0.08, 0.4], [0, 1]]) {
+              const u = Math.max(0, ease - lag);
+              ctx.save(); ctx.globalAlpha = al; ctx.translate(f.sx + (f.tx - f.sx) * u, f.sy + (f.ty - f.sy) * u); ctx.rotate(ang); ctx.scale(k, k);
+              ctx.drawImage(img, -S.flight.ax, -S.flight.ay); ctx.restore();
+            }
+          }
+          break;
+        }
+        case 'phxRing': { // 着弾：炎の輪が横へ広がり、火の粉を残して消える
+          const S = SKIN.spellPhoenix.impact; const img = getImage(S.src); if (!img) break;
+          const k = f.w / img.naturalWidth; const sx = 0.55 + 0.55 * Math.min(1, p * 1.6); const sy = 0.75 + 0.25 * Math.min(1, p * 1.6);
+          ctx.save(); ctx.globalAlpha = p < 0.55 ? 1 : 1 - (p - 0.55) / 0.45; ctx.translate(f.x, f.y); ctx.scale(k * sx, k * sy);
+          ctx.drawImage(img, -S.ax, -S.ay); ctx.restore();
+          break;
+        }
         case 'ufx': { // ユニット別エフェクト（1コマ）。動きは anim で付ける
+          if (f.delay && f.age < f.delay) break;
           const d = f.d; const img = getImage(d.src); if (!img) break;
+          if (f.delay) p = (f.age - f.delay) / (f.life - f.delay);
           let sx = 1; let sy = 1; let dy = 0; let a = 1;
           if (d.anim === 'pop') { sx = sy = 0.7 + 0.45 * Math.min(1, p * 2); a = p < 0.5 ? 1 : 1 - (p - 0.5) * 2; }
           else if (d.anim === 'ground') { sx = 0.6 + 0.6 * p; sy = 0.6 + 0.3 * p; a = p < 0.5 ? 1 : 1 - (p - 0.5) * 2; }

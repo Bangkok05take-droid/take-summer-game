@@ -202,7 +202,9 @@ test('魔王の呪文：人間の密集地点を中心に範囲ダメージ', ()
   const lone = b.spawnHuman('swordsman'); lone.x = 1600;
   assert.ok(b.canCastSpell().ok);
   b.queue({ type: 'spell' }); b.step();
-  assert.ok(crowd.every((h) => h.hp <= h.maxHp - CONFIG.spell.damage));
+  assert.ok(crowd.every((h) => h.hp === h.maxHp), '唱えた瞬間はまだ当たらない（不死鳥が飛んでいる）');
+  run(b, 0.7);
+  assert.ok(crowd.every((h) => h.hp <= h.maxHp - CONFIG.spell.damage), '着弾でダメージ');
   assert.equal(lone.hp, lone.maxHp, '密集から離れた1人には当たらない');
 });
 
@@ -453,7 +455,7 @@ test('後衛狙撃：前衛を無視して、射程内の後衛（回復役を�
   const archer = b.spawnHuman('archer'); archer.x = 1120;
   const priest = b.spawnHuman('priest'); priest.x = 1100;
   const hp = [front.hp, archer.hp, priest.hp];
-  b.resolveAttack(m);
+  b.resolveAttack(m); run(b, 0.6); // 木槌が届くまで待つ
   assert.equal(front.hp, hp[0], '前衛には当てない');
   assert.equal(archer.hp, hp[1], '回復役を優先');
   assert.ok(priest.hp < hp[2]);
@@ -462,7 +464,7 @@ test('後衛狙撃：後衛がいなければ前衛に切り替えず空振り�
   const { b, m } = sniperBattle();
   const front = b.spawnHuman('swordsman'); front.x = 1300; const hp = front.hp;
   b.events.length = 0;
-  b.resolveAttack(m);
+  b.resolveAttack(m); run(b, 0.6); // 木槌が届くまで待つ
   assert.equal(front.hp, hp);
   assert.ok(b.events.some((e) => e.type === 'whiff') && b.events.some((e) => e.type === 'shot' && e.miss));
 });
@@ -477,7 +479,7 @@ test('後衛狙撃：敵拠点が射程に入れば、後衛がいなくても�
   const m = b.spawn('demon', b.deckDef('mallet'), 0); m.x = b.base.x + b.base.halfWidth + 200;
   const front = b.spawnHuman('swordsman'); front.x = m.x - 60;
   const hp0 = b.base.hp; const fh = front.hp;
-  b.resolveAttack(m);
+  b.resolveAttack(m); run(b, 0.6); // 木槌が届くまで待つ
   assert.ok(b.base.hp < hp0 && front.hp === fh);
 });
 test('後衛狙撃：高火力・高コスト・低HP・長い構え（ほかの通常モンスターと比べて）', () => {
@@ -508,7 +510,7 @@ test('後衛狙撃：後衛と拠点が両方射程にあるときは後衛を�
   const m = b.spawn('demon', b.deckDef('mallet'), 0); m.x = b.base.x + b.base.halfWidth + 250;
   const priest = b.spawnHuman('priest'); priest.x = m.x - 100;
   const hp0 = b.base.hp; const ph = priest.hp;
-  b.resolveAttack(m);
+  b.resolveAttack(m); run(b, 0.6); // 木槌が届くまで待つ
   assert.ok(priest.hp < ph && b.base.hp === hp0);
 });
 test('飛び道具（弓ゴブリン・魔法使い）は届いた瞬間にダメージ。遠いほど遅く届く', () => {
