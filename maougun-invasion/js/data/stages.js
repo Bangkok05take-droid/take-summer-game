@@ -33,7 +33,9 @@ export const CONFIG = {
 export const CHAPTER1 = { id: 1, name: 'はじまりの村を侵略せよ', stages: ['1-1', '1-2', '1-3'], unlockOnClear: 'charger' };
 // 第2章（2026-11-25）：城下町。旧 1-4「村の門」の敵構成をもとに、後衛（弓兵・僧侶）が多く、最後に強敵「警備隊長」
 export const CHAPTER2 = { id: 2, name: '城下町を制圧せよ', stages: ['2-1', '2-2', '2-3'] };
-export const CHAPTERS = [CHAPTER1, CHAPTER2];
+// 第3章（2026-11-25）：地方王国の城。台本は承認済み。敵編成・ボス・報酬は仮（別途バトル設計）
+export const CHAPTER3 = { id: 3, name: '地方王国の城を攻略せよ', stages: ['3-1', '3-2', '3-3'] };
+export const CHAPTERS = [CHAPTER1, CHAPTER2, CHAPTER3];
 // 全ステージの順番（章をまたいで、前のステージをクリアすると次が開く）
 export const STAGE_ORDER = CHAPTERS.flatMap((c) => c.stages);
 export const chapterOf = (id) => CHAPTERS.find((c) => c.stages.includes(id)) || CHAPTER1;
@@ -206,5 +208,52 @@ export const STAGES = {
     talk: [
       { who: '警備隊長', text: '城下町の守りは、この私が預かっている。魔物ども、ここで終わりだ！' },
     ],
+  },
+  // ---------------- 第3章 地方王国の城（敵編成・ボス・報酬は仮） ----------------
+  '3-1': {
+    id: '3-1', chapter: 3, name: '王国の城門', theme: 'gate',
+    length: L(2400), shrineHp: 7500, baseHp: 7000, enemyScale: 1.3, mana: MANA,
+    spawns: [
+      { who: 'militia', start: 3, every: 4.5, max: 6 },
+      { who: 'swordsman', start: 8, every: 9, max: 4 },
+      { who: 'shield', start: 15, every: 20, max: 2 },
+      { who: 'archer', start: 20, every: 11, max: 3 },
+      { who: 'knight', start: 50, every: 30, max: 1 },
+      { who: 'priest', start: 60, every: 26, max: 1 },
+      { who: 'rider', start: 80, every: 15, max: 2 },
+      { trigger: { baseBelow: 0.6 }, wave: [{ who: 'knight', count: 1 }, { who: 'swordsman', count: 3 }, { who: 'archer', count: 2 }], gap: 0.6 },
+      { trigger: { baseBelow: 0.3 }, wave: [{ who: 'shield', count: 2 }, { who: 'rider', count: 3 }, { who: 'priest', count: 1 }], gap: 0.6 },
+    ],
+    reward: { stones: 320 },
+  },
+  '3-2': {
+    id: '3-2', chapter: 3, name: '王国騎士団', theme: 'gate',
+    length: L(2400), shrineHp: 8000, baseHp: 7500, enemyScale: 1.35, mana: MANA,
+    spawns: [
+      { who: 'swordsman', start: 3, every: 7, max: 4 },
+      { who: 'knight', start: 10, every: 18, max: 2 },
+      { who: 'archer', start: 15, every: 10, max: 3 },
+      { who: 'priest', start: 30, every: 22, max: 2 },
+      { who: 'rider', start: 40, every: 14, max: 3 },
+      { who: 'knight', start: 110, every: 14, max: 3 },
+      { trigger: { baseBelow: 0.6 }, wave: [{ who: 'knight', count: 2 }, { who: 'priest', count: 1 }, { who: 'archer', count: 2 }], gap: 0.6 },
+      { trigger: { baseBelow: 0.3 }, wave: [{ who: 'knight', count: 2 }, { who: 'rider', count: 3 }], gap: 0.6 },
+    ],
+    reward: { stones: 340 },
+  },
+  '3-3': {
+    id: '3-3', chapter: 3, name: '王の間', theme: 'plaza', boss: true,
+    length: L(2500), shrineHp: 8500, baseHp: 7000, enemyScale: 1.3, mana: { ...MANA, start: 400 },
+    spawns: [
+      { who: 'swordsman', start: 2, every: 7, max: 4 },
+      { who: 'knight', start: 12, every: 20, max: 2 },
+      { who: 'archer', start: 15, every: 11, max: 3 },
+      { who: 'shield', start: 25, every: 24, max: 2 },
+      { who: 'priest', start: 40, every: 24, max: 2 },
+      { who: 'rider', start: 55, every: 14, max: 3 },
+      { trigger: { baseBelow: 0.6 }, hero: 'king', wave: [{ who: 'king', count: 1 }, { who: 'knight', count: 2 }, { who: 'priest', count: 1 }], gap: 0.8 },
+      { trigger: { baseBelow: 0.25 }, wave: [{ who: 'knight', count: 2 }, { who: 'rider', count: 3 }, { who: 'archer', count: 2 }], gap: 0.5 },
+    ],
+    reward: { stones: 450 },
   },
 };

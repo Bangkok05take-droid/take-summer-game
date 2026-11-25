@@ -43,6 +43,21 @@ export const HUMANS = {
     hits: 2, hitGap: 0.2,
     skills: [{ id: 'wave', name: '鋭い一閃', type: 'wave', every: 8, first: 4, windup: 0.8, recover: 0.4, reach: 280, mult: 1.8 }],
   },
+  // ---- 第3章（2026-11-25・仮）。絵は届くまで既存の兵士の絵を大きくして使う ----
+  knight: {
+    name: '王国騎士', role: '重装前衛',
+    note: 'よく訓練された硬い騎士。小さな魔物では押し返せない', counter: '岩男で受け止め、魔法使いの範囲・木槌小鬼の重い一撃で崩す',
+    hp: 900, atk: 34, range: 36, speed: 26, interval: 1.7, windup: 0.45, kb: 3, attack: 'single', guard: 0.15, noKbFromSmall: true, mana: 110, size: 1.1,
+  },
+  king: {
+    name: '国王', role: '強敵', hero: true, noKbFromSmall: true,
+    note: '号令で仲間を回復し、王家の剣で前方の魔物を吹き飛ばす', counter: '後衛（僧侶）を木槌小鬼で先に倒し、呪文と幹部で押し切る',
+    hp: 2800, atk: 34, range: 44, speed: 24, interval: 1.8, windup: 0.5, kb: 6, attack: 'single', mana: 400, size: 1.35,
+    skills: [
+      { id: 'heal', name: '王の号令', type: 'heal', every: 14, first: 6, windup: 0.6, recover: 0.4, radius: 220, ratio: 0.1 },
+      { id: 'wave', name: '王家の剣', type: 'wave', every: 9, first: 6, windup: 0.9, recover: 0.4, reach: 240, mult: 1.6 },
+    ],
+  },
   // ---- 勇者（1-5 のボス）。拠点HPの割合で1回だけ登場。倒すと撤退 ----
   take: {
     name: '勇者たけ', role: '勇者', hero: true, noKbFromSmall: true,

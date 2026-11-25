@@ -292,6 +292,31 @@ try {
   check('説明の途中でエラーが無い', e4.length === 0, e4.join(' / '));
   await ctx4.close();
 
+  // ---- 第3章：会話が台本どおりの順番で流れる ----
+  const ctx5 = await browser.newContext({ ...devices['iPhone 13 landscape'] });
+  const p5 = await ctx5.newPage();
+  const e5 = []; p5.on('pageerror', (e) => e5.push(String(e)));
+  await p5.goto(`http://localhost:${PORT}/?seed=5`); await p5.waitForFunction(() => window.__game);
+  await p5.evaluate(async () => { const m = await import('./js/data/progress.js'); const g = window.__game; const p = m.newProfile(); for (const id of ['1-1', '1-2', '1-3', '2-1', '2-2', '2-3']) m.applyResult(p, id, 'win', 100); Object.assign(p.story, { opening: true, 'tip:recon': true, 'tip:form': true, 'tip:upgrade': true }); g.app.profile = p; m.saveProfile(p); g.toSelect(); });
+  await p5.waitForTimeout(200);
+  check('第2章クリア後は第3章「地方王国の城を攻略せよ」が開く', (await p5.locator('#selChapName').textContent()) === '地方王国の城を攻略せよ' && !(await p5.locator('.node[data-stage="3-1"]').isDisabled()));
+  const readTalk = async () => { const out = []; for (let i = 0; i < 30 && await p5.locator('#scTalk').isVisible(); i++) { out.push(`${await p5.locator('#talkWho').textContent()}：${await p5.locator('#talkText').textContent()}`); await p5.tap('#talkBox'); await p5.waitForTimeout(40); } return out; };
+  await p5.tap('.node[data-stage="3-1"]', { force: true }); await p5.waitForTimeout(150);
+  const t31 = await readTalk();
+  const want31 = ['ヴェイル：大魔王様、王国の城に到着しました。これまでとは比べものにならないほど立派な城です。', '大魔王：ほほう！ なかなか立派ではないか。わしの新しい住みかにちょうどよい！', 'ヴェイル：大魔王様は、まだ祠から出られませんが。', '大魔王：……わかっとるわ！！', '王国兵：魔物の軍勢が来たぞ！ 城門を守れ！'];
+  check('3-1 戦闘前の会話が台本どおりの順番（差し込みなし）', JSON.stringify(t31) === JSON.stringify(want31), JSON.stringify(t31));
+  check('会話のあとは偵察報告へ', await p5.locator('#scRecon').isVisible());
+  // 3-3 の勝利後
+  await p5.evaluate(async () => { const m = await import('./js/data/progress.js'); const g = window.__game; for (const id of ['3-1', '3-2']) m.applyResult(g.app.profile, id, 'win', 100); g.app.profile.story['before:3-3'] = true; g.startStage('3-3'); });
+  await p5.waitForTimeout(200);
+  await p5.evaluate(() => { const b = window.__game.battle; b.damageBase(b.base, b.base.hp); });
+  await p5.waitForSelector('#scResult:not([hidden])', { timeout: 3000 });
+  await p5.tap('#btnReport'); await p5.waitForTimeout(150);
+  const t33 = await readTalk();
+  check('3-3 勝利後：15行・「まったく……」→「――第3章クリア。」→ 伏線 の順', t33.length === 15 && t33[9].endsWith('まったく……いつになったら、この祠から出られるんじゃ……。') && t33[10] === '：――第3章クリア。' && t33[14] === '：――竜人オルドとの遭遇へ続く。', JSON.stringify(t33.slice(8)));
+  check('第3章でエラーが無い', e5.length === 0, e5.join(' / '));
+  await ctx5.close();
+
   // ---- 縦持ち ----
   const ctx2 = await browser.newContext({ ...devices['iPhone 13'] });
   const p2 = await ctx2.newPage();

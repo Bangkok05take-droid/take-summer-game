@@ -555,10 +555,34 @@ test('第2章（城下町）：3ステージ。順に開き、2-3 は警備隊�
   const p = newProfile();
   for (const id of CHAPTER1.stages) applyResult(p, id, 'win', 100);
   for (const id of ['2-1', '2-2', '2-3']) { assert.ok(isStageOpen(p, id), id); applyResult(p, id, 'win', 100); }
-  assert.equal(nextStage(p), null);
+  assert.equal(nextStage(p), '3-1', '第2章をクリアすると第3章へ');
   assert.equal(lordLevel(p), 7);
   assert.ok(STAGES['2-3'].spawns.some((s) => s.hero === 'captain'));
   const b = makeBattle({ stageId: '2-3', seed: 1 });
   b.damageBase(b.base, b.base.hp - b.base.maxHp * 0.59); run(b, 3);
   assert.ok(b.entities.some((e) => e.key === 'captain'), '拠点HP60%で警備隊長');
+});
+
+test('第3章（地方王国の城）：3ステージ。台本どおりの順番・話し手', async () => {
+  const { STORY } = await import('../js/data/story.js');
+  const { CHAPTER3 } = await import('../js/data/stages.js');
+  assert.deepEqual(CHAPTER3.stages, ['3-1', '3-2', '3-3']);
+  assert.equal(CHAPTER3.name, '地方王国の城を攻略せよ');
+  for (const id of CHAPTER3.stages) assert.ok(!STAGES[id].talk, `${id} は自動の差し込み（talk）を使わない`);
+  const who = (id, k) => STORY[k][id].map((l) => l.who).join(',');
+  assert.equal(who('3-1', 'before'), 'aide,lord,aide,lord,王国兵');
+  assert.equal(who('3-2', 'before'), 'aide,王国騎士,lord,aide,lord');
+  assert.equal(who('3-3', 'before'), '国王,aide,lord');
+  assert.equal(STORY.before['3-2'][4].text, 'わしは本当に偉いのじゃ！！');
+  assert.equal(STORY.after['3-3'].length, 15);
+  assert.equal(STORY.after['3-3'][9].text, 'まったく……いつになったら、この祠から出られるんじゃ……。');
+  assert.equal(STORY.after['3-3'][10].text, '――第3章クリア。');
+  const p = newProfile();
+  for (const id of [...CHAPTER1.stages, '2-1', '2-2', '2-3', '3-1', '3-2']) applyResult(p, id, 'win', 100);
+  assert.ok(isStageOpen(p, '3-3'));
+  applyResult(p, '3-3', 'win', 100);
+  assert.equal(nextStage(p), null);
+  const b = makeBattle({ stageId: '3-3', seed: 1 });
+  b.damageBase(b.base, b.base.hp - b.base.maxHp * 0.59); run(b, 3);
+  assert.ok(b.entities.some((e) => e.key === 'king'), '王の間：拠点HP60%で国王');
 });

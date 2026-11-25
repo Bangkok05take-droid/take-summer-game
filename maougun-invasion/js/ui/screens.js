@@ -19,7 +19,7 @@ const fmtTime = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padSt
 // ---------- ステージ選択 ----------
 // 地図の上の位置（%）：左下の見張り小屋から、右上の村の広場へ
 // 地図の上の位置（%）。章ごとに3つ
-const NODE_POS = { '1-1': [18, 66], '1-2': [50, 36], '1-3': [82, 62], '2-1': [18, 40], '2-2': [50, 66], '2-3': [82, 40] };
+const NODE_POS = { '1-1': [18, 66], '1-2': [50, 36], '1-3': [82, 62], '2-1': [18, 40], '2-2': [50, 66], '2-3': [82, 40], '3-1': [18, 66], '3-2': [50, 38], '3-3': [82, 62] };
 
 // ch：表示する章（CHAPTERS の1つ）。onChapter(ch)：章のタブを押したとき
 export function renderSelect(p, onPick, ch = CHAPTER1, onChapter = null) {
@@ -76,7 +76,7 @@ export function renderSelect(p, onPick, ch = CHAPTER1, onChapter = null) {
 
 // ---------- 会話 ----------
 const SIDE = { lord: 'left', aide: 'right', take: 'right', sai: 'right', tiw: 'left', mot: 'left', waan: 'left', koi: 'left', yanai: 'left' };
-const HUMAN_SPEAKERS = ['take', 'sai', 'tiw', 'mot', 'waan', 'koi', 'yanai', '門番', '商人', '警備隊長'];
+const HUMAN_SPEAKERS = ['take', 'sai', 'tiw', 'mot', 'waan', 'koi', 'yanai', '門番', '商人', '警備隊長', '王国兵', '王国騎士', '国王'];
 
 export class TalkPlayer {
   constructor() {
@@ -144,11 +144,13 @@ export class TalkPlayer {
 
 // ---------- 戦利品 ----------
 export function renderLoot(stageId, res, firstClear) {
+  // 手がかりが決まっていないステージ（第3章など）は、魔界石だけの表示にする
   const loot = LOOT[stageId];
+  const showLoot = firstClear && !!loot;
   const c = $('lootIcon').getContext('2d');
   c.clearRect(0, 0, 96, 96);
   const icon = getImage(SKIN.ui && SKIN.ui['loot_' + stageId]); // 承認済みのアイコンがあればそれを
-  if (icon && firstClear) c.drawImage(icon, 0, 0, 96, 96);
+  if (icon && showLoot) c.drawImage(icon, 0, 0, 96, 96);
   else {
   // 巻いた古い地図（仮の絵）
   c.fillStyle = '#e8d4a0'; c.strokeStyle = '#7a5a2a'; c.lineWidth = 3;
@@ -157,8 +159,8 @@ export function renderLoot(stageId, res, firstClear) {
   c.beginPath(); c.moveTo(26, 66); c.quadraticCurveTo(44, 30, 70, 40); c.stroke(); c.setLineDash([]);
   c.strokeStyle = '#b0452a'; c.lineWidth = 3; c.beginPath(); c.moveTo(64, 34); c.lineTo(76, 46); c.moveTo(76, 34); c.lineTo(64, 46); c.stroke();
   }
-  $('lootName').textContent = firstClear ? loot.name : '戦利品の魔界石';
-  $('lootDesc').textContent = firstClear ? loot.desc : 'すでに制圧した場所から、魔界石を回収した。';
+  $('lootName').textContent = showLoot ? loot.name : '戦利品の魔界石';
+  $('lootDesc').textContent = showLoot ? loot.desc : firstClear ? '制圧した場所から、魔界石を回収した。' : 'すでに制圧した場所から、魔界石を回収した。';
   const gains = [`魔界石 <b>+${res.stones}</b>`];
   if (firstClear) gains.push('封印がゆるみ、大魔王の魔力が戻った：最大魔力 <b>+60</b>・魔力回復 <b>+1.5/秒</b>');
   if (res.slotsUp) gains.push(`支配力が戻った：編成枠が <b>通常${res.slotsUp.units}＋幹部${res.slotsUp.bosses}</b> に！`);
