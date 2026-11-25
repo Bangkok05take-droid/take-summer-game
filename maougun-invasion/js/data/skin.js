@@ -29,6 +29,34 @@ export const SKIN = {
   // エンディングのムービー（保留中・2026-11-25）。{ src: 'assets/approved/movie/…mp4', replaces: ['lines'] } を入れると、その段の代わりに動画を流す
   movies: { ending: null },
   sprites: {
+    // 2026-11-25：素材 batch03（ビジュアル制作室・maougun_assets_batch03.zip・manifest.csv）。26体の個別透過PNG・右向き・静止画1コマ。絵は変更なし
+    // 倍率：通常兵 256×256 は基本の兵士と同じ 0.25／ボス 384×384 は 0.23（兵士の約1.4倍）／勇者 0.245（約1.5倍）／聖竜は manifest どおりボスの1.65倍（0.38）
+    naval_soldier: { src: 'assets/approved/humans/naval_soldier.png', frameW: 256, frameH: 256, frames: { walk: [0], windup: 0, attack: 0 }, footY: 239, facing: 'right', scale: 0.25 },
+    harbor_captain: { src: 'assets/approved/humans/port_commander.png', frameW: 384, frameH: 384, frames: { walk: [0], windup: 0, attack: 0 }, footY: 367, facing: 'right', scale: 0.23 },
+    heavy: { src: 'assets/approved/humans/heavy_infantry.png', frameW: 256, frameH: 256, frames: { walk: [0], windup: 0, attack: 0 }, footY: 239, facing: 'right', scale: 0.25 },
+    engineer: { src: 'assets/approved/humans/engineer.png', frameW: 256, frameH: 256, frames: { walk: [0], windup: 0, attack: 0 }, footY: 240, facing: 'right', scale: 0.25 },
+    turret: { src: 'assets/approved/humans/mobile_cannon.png', frameW: 256, frameH: 256, frames: { walk: [0], windup: 0, attack: 0 }, footY: 239, facing: 'right', scale: 0.25 },
+    commander: { src: 'assets/approved/humans/fortress_commander.png', frameW: 384, frameH: 384, frames: { walk: [0], windup: 0, attack: 0 }, footY: 367, facing: 'right', scale: 0.23 },
+    ancient_soldier: { src: 'assets/approved/humans/ancient_soldier.png', frameW: 256, frameH: 256, frames: { walk: [0], windup: 0, attack: 0 }, footY: 239, facing: 'right', scale: 0.25 },
+    guardian: { src: 'assets/approved/humans/ancient_guardian.png', frameW: 256, frameH: 256, frames: { walk: [0], windup: 0, attack: 0 }, footY: 240, facing: 'right', scale: 0.25 },
+    ancient_priest: { src: 'assets/approved/humans/ancient_priest.png', frameW: 256, frameH: 256, frames: { walk: [0], windup: 0, attack: 0 }, footY: 239, facing: 'right', scale: 0.25 },
+    ancient_king: { src: 'assets/approved/humans/ancient_king.png', frameW: 384, frameH: 384, frames: { walk: [0], windup: 0, attack: 0 }, footY: 367, facing: 'right', scale: 0.23 },
+    paladin: { src: 'assets/approved/humans/holy_knight.png', frameW: 256, frameH: 256, frames: { walk: [0], windup: 0, attack: 0 }, footY: 239, facing: 'right', scale: 0.25 },
+    high_priest: { src: 'assets/approved/humans/high_priest.png', frameW: 256, frameH: 256, frames: { walk: [0], windup: 0, attack: 0 }, footY: 240, facing: 'right', scale: 0.25 },
+    holy_captain: { src: 'assets/approved/humans/holy_knight_commander.png', frameW: 384, frameH: 384, frames: { walk: [0], windup: 0, attack: 0 }, footY: 367, facing: 'right', scale: 0.23 },
+    mage: { src: 'assets/approved/humans/fire_mage.png', frameW: 256, frameH: 256, frames: { walk: [0], windup: 0, attack: 0 }, footY: 239, facing: 'right', scale: 0.25 },
+    ice_mage: { src: 'assets/approved/humans/ice_mage.png', frameW: 256, frameH: 256, frames: { walk: [0], windup: 0, attack: 0 }, footY: 239, facing: 'right', scale: 0.25 },
+    magic_knight: { src: 'assets/approved/humans/magic_knight.png', frameW: 256, frameH: 256, frames: { walk: [0], windup: 0, attack: 0 }, footY: 239, facing: 'right', scale: 0.25 },
+    archmage: { src: 'assets/approved/humans/archmage.png', frameW: 384, frameH: 384, frames: { walk: [0], windup: 0, attack: 0 }, footY: 367, facing: 'right', scale: 0.23 },
+    royal_guard: { src: 'assets/approved/humans/royal_guard.png', frameW: 256, frameH: 256, frames: { walk: [0], windup: 0, attack: 0 }, footY: 239, facing: 'right', scale: 0.25 },
+    royal_guard_cavalry: { src: 'assets/approved/humans/royal_guard_cavalry.png', frameW: 256, frameH: 256, frames: { walk: [0], windup: 0, attack: 0 }, footY: 240, facing: 'right', scale: 0.25 },
+    supreme_commander: { src: 'assets/approved/humans/supreme_commander.png', frameW: 384, frameH: 384, frames: { walk: [0], windup: 0, attack: 0 }, footY: 367, facing: 'right', scale: 0.23 },
+    sky_guard: { src: 'assets/approved/humans/celestial_soldier.png', frameW: 256, frameH: 256, frames: { walk: [0], windup: 0, attack: 0 }, footY: 240, facing: 'right', scale: 0.25 },
+    celestial_mage: { src: 'assets/approved/humans/celestial_mage.png', frameW: 256, frameH: 256, frames: { walk: [0], windup: 0, attack: 0 }, footY: 240, facing: 'right', scale: 0.25 },
+    celestial_knight: { src: 'assets/approved/humans/celestial_knight.png', frameW: 256, frameH: 256, frames: { walk: [0], windup: 0, attack: 0 }, footY: 240, facing: 'right', scale: 0.25 },
+    holy_dragon: { src: 'assets/approved/humans/holy_dragon.png', frameW: 384, frameH: 384, frames: { walk: [0], windup: 0, attack: 0 }, footY: 368, facing: 'right', scale: 0.46 }, // 大型ボス：ボスの2倍
+    take: { src: 'assets/approved/humans/hero_take.png', frameW: 384, frameH: 384, frames: { walk: [0], windup: 0, attack: 0 }, footY: 368, facing: 'right', scale: 0.245 },
+    sai: { src: 'assets/approved/humans/hero_sai.png', frameW: 384, frameH: 384, frames: { walk: [0], windup: 0, attack: 0 }, footY: 368, facing: 'right', scale: 0.245 },
     // 2026-11-25：マスター・ヤナイ（承認済みデザイン・個別の透過画像 1254×1254・右向き。PNGに保存しただけで絵は変更なし）。最終ボスなので兵士の約1.6倍
     yanai: { src: 'assets/approved/humans/master_yanai.png', frameW: 1254, frameH: 1254, frames: { walk: [0], windup: 0, attack: 0 }, footY: 1202, facing: 'right', scale: 0.105 },
     // 2026-11-25：第1〜3章の追加キャラクター（ビジュアル制作室・11528.png の5体を1体ずつに切り出し。絵は変更なし）。右向き。足元は不透明部分の下端

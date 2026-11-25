@@ -1,0 +1,27 @@
+filename,frames,frame_width,frame_height,direction,user_approved,notes
+humans/naval_soldier.png,1,256,256,right,yes,static
+humans/port_commander.png,1,384,384,right,yes,static
+humans/heavy_infantry.png,1,256,256,right,yes,static
+humans/engineer.png,1,256,256,right,yes,static
+humans/mobile_cannon.png,1,256,256,right,yes,static
+humans/fortress_commander.png,1,384,384,right,yes,static
+humans/ancient_soldier.png,1,256,256,right,yes,static
+humans/ancient_guardian.png,1,256,256,right,yes,static
+humans/ancient_priest.png,1,256,256,right,yes,static
+humans/ancient_king.png,1,384,384,right,yes,static
+humans/holy_knight.png,1,256,256,right,yes,static
+humans/high_priest.png,1,256,256,right,yes,static
+humans/holy_knight_commander.png,1,384,384,right,yes,static
+humans/fire_mage.png,1,256,256,right,yes,static
+humans/ice_mage.png,1,256,256,right,yes,static
+humans/magic_knight.png,1,256,256,right,yes,static
+humans/archmage.png,1,384,384,right,yes,static
+humans/royal_guard.png,1,256,256,right,yes,static
+humans/royal_guard_cavalry.png,1,256,256,right,yes,static
+humans/supreme_commander.png,1,384,384,right,yes,static
+humans/celestial_soldier.png,1,256,256,right,yes,static
+humans/celestial_mage.png,1,256,256,right,yes,static
+humans/celestial_knight.png,1,256,256,right,yes,static
+humans/holy_dragon.png,1,384,384,right,yes,static; render at 1.65x native size for boss scale
+humans/hero_take.png,1,384,384,right,yes,static
+humans/hero_sai.png,1,384,384,right,yes,static
