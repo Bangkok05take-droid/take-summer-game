@@ -82,7 +82,7 @@ export const SKIN = {
       chapter5: { src: 'assets/approved/bg/ch5_fortress.png', scale: 0.95, offsetY: -147, parallax: 0.35, focus: 0.5 }, // 2026-11-25：鉄鋼の要塞都市の本番背景（2172×724・道の上端 y≈552）。4ステージ共通
       chapter6: { src: 'assets/approved/bg/ch6_desert.png', scale: 0.85, offsetY: -75, parallax: 0.35, focus: 0.5 }, // 2026-11-25：砂漠の古代王国の本番背景（2172×724・道の上端 y≈532）。3ステージ共通
       chapter10: { src: 'assets/approved/bg/ch3_castle_v2.png', scale: 1.22, offsetY: -358, parallax: 0.35, focus: 0.5, tint: 'rgba(220,235,255,.4)' }, // 仮：天空背景（未着）。5ステージ共通
-      chapter9: { src: 'assets/approved/bg/ch3_castle_v2.png', scale: 1.22, offsetY: -358, parallax: 0.35, focus: 0.5, tint: 'rgba(60,40,90,.25)' }, // 仮：王都の背景（未着）。4ステージ共通
+      chapter9: { src: 'assets/approved/bg/ch9_capital.png', scale: 0.85, offsetY: -75, parallax: 0.35, focus: 0.5 }, // 2026-11-25：人間界の王都の本番背景（2172×724・道の上端 y≈533）。4ステージ共通
       chapter8: { src: 'assets/approved/bg/ch8_magic.png', scale: 0.85, offsetY: -75, parallax: 0.35, focus: 0.5 }, // 2026-11-25：魔法都市の本番背景（2172×724・道の上端 y≈533）。4ステージ共通
       chapter7: { src: 'assets/approved/bg/ch7_holy.png', scale: 0.95, offsetY: -147, parallax: 0.35, focus: 0.5 }, // 2026-11-25：聖なる都の本番背景（2172×724・道の上端 y≈553）。2ステージ共通
       chapter3: { src: 'assets/approved/bg/ch3_castle_v2.png', scale: 1.22, offsetY: -358, parallax: 0.35, focus: 0.5 },
