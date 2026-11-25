@@ -38,6 +38,7 @@ npm run balance        # ボットで全5ステージのクリア時間を確認
 | [docs/UNITS.md](docs/UNITS.md) | 魔王軍ユニット（通常8枠・幹部5枠・大魔王、数値、進化の仕組み） |
 | [docs/ASSET_MAP.md](docs/ASSET_MAP.md) | **素材の組み込み先・状態・不足素材の一覧**（担当：デザインは ChatGPT、承認はユーザー、組み込みは Claude Code） |
 | [docs/ASSET_SOURCES.md](docs/ASSET_SOURCES.md) | 取り込んだ承認済み素材の出どころ（自動記録） |
+| [docs/ROADMAP.md](docs/ROADMAP.md) | 全10章・36ステージの方針・名前の置き換え・章を増やす前に必要な実装 |
 | [docs/CHATGPT_BG_FIX.md](docs/CHATGPT_BG_FIX.md) | ChatGPT への背景修正の依頼文（1-1 の見張り台・1-2 の祠を消す） |
 | [docs/ART_SPEC.md](docs/ART_SPEC.md) | ChatGPT に依頼する素材の仕様（寸法・向き・コマ数・ファイル名） |
 | [docs/STORY.md](docs/STORY.md) | 第1章のストーリー・人物・演出の流れ・手がかり |
