@@ -1038,3 +1038,22 @@ test('第6〜7章の追加キャラクター：古代兵士・古代神官・高
     assert.ok(b.entities.some((e) => e.key === hero), id);
   }
 });
+
+test('第8〜9章の追加キャラクター：火炎・氷結魔導士・魔法騎士・近衛兵・近衛騎兵。第9章は過去の章の兵種も総動員', async () => {
+  const { SKIN } = await import('../js/data/skin.js');
+  const used = (id) => STAGES[id].spawns.flatMap((x) => x.who ? [x.who] : x.wave.map((w) => w.who));
+  assert.equal(HUMANS.mage.name, '火炎魔導士');
+  for (const id of ['8-1', '8-2', '8-3', '8-4']) assert.ok(used(id).includes('magic_knight') && used(id).includes('ice_mage') && used(id).includes('mage'), id);
+  for (const id of ['9-1', '9-2', '9-3', '9-4']) assert.ok(used(id).includes('royal_guard'), id);
+  assert.ok(['9-1', '9-2', '9-4'].every((id) => used(id).includes('royal_guard_cavalry')));
+  const ch9 = new Set(['9-1', '9-2', '9-3', '9-4'].flatMap(used));
+  for (const k of ['naval_soldier', 'engineer', 'ancient_soldier', 'court_mage', 'high_priest', 'heavy', 'guardian', 'paladin', 'knight', 'mage', 'ice_mage', 'magic_knight']) assert.ok(ch9.has(k), '第9章に過去の兵種：' + k);
+  assert.ok(HUMANS.supreme_commander.skills.some((k) => k.name === '巨大な大剣'));
+  assert.equal(SKIN.images.finalBg, 'assets/approved/bg/ch10_sky.png');
+  for (const [id, hero] of [['8-4', 'archmage'], ['9-4', 'supreme_commander']]) {
+    const row = STAGES[id].spawns.find((x) => x.hero === hero);
+    const b = makeBattle({ stageId: id, seed: 1 });
+    b.damageBase(b.base, b.base.hp - b.base.maxHp * (row.trigger.baseBelow - 0.01)); run(b, 3);
+    assert.ok(b.entities.some((e) => e.key === hero), id);
+  }
+});

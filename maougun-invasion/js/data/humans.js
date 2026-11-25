@@ -174,8 +174,8 @@ export const HUMANS = {
   },
   // ---- 第8章（2026-11-25・仮）。魔導兵・魔導士団長・大魔導士のデザインは未承認なので、絵は既存の兵士（見習い僧侶）の代用 ----
   mage: {
-    name: '魔導兵', role: '後衛（魔法）', line: 'back',
-    note: '後ろから魔法弾を撃つ。打たれ弱い', counter: '木槌小鬼で後ろから倒すか、こうもりで一気に近づく',
+    name: '火炎魔導士', // 2026-11-25：魔導兵から名前を変更（キーはそのまま） role: '後衛（魔法）', line: 'back',
+    note: '後ろから炎の魔法を撃つ。打たれ弱い', counter: '木槌小鬼で後ろから倒すか、こうもりで一気に近づく',
     hp: 420, atk: 30, range: 200, speed: 26, interval: 2.4, windup: 0.6, kb: 2, attack: 'single', projectile: 'orb', mana: 110, size: 1.0,
   },
   elite_mage: {
@@ -199,6 +199,28 @@ export const HUMANS = {
       { id: 'stun', name: '束縛の魔法', type: 'stun', every: 14, first: 9, windup: 0.9, recover: 0.4, reach: 220, duration: 1.8 },
     ],
   },
+  // ---- 第8〜9章の追加キャラクター（2026-11-25・承認済みデザイン。個別の透過PNGが届くまで絵は既存の兵士の代用） ----
+  ice_mage: {
+    name: '氷結魔導士', role: '後衛（魔法）', line: 'back',
+    note: '後ろから氷の魔法を撃ち、ときどき凍らせて足を止める', counter: '木槌小鬼で後ろから倒すか、こうもりで一気に近づく',
+    hp: 300, atk: 20, range: 190, speed: 26, interval: 2.6, windup: 0.6, kb: 2, attack: 'single', projectile: 'orb', mana: 110, size: 1.0,
+    skills: [{ id: 'stun', name: '凍てつく氷', type: 'stun', every: 14, first: 8, windup: 0.8, recover: 0.4, reach: 200, duration: 1.0 }],
+  },
+  magic_knight: {
+    name: '魔法騎士', role: '前衛',
+    note: '魔力を宿した剣で斬りかかる騎士', counter: '闇の騎士と岩男で受け止め、魔法使いで崩す',
+    hp: 520, atk: 32, range: 36, speed: 30, interval: 1.5, windup: 0.4, kb: 3, attack: 'single', guard: 0.1, mana: 110, size: 1.05,
+  },
+  royal_guard: {
+    name: '王国近衛兵', role: '重装前衛',
+    note: '王都を守る近衛兵。剣と盾で守りを固め、とても打たれ強い', counter: '魔法使いの範囲と木槌小鬼の重い一撃で崩す',
+    hp: 440, atk: 26, range: 36, speed: 28, interval: 1.6, windup: 0.45, kb: 3, attack: 'single', guard: 0.15, noKbFromSmall: true, mana: 120, size: 1.05,
+  },
+  royal_guard_cavalry: {
+    name: '王国近衛騎兵', role: '高速',
+    note: '大きなランスを構えて一気に突っ込んでくる', counter: '岩男で受け止め、まとめて倒す',
+    hp: 520, atk: 38, range: 40, speed: 80, interval: 1.4, windup: 0.35, kb: 4, attack: 'single', noKbFromSmall: true, mana: 120, size: 1.15,
+  },
   // ---- 第9章（2026-11-25・仮）。王国軍指揮官・人間軍総司令官のデザインは未承認なので、絵は見習い剣士の代用 ----
   royal_commander: {
     name: '王国軍指揮官', role: '強敵', hero: true, noKbFromSmall: true,
@@ -211,11 +233,11 @@ export const HUMANS = {
   },
   supreme_commander: {
     name: '人間軍総司令官', role: '強敵', hero: true, noKbFromSmall: true,
-    note: '人間軍の全軍を率いる。号令で仲間を回復し、総攻撃の合図でなぎ払い、魔物を気絶させる', counter: '回復役を先に倒し、最上位の魔物・呪文・幹部で一気に押し切る',
+    note: '人間軍の全軍を率いる。号令で仲間を回復し、巨大な大剣でなぎ払い、威圧で魔物を気絶させる', counter: '回復役を先に倒し、最上位の魔物・呪文・幹部で一気に押し切る',
     hp: 3400, atk: 48, range: 46, speed: 22, interval: 1.8, windup: 0.5, kb: 6, attack: 'single', guard: 0.2, mana: 1000, size: 1.6,
     skills: [
       { id: 'heal', name: '総司令官の号令', type: 'heal', every: 24, first: 10, windup: 0.6, recover: 0.4, radius: 220, ratio: 0.05 },
-      { id: 'wave', name: '総攻撃', type: 'wave', every: 16, first: 6, windup: 1.2, recover: 0.4, reach: 250, mult: 1.4 },
+      { id: 'wave', name: '巨大な大剣', type: 'wave', every: 16, first: 6, windup: 1.2, recover: 0.4, reach: 250, mult: 1.4 },
       { id: 'stun', name: '威圧', type: 'stun', every: 15, first: 9, windup: 0.9, recover: 0.4, reach: 200, duration: 1.6 },
     ],
   },

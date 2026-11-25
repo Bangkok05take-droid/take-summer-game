@@ -64,8 +64,8 @@ export const SKIN = {
   /* 画面の各場所に入れる承認済み画像（場所と仕様の一覧：docs/ASSET_MAP.md）。
    * 未登録・読み込み失敗のときは、今の仮の表示に戻る。見た目は変えず、拡大縮小と位置だけ指定する。 */
   images: {
-    // 最終章解放演出の背景（承認済み天空背景）。届いたら 'assets/approved/bg/…' を入れる。null のあいだは夜空のグラデーション
-    finalBg: null,
+    // 最終章解放演出の背景（承認済み天空背景・2026-11-25 到着）。文字が読めるよう少し暗くして表示
+    finalBg: 'assets/approved/bg/ch10_sky.png', // 2026-11-25：承認済み天空背景
     // エンディングの「世界征服達成」画面の背景（未定・null のあいだは夜空のグラデーション）
     endingBg: null,
     // 戦闘の背景。ステージIDで個別に、無ければ chapter1（1-3 以降は大きな町の背景）。scale：論理画面（960×540）での倍率、offsetY：上下の位置
@@ -81,7 +81,7 @@ export const SKIN = {
       chapter4: { src: 'assets/approved/bg/ch4_harbor.png', scale: 0.85, offsetY: -75, parallax: 0.35, focus: 0.5 }, // 2026-11-25：港町の本番背景（2172×724・道の上端 y≈532）
       chapter5: { src: 'assets/approved/bg/ch5_fortress.png', scale: 0.95, offsetY: -147, parallax: 0.35, focus: 0.5 }, // 2026-11-25：鉄鋼の要塞都市の本番背景（2172×724・道の上端 y≈552）。4ステージ共通
       chapter6: { src: 'assets/approved/bg/ch6_desert.png', scale: 0.85, offsetY: -75, parallax: 0.35, focus: 0.5 }, // 2026-11-25：砂漠の古代王国の本番背景（2172×724・道の上端 y≈532）。3ステージ共通
-      chapter10: { src: 'assets/approved/bg/ch3_castle_v2.png', scale: 1.22, offsetY: -358, parallax: 0.35, focus: 0.5, tint: 'rgba(220,235,255,.4)' }, // 仮：天空背景（未着）。5ステージ共通
+      chapter10: { src: 'assets/approved/bg/ch10_sky.png', scale: 0.95, offsetY: -144, parallax: 0.35, focus: 0.5 }, // 2026-11-25：天空・勇者の聖域の本番背景（2172×724・床の上端 y≈548）。5ステージ共通
       chapter9: { src: 'assets/approved/bg/ch9_capital.png', scale: 0.85, offsetY: -75, parallax: 0.35, focus: 0.5 }, // 2026-11-25：人間界の王都の本番背景（2172×724・道の上端 y≈533）。4ステージ共通
       chapter8: { src: 'assets/approved/bg/ch8_magic.png', scale: 0.85, offsetY: -75, parallax: 0.35, focus: 0.5 }, // 2026-11-25：魔法都市の本番背景（2172×724・道の上端 y≈533）。4ステージ共通
       chapter7: { src: 'assets/approved/bg/ch7_holy.png', scale: 0.95, offsetY: -147, parallax: 0.35, focus: 0.5 }, // 2026-11-25：聖なる都の本番背景（2172×724・道の上端 y≈553）。2ステージ共通
@@ -187,6 +187,11 @@ if (SKIN.sprites.shield && !SKIN.sprites.knight) SKIN.sprites.knight = { ...SKIN
 // 竜人オルド（仮）：ビジュアル制作室の絵が届くまで、闇の騎士の絵を1.6倍で代用
 if (SKIN.sprites.swordsman && !SKIN.sprites.harbor_captain) SKIN.sprites.harbor_captain = { ...SKIN.sprites.swordsman, scale: (SKIN.sprites.swordsman.scale || 0.25) * 1.5 };
 // 第5章（仮）：防衛砲台は弓兵の絵、重装兵は盾兵の絵、要塞司令官は見習い剣士の絵を大きくして代用（兵器・重装兵のデザインは未承認）
+// 第8〜9章の追加（2026-11-25）：個別の透過PNGが届くまでの代用
+if (SKIN.sprites.priest && !SKIN.sprites.ice_mage) SKIN.sprites.ice_mage = { ...SKIN.sprites.priest };
+if (SKIN.sprites.swordsman && !SKIN.sprites.magic_knight) SKIN.sprites.magic_knight = { ...SKIN.sprites.swordsman, scale: (SKIN.sprites.swordsman.scale || 0.25) * 1.05 };
+if (SKIN.sprites.shield && !SKIN.sprites.royal_guard) SKIN.sprites.royal_guard = { ...SKIN.sprites.shield, scale: (SKIN.sprites.shield.scale || 0.25) * 1.05 };
+if (SKIN.sprites.rider && !SKIN.sprites.royal_guard_cavalry) SKIN.sprites.royal_guard_cavalry = { ...SKIN.sprites.rider, scale: (SKIN.sprites.rider.scale || 0.25) * 1.15 };
 // 第6〜7章の追加（2026-11-25）：個別の透過PNGが届くまでの代用
 if (SKIN.sprites.swordsman && !SKIN.sprites.ancient_soldier) SKIN.sprites.ancient_soldier = { ...SKIN.sprites.swordsman };
 if (SKIN.sprites.priest && !SKIN.sprites.ancient_priest) SKIN.sprites.ancient_priest = { ...SKIN.sprites.priest };

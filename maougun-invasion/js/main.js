@@ -353,7 +353,7 @@ function showTitleCard(T, bg, done) {
   for (const [id, k] of [['finEyebrow', 'eyebrow'], ['finChapter', 'chapter'], ['finName', 'name'], ['finText', 'text'], ['finEnd', 'end']]) { $(id).textContent = T[k] || ''; $(id).hidden = !T[k]; }
   document.querySelector('#ovFinal .finalCard').classList.toggle('endOnly', !T.name && !!T.end);
   const card = document.querySelector('#ovFinal .finalCard'); card.style.animation = 'none'; void card.offsetWidth; card.style.animation = '';
-  $('ovFinal').style.backgroundImage = bg ? `url(${bg})` : '';
+  $('ovFinal').style.backgroundImage = bg ? `linear-gradient(rgba(12,6,32,.5), rgba(12,6,32,.5)), url(${bg})` : ''; // 文字が読めるよう少し暗く
   $('ovFinal').hidden = false;
   app.afterFinal = done;
 }
