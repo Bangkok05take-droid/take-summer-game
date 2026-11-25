@@ -125,12 +125,13 @@ export const LORD = {
  * 名前・絵・詳しい能力はビジュアル制作室で確定する */
 /* 第2形態（2026-11-25 企画回答 Ver.1）：基本形の役割のまま純粋に強くなる。能力は基本形から自動で作る（EVOLVE_FORM2）。
  * ready: false＝デザイン待ち（森のお化け・木槌小鬼）。第3形態は保留 */
-export const EVOLVE_FORM2 = { stat: 1.8, cost: 1.4 }; // 仮：HP・攻撃は基本形の1.8倍（Lv1で基本形Lv5の1.48倍より強い）、召喚の魔力は1.4倍
-const form2 = (key, ready) => { const b = UNITS[key]; return { ...b, tier: 2, evolvesTo: null, ready, baseKey: key, hp: Math.round(b.hp * EVOLVE_FORM2.stat), atk: Math.round(b.atk * EVOLVE_FORM2.stat), cost: Math.round(b.cost * EVOLVE_FORM2.cost / 10) * 10 }; };
+// 2026-11-25 確定：HP・攻撃は基本形の2.5倍（Lv1でも基本形Lv10の2.08倍より強い）。召喚の魔力は役割ごとに上げる
+export const EVOLVE_FORM2 = { stat: 2.5, cost: { mass: 1.2, vanguard: 1.4, tank: 1.5, ranged: 1.3, fast: 1.2, area: 1.5, healer: 1.3, mallet: 1.4 } };
+const form2 = (key, ready) => { const b = UNITS[key]; return { ...b, tier: 2, evolvesTo: null, ready, baseKey: key, hp: Math.round(b.hp * EVOLVE_FORM2.stat), atk: Math.round(b.atk * EVOLVE_FORM2.stat), cost: Math.round(b.cost * EVOLVE_FORM2.cost[key] / 10) * 10 }; };
 export const EVOLUTIONS = {
   mass_2: form2('mass', true), vanguard_2: form2('vanguard', true), tank_2: form2('tank', true), ranged_2: form2('ranged', true),
-  fast_2: form2('fast', true), area_2: form2('area', true), healer_2: form2('healer', false),
-  mallet_2: { ...form2('mallet', false), evolvesTo: ['mallet_3a', 'mallet_3b'] }, // 第3形態（下の2つ）は保留・使わない
+  fast_2: form2('fast', true), area_2: form2('area', true), healer_2: form2('healer', true),
+  mallet_2: { ...form2('mallet', true), evolvesTo: ['mallet_3a', 'mallet_3b'] }, // 第3形態（下の2つ）は保留・使わない
   mallet_3a: { // 第3形態A：超巨大木槌の一撃特化
     role: '後衛狙撃（一撃）', attackType: 'sniper', target: 'backline', line: 'back', tier: 3, evolvesTo: null, growth: GROWTH, ready: false,
     cost: 620, cooldown: 20, hp: 240, atk: 560, range: 400, speed: 28, interval: 4.6, windup: 1.9, kb: 5, attack: 'single', projectile: 'hammer', size: 1.0,

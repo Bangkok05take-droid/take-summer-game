@@ -350,9 +350,9 @@ export function renderFormation(p, stageId, onToggle) {
 // 進化の確認（2026-11-25）：レベルが1に戻ることと、進化の前後の能力を見せる
 export function renderEvolveConfirm(p, key, toKey) {
   const now = resolveUnit(key, p);
-  const after = resolveUnit(key, { ...p, units: { ...p.units, [key]: { ...p.units[key], formKey: toKey, form: EVOLUTIONS[toKey].tier - 1, level: 1 } } });
+  const after = resolveUnit(key, { ...p, units: { ...p.units, [key]: { ...p.units[key], formKey: toKey, form: EVOLUTIONS[toKey].tier - 1, level: Math.max(1, p.units[key].level - (EVOLVE_NEED.level - 1)) } } });
   $('evoTitle').textContent = `${SKIN.names[now.skin] || key} → ${SKIN.names[toKey] || toKey}`;
-  $('evoTable').innerHTML = [['レベル', `Lv${now.level}`, 'Lv1'], ['HP', now.hp, after.hp], ['攻撃', now.atk, after.atk], ['召喚の魔力', now.cost, after.cost]]
+  $('evoTable').innerHTML = [['レベル', `Lv${now.level}`, `Lv${after.level}`], ['HP', now.hp, after.hp], ['攻撃', now.atk, after.atk], ['召喚の魔力', now.cost, after.cost]]
     .map(([k, a, b]) => `<tr><th>${k}</th><td>${a}</td><td>→</td><td><b>${b}</b></td></tr>`).join('');
   $('evoCost').textContent = EVOLVE_NEED.stones(EVOLUTIONS[toKey].tier);
   Renderer.thumb($('evoFrom'), now.skin, UNITS[key].size); Renderer.thumb($('evoTo'), toKey, UNITS[key].size);

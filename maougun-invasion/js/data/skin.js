@@ -17,9 +17,9 @@ export const SKIN = {
     fast: 'こうもり', area: '魔法使い', healer: '森のお化け',
     special: 'プチデビル', // 2026-11-24：既存作品名と重なる旧名から変更
     mallet: '木槌小鬼', // 2026-11-24 追加の後衛狙撃型（仮称）。正式名はビジュアル制作室で確定
-    mallet_2: '木槌小鬼（第2形態）', mallet_3a: '木槌小鬼（一撃）', mallet_3b: '木槌小鬼（連投）', // 進化形（仮称）
+    mallet_3a: '木槌小鬼（一撃）', mallet_3b: '木槌小鬼（連投）', // 進化形（仮称）
     // 2026-11-25：第2形態の正式名（ユーザー指定）。森のお化け・木槌小鬼はデザイン待ち
-    mass_2: 'ハードグミ', vanguard_2: '悪魔の騎士', tank_2: '鋼男', fast_2: 'イーグル', ranged_2: '弩ゴブリン', area_2: '星炎の魔導士', healer_2: '森のお化け（第2形態）',
+    mass_2: 'ハードグミ', vanguard_2: '悪魔の騎士', tank_2: '鋼男', fast_2: 'イーグル', ranged_2: '弩ゴブリン', area_2: '星炎の魔導士', healer_2: '花灯りの精霊', mallet_2: '鉄槌鬼',
     charger: 'ワニ将軍', // 2026-11-25：幹部1体目（ユーザーのデザイン）。内部キーは charger のまま elemental: '幹部・炎氷', trickster: '幹部・罠', thunder: '幹部・落雷', mist: '幹部・霧',
     lord: '大魔王', lordAwakened: '大魔王（真の姿）',
     ord: '竜人オルド', // 2026-11-25（依頼文での呼び方：バラン）
@@ -31,6 +31,9 @@ export const SKIN = {
   // エンディングのムービー（保留中・2026-11-25）。{ src: 'assets/approved/movie/…mp4', replaces: ['lines'] } を入れると、その段の代わりに動画を流す
   movies: { ending: null },
   sprites: {
+    // 2026-11-25：進化形（第2形態）鉄槌鬼・花灯りの精霊（ユーザー納品・透過・左向き）
+    mallet_2: { src: 'assets/approved/units/mallet_2.png', frameW: 1312, frameH: 1199, frames: { walk: [0], windup: 0, attack: 0 }, footY: 1177, facing: 'left', scale: 0.0538 },
+    healer_2: { src: 'assets/approved/units/healer_2.png', frameW: 1254, frameH: 1254, frames: { walk: [0], windup: 0, attack: 0 }, footY: 1207, facing: 'left', scale: 0.0495 },
     // 2026-11-25：進化形（第2形態）6体（ユーザー納品・透過PNG・左向き・静止画）。表示は基本形の約1.12倍の背の高さ
     mass_2: { src: 'assets/approved/units/mass_2.png', frameW: 1536, frameH: 1024, frames: { walk: [0], windup: 0, attack: 0 }, footY: 899, facing: 'left', scale: 0.0528 },
     vanguard_2: { src: 'assets/approved/units/vanguard_2.png', frameW: 1295, frameH: 1215, frames: { walk: [0], windup: 0, attack: 0 }, footY: 1144, facing: 'left', scale: 0.0593 },

@@ -428,7 +428,7 @@ export const STAGES = {
   // ---------------- 第7章 聖なる都（敵編成・ボス・報酬は仮） ----------------
   '7-1': {
     id: '7-1', chapter: 7, name: '聖都の防衛線', theme: 'holy',
-    length: L(2400), shrineHp: 12000, baseHp: 9000, enemyScale: 1.4, mana: MANA,
+    length: L(2400), shrineHp: 12000, baseHp: 16000, enemyScale: 2.49 /* 2026-11-25 進化に合わせて ×1.78（元 9000・1.4） */, mana: MANA,
     spawns: [
       { who: 'swordsman', start: 3, every: 7, max: 4 },
       { who: 'paladin', start: 8, every: 14, max: 3 },
@@ -442,7 +442,7 @@ export const STAGES = {
   },
   '7-2': {
     id: '7-2', chapter: 7, name: '聖騎士団との決戦', theme: 'holy', boss: true,
-    length: L(2500), shrineHp: 12500, baseHp: 9500, enemyScale: 1.4, mana: { ...MANA, start: 400 },
+    length: L(2500), shrineHp: 12500, baseHp: 17400, enemyScale: 2.56 /* 2026-11-25 進化に合わせて ×1.83（元 9500・1.4） */, mana: { ...MANA, start: 400 },
     spawns: [
       { who: 'paladin', start: 3, every: 13, max: 3 },
       { who: 'swordsman', start: 6, every: 8, max: 3 },
@@ -457,7 +457,7 @@ export const STAGES = {
   // ---------------- 第8章 魔法都市（敵編成・ボス・報酬は仮。背景は4ステージとも同じ） ----------------
   '8-1': {
     id: '8-1', chapter: 8, name: '魔法都市の防衛線', theme: 'magic',
-    length: L(2400), shrineHp: 12500, baseHp: 10500, enemyScale: 1.4, mana: MANA,
+    length: L(2400), shrineHp: 12500, baseHp: 19700, enemyScale: 2.63 /* 2026-11-25 進化に合わせて ×1.88（元 10500・1.4） */, mana: MANA,
     spawns: [
       { who: 'magic_knight', start: 3, every: 7, max: 4 } /* 2026-11-25：魔法騎士 */,
       { who: 'knight', start: 8, every: 14, max: 2 },
@@ -471,7 +471,7 @@ export const STAGES = {
   },
   '8-2': {
     id: '8-2', chapter: 8, name: '魔法都市の反撃', theme: 'magic',
-    length: L(2400), shrineHp: 12500, baseHp: 10500, enemyScale: 1.4, mana: MANA,
+    length: L(2400), shrineHp: 12500, baseHp: 17800, enemyScale: 2.38 /* 2026-11-25 進化に合わせて ×1.7（元 10500・1.4） */, mana: MANA,
     spawns: [
       { who: 'magic_knight', start: 3, every: 7, max: 3 } /* 2026-11-25：魔法騎士 */,
       { who: 'mage', start: 6, every: 10, max: 3 },
@@ -486,7 +486,7 @@ export const STAGES = {
   },
   '8-3': {
     id: '8-3', chapter: 8, name: '精鋭魔導士団', theme: 'magic',
-    length: L(2500), shrineHp: 13000, baseHp: 9500, enemyScale: 1.4, mana: { ...MANA, start: 300 },
+    length: L(2500), shrineHp: 13000, baseHp: 17500, enemyScale: 2.58 /* 2026-11-25 進化に合わせて ×1.84（元 9500・1.4） */, mana: { ...MANA, start: 300 },
     spawns: [
       { who: 'elite_mage', start: 6, every: 18, max: 1 },
       { who: 'magic_knight', start: 3, every: 7, max: 3 } /* 2026-11-25：魔法騎士 */,
@@ -500,7 +500,7 @@ export const STAGES = {
   },
   '8-4': {
     id: '8-4', chapter: 8, name: '魔法都市の最終決戦', theme: 'magic', boss: true,
-    length: L(2500), shrineHp: 13500, baseHp: 10000, enemyScale: 1.4, mana: { ...MANA, start: 400 },
+    length: L(2500), shrineHp: 13500, baseHp: 18900, enemyScale: 2.65 /* 2026-11-25 進化に合わせて ×1.89（元 10000・1.4） */, mana: { ...MANA, start: 400 },
     spawns: [
       { who: 'paladin', start: 3, every: 16, max: 1 },
       { who: 'magic_knight', start: 5, every: 8, max: 3 } /* 2026-11-25：魔法騎士 */,
@@ -516,7 +516,7 @@ export const STAGES = {
   // ---------------- 第9章 人間界の王都（敵編成・ボス・報酬は仮。背景は4ステージとも同じ。人間軍の兵種を総動員） ----------------
   '9-1': {
     id: '9-1', chapter: 9, name: '人間軍の連合部隊', theme: 'capital',
-    length: L(2500), shrineHp: 13500, baseHp: 10500, enemyScale: 1.45, mana: MANA,
+    length: L(2500), shrineHp: 13500, baseHp: 19400, enemyScale: 2.68 /* 2026-11-25 進化に合わせて ×1.85（元 10500・1.45） */, mana: MANA,
     spawns: [
       { who: 'royal_guard', start: 3, every: 9, max: 2 } /* 2026-11-25：王国近衛兵 */,
       { who: 'shield', start: 6, every: 14, max: 1 },
@@ -532,7 +532,7 @@ export const STAGES = {
   },
   '9-2': {
     id: '9-2', chapter: 9, name: '人間軍の総攻撃', theme: 'capital',
-    length: L(2500), shrineHp: 14000, baseHp: 11000, enemyScale: 1.45, mana: MANA,
+    length: L(2500), shrineHp: 14000, baseHp: 21400, enemyScale: 2.83 /* 2026-11-25 進化に合わせて ×1.95（元 11000・1.45） */, mana: MANA,
     spawns: [
       { who: 'royal_guard', start: 3, every: 9, max: 2 } /* 2026-11-25：王国近衛兵 */,
       { who: 'heavy', start: 8, every: 20, max: 1 },
@@ -547,7 +547,7 @@ export const STAGES = {
   },
   '9-3': {
     id: '9-3', chapter: 9, name: '王国最強の軍団', theme: 'capital',
-    length: L(2500), shrineHp: 14000, baseHp: 10500, enemyScale: 1.45, mana: { ...MANA, start: 300 },
+    length: L(2500), shrineHp: 14000, baseHp: 20600, enemyScale: 2.84 /* 2026-11-25 進化に合わせて ×1.96（元 10500・1.45） */, mana: { ...MANA, start: 300 },
     spawns: [
       { who: 'knight', start: 3, every: 14, max: 1 },
       { who: 'royal_guard', start: 5, every: 10, max: 2 } /* 2026-11-25：王国近衛兵 */,
@@ -562,7 +562,7 @@ export const STAGES = {
   },
   '9-4': {
     id: '9-4', chapter: 9, name: '人間界の最終決戦', theme: 'capital', boss: true,
-    length: L(2600), shrineHp: 14500, baseHp: 10500, enemyScale: 1.4, mana: { ...MANA, start: 400 },
+    length: L(2600), shrineHp: 14500, baseHp: 21000, enemyScale: 2.8 /* 2026-11-25 進化に合わせて ×2（元 10500・1.4） */, mana: { ...MANA, start: 400 },
     spawns: [
       { who: 'royal_guard', start: 3, every: 9, max: 2 } /* 2026-11-25：王国近衛兵 */,
       { who: 'knight', start: 6, every: 14, max: 2 },
@@ -578,7 +578,7 @@ export const STAGES = {
   // ---------------- 第10章 天空・勇者の聖域（敵編成・ボス・報酬は仮。背景は5ステージとも同じ） ----------------
   '10-1': {
     id: '10-1', chapter: 10, name: '天空の守護兵', theme: 'sky',
-    length: L(2500), shrineHp: 14500, baseHp: 12500, enemyScale: 1.45, mana: MANA,
+    length: L(2500), shrineHp: 14500, baseHp: 27300, enemyScale: 3.16 /* 2026-11-25 進化に合わせて ×2.18（元 12500・1.45） */, mana: MANA,
     spawns: [
       { who: 'sky_guard', start: 3, every: 10, max: 2 },
       { who: 'swordsman', start: 6, every: 8, max: 2 },
@@ -592,7 +592,7 @@ export const STAGES = {
   },
   '10-2': {
     id: '10-2', chapter: 10, name: '天空の精鋭部隊', theme: 'sky',
-    length: L(2500), shrineHp: 15000, baseHp: 13000, enemyScale: 1.45, mana: MANA,
+    length: L(2500), shrineHp: 15000, baseHp: 29400, enemyScale: 3.28 /* 2026-11-25 進化に合わせて ×2.26（元 13000・1.45） */, mana: MANA,
     spawns: [
       { who: 'sky_guard', start: 3, every: 10, max: 2 },
       { who: 'celestial_mage', start: 8, every: 16, max: 1 } /* 2026-11-25：天空の魔導士 */,
@@ -605,7 +605,7 @@ export const STAGES = {
   },
   '10-3': {
     id: '10-3', chapter: 10, name: '聖竜降臨', theme: 'sky', boss: true,
-    length: L(2600), shrineHp: 15500, baseHp: 11000, enemyScale: 1.4, mana: { ...MANA, start: 400 },
+    length: L(2600), shrineHp: 15500, baseHp: 25700, enemyScale: 3.28 /* 2026-11-25 進化に合わせて ×2.34（元 11000・1.4） */, mana: { ...MANA, start: 400 },
     spawns: [
       { who: 'sky_guard', start: 3, every: 11, max: 2 },
       { who: 'archer', start: 10, every: 12, max: 2 },
@@ -618,7 +618,7 @@ export const STAGES = {
   },
   '10-4': {
     id: '10-4', chapter: 10, name: '最後の守護者たち', theme: 'sky',
-    length: L(2600), shrineHp: 15500, baseHp: 11500, enemyScale: 1.45, mana: { ...MANA, start: 300 },
+    length: L(2600), shrineHp: 15500, baseHp: 22900, enemyScale: 2.89 /* 2026-11-25 進化に合わせて ×1.99（元 11500・1.45） */, mana: { ...MANA, start: 300 },
     spawns: [
       { who: 'sky_guard', start: 3, every: 10, max: 2 },
       { who: 'guardian', start: 8, every: 20, max: 1 },
@@ -633,7 +633,7 @@ export const STAGES = {
   // 最終決戦：たけ・サイは最初から、マスター・ヤナイは拠点HP60%で。勇者は倒されると「撤退」（死亡の描写なし）
   '10-5': {
     id: '10-5', chapter: 10, name: '勇者たちとの最終決戦', theme: 'sky', boss: true, final: true,
-    length: L(2700), shrineHp: 16000, baseHp: 13000, enemyScale: 1.45, mana: { ...MANA, start: 500 },
+    length: L(2700), shrineHp: 16000, baseHp: 23500, enemyScale: 2.62 /* 2026-11-25 進化に合わせて ×1.81（元 13000・1.45） */, mana: { ...MANA, start: 500 },
     spawns: [
       { trigger: { baseBelow: 1.0 }, hero: 'take', wave: [{ who: 'take', count: 1 }, { who: 'sai', count: 1 }], gap: 1.5 },
       { who: 'sky_guard', start: 6, every: 11, max: 2 },

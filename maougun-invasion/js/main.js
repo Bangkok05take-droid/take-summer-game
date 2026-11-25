@@ -4,6 +4,7 @@ import { createBattle, STEP } from './core/battle.js';
 import { createClock } from './core/clock.js';
 import { HUMANS } from './data/humans.js';
 import { STAGES, CONFIG, TEST_ENEMY_POWER } from './data/stages.js';
+import { UNIT_ORDER } from './data/units.js';
 import { startPointer } from './ui/pointer.js';
 import { STORY, CRYSTAL_EVENT, ULTIMATE_EVENT, FINAL_MARCH, ENDING } from './data/story.js';
 import { SKIN } from './data/skin.js';
@@ -292,6 +293,10 @@ function showResult() {
   $('resTitle').textContent = win ? '侵略成功！' : '祠が破られた…';
   $('resTitle').className = win ? 'win' : 'lose';
   $('resText').textContent = win ? `${STAGES[app.stageId].name}を制圧した！` : '魔物の組み合わせや強化を見直して、もう一度挑もう。';
+  // 第7章から：進化できる魔物がいるのに進化していないとき、ヴェイルが進化をすすめる（2026-11-25）
+  if (!win && STAGES[app.stageId].chapter >= 7 && UNIT_ORDER.some((k) => { const u = app.profile.units[k]; return u && u.unlocked && !u.formKey && u.level >= 5; })) {
+    $('resText').textContent = SKIN.speakers.aide + '「' + LOSE_TIPS.evolve + '」';
+  }
   if (!win && STAGES[app.stageId].tutorial) { // 第1章：負けた理由の見当を一言
     const priest = b.entities.some((e) => e.side === 'human' && e.state !== 'dead' && e.def.heal);
     $('resText').textContent = SKIN.speakers.aide + '「' + (b.furnaceLv === 1 ? LOSE_TIPS.furnace : b.stats.summoned < 12 ? LOSE_TIPS.few : priest ? LOSE_TIPS.healer : LOSE_TIPS.default) + '」';

@@ -502,7 +502,7 @@ test('木槌小鬼は最初から使える。所持は8体でも編成枠は5（
 test('進化：3段階・最終形態は2方向に分岐（データの仕組み）', () => {
   const p = newProfile(); p.units.mallet.unlocked = true;
   assert.deepEqual(evolutionChoices(p, 'mallet'), ['mallet_2']);
-  assert.equal(evolveUnit(p, 'mallet', 'mallet_2').reason, 'planned', '進化形は準備中');
+  EVOLUTIONS.mallet_2.ready = false; try { assert.equal(evolveUnit(p, 'mallet', 'mallet_2').reason, 'planned', '進化形は準備中'); } finally { EVOLUTIONS.mallet_2.ready = true; }
   p.units.mallet.formKey = 'mallet_2';
   assert.deepEqual(evolutionChoices(p, 'mallet'), ['mallet_3a', 'mallet_3b']);
   assert.equal(resolveUnit('mallet', p).tier, 2);
@@ -755,6 +755,7 @@ test('上位進化：魔力結晶の前はできない・Lv5と魔界石が必�
   pr.applyCrystal(p);
   assert.equal(pr.tryEvolve(p, 'mallet', 'mallet_2').reason, 'level');
   p.units.mallet.level = 5;
+  EVOLUTIONS.mallet_2.ready = false;
   assert.equal(pr.tryEvolve(p, 'mallet', 'mallet_2').reason, 'planned', '進化先のデザイン待ち（ready: false）');
   EVOLUTIONS.mallet_2.ready = true;
   try {
@@ -762,7 +763,7 @@ test('上位進化：魔力結晶の前はできない・Lv5と魔界石が必�
     assert.ok(r.ok && p.stones === 9999 - r.cost && resolveUnit('mallet', p).tier === 2);
     EVOLUTIONS.mallet_3a.ready = true;
     assert.equal(pr.tryEvolve(p, 'mallet', 'mallet_3a').reason, 'tier', '最上位はまだ解放しない');
-  } finally { EVOLUTIONS.mallet_2.ready = false; EVOLUTIONS.mallet_3a.ready = false; }
+  } finally { EVOLUTIONS.mallet_2.ready = true; EVOLUTIONS.mallet_3a.ready = false; }
 });
 
 test('第7章（聖なる都）：2ステージ・台本どおり。6-3 のあと開き、7-2 は聖騎士団長・クリアで第8章へ', async () => {
@@ -851,9 +852,9 @@ test('最上位進化：究極進化のあとだけ（上位からのみ・デ�
     const r = pr.tryEvolve(p, 'mallet', 'mallet_3a');
     assert.ok(r.ok && resolveUnit('mallet', p).tier === 3 && r.cost === pr.EVOLVE_NEED.stones(3));
     assert.equal(pr.tryEvolve(p, 'mallet', 'mallet_3b').reason, 'invalid', '分岐はどちらか1つ');
-  } finally { EVOLUTIONS.mallet_2.ready = false; EVOLUTIONS.mallet_3a.ready = false; }
+  } finally { EVOLUTIONS.mallet_2.ready = true; EVOLUTIONS.mallet_3a.ready = false; }
   const q = newProfile(); q.stones = 99999; pr.applyCrystal(q); pr.applyUltimate(q); q.units.mallet.level = 9;
-  assert.equal(pr.tryEvolve(q, 'mallet', 'mallet_2').reason, 'planned', '進化先のデザイン待ち');
+  EVOLUTIONS.mallet_2.ready = false; try { assert.equal(pr.tryEvolve(q, 'mallet', 'mallet_2').reason, 'planned', '進化先のデザイン待ち'); } finally { EVOLUTIONS.mallet_2.ready = true; }
 });
 
 test('第9章（人間界の王都）：4ステージ・台本どおり・背景は共通1枚。9-4 は人間軍総司令官。初回だけ最終章への進軍（セーブ）・第10章へ', async () => {
@@ -1074,12 +1075,13 @@ test('第10章の追加キャラクター：天空の魔導士・天空の守護
   assert.ok(Math.abs(h.maxHp - h2.maxHp / 3) <= 1, '敵のHPも1/3');
 });
 
-test('第2形態（企画回答 Ver.1）：Lv5で任意に進化・Lv1に戻る・Lv1でも基本形Lv5より強い・召喚の魔力とレベル上げ費用が上がる・セーブ', async () => {
+test('第2形態（確定）：Lv5で任意に進化・Lv−4に下がる・2.5倍で基本形Lv10より強い・役割別の召喚コスト・レベル上げ1.5倍・セーブ', async () => {
   const pr = await import('../js/data/progress.js');
   const { SKIN } = await import('../js/data/skin.js');
   const names = { mass_2: 'ハードグミ', vanguard_2: '悪魔の騎士', tank_2: '鋼男', fast_2: 'イーグル', ranged_2: '弩ゴブリン', area_2: '星炎の魔導士' };
   for (const [k, n] of Object.entries(names)) { assert.equal(SKIN.names[k], n); assert.ok(EVOLUTIONS[k].ready !== false && SKIN.sprites[k] && SKIN.sprites[k].facing === 'left', k); }
-  assert.equal(EVOLUTIONS.healer_2.ready, false, '森のお化けはデザイン待ち'); assert.equal(EVOLUTIONS.mallet_2.ready, false, '木槌小鬼はデザイン待ち');
+  assert.equal(SKIN.names.healer_2, '花灯りの精霊'); assert.equal(SKIN.names.mallet_2, '鉄槌鬼');
+  for (const k of ['healer_2', 'mallet_2']) assert.ok(EVOLUTIONS[k].ready !== false && SKIN.sprites[k] && SKIN.sprites[k].facing === 'left', k);
   const p = newProfile(); p.stones = 99999; pr.applyCrystal(p);
   for (const k of ['mass', 'vanguard', 'tank', 'ranged', 'fast', 'area']) {
     p.units[k].level = 5; const b5 = resolveUnit(k, p);
@@ -1094,6 +1096,13 @@ test('第2形態（企画回答 Ver.1）：Lv5で任意に進化・Lv1に戻る�
     assert.ok(lv5cost > 0);
   }
   assert.equal(pr.tryEvolve(p, 'mass', 'mass_2').reason, 'invalid', '2回は進化しない');
+  // 2.5倍：第2形態Lv1は基本形Lv10より強い
+  const t10 = newProfile(); t10.units.tank.level = 10; const t1 = newProfile(); t1.units.tank.formKey = 'tank_2'; t1.units.tank.form = 1;
+  assert.ok(resolveUnit('tank', t1).hp > resolveUnit('tank', t10).hp);
+  assert.deepEqual(['mass', 'vanguard', 'tank', 'ranged', 'fast', 'area', 'healer', 'mallet'].map((k) => EVOLUTIONS[k + '_2'].cost), [60, 210, 600, 260, 120, 450, 330, 630], '役割ごとの召喚コスト');
+  // レベルの引き継ぎ：Lv10で進化すると第2形態Lv6
+  const z = newProfile(); z.stones = 9999; pr.applyCrystal(z); z.units.area.level = 10; pr.tryEvolve(z, 'area', 'area_2'); assert.equal(z.units.area.level, 6);
+  const y = newProfile(); y.stones = 9999; pr.applyCrystal(y); y.units.area.level = 7; pr.tryEvolve(y, 'area', 'area_2'); assert.equal(y.units.area.level, 3);
   const st = memStore(); saveProfile(p, st); const q = loadProfile(st);
   assert.equal(q.units.vanguard.formKey, 'vanguard_2'); assert.equal(resolveUnit('vanguard', q).skin, 'vanguard_2');
   // 進化しなくても使える（任意）

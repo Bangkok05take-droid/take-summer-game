@@ -317,7 +317,7 @@ export function evolveUnit(p, key, toKey) {
   if (!evolutionChoices(p, key).includes(toKey)) return { ok: false, reason: 'invalid' };
   if (EVOLUTIONS[toKey].ready === false) return { ok: false, reason: 'planned' };
   u.formKey = toKey; u.form = EVOLUTIONS[toKey].tier - 1;
-  u.level = 1; // 2026-11-25：進化するとLv1に戻る（第2形態のLv1は基本形のLv5より強い）
+  u.level = Math.max(1, u.level - (EVOLVE_NEED.level - 1)); // 2026-11-25 確定：レベルを一部引き継ぐ（進化前のLv−4。Lv5→Lv1・Lv10→Lv6）
   return { ok: true };
 }
 

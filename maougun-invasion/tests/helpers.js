@@ -3,17 +3,19 @@ import { createBattle, STEP } from '../js/core/battle.js';
 import { UNITS, ALL_DEMONS, UNIT_ORDER } from '../js/data/units.js';
 import { HUMANS } from '../js/data/humans.js';
 import { STAGES, CONFIG, CHAPTER1, STAGE_ORDER } from '../js/data/stages.js';
-import { newProfile, buildDeck, resolveMana, resolveUnit, applyResult, applyCrystal, applyUltimate, resolveFurnace } from '../js/data/progress.js';
+import { newProfile, buildDeck, resolveMana, resolveUnit, applyResult, applyCrystal, applyUltimate, resolveFurnace, evolveUnit } from '../js/data/progress.js';
 
 export { STEP, UNITS, ALL_DEMONS, UNIT_ORDER, HUMANS, STAGES, CONFIG, CHAPTER1, newProfile };
 
 // その時点までのステージを、ふつうに遊んでクリアした状態のプロフィール（強化なし・編成は自動で入った魔物のまま）
 // upgraded：それまでの初回クリア報酬を、主力の強化に使った想定（1-1 0石 → 1-5 約730石）
-export function profileFor(stageId, upgraded = false) {
+export function profileFor(stageId, upgraded = false, over = {}) {
   const p = newProfile();
   for (const id of STAGE_ORDER) { if (id === stageId) break; applyResult(p, id, 'win', 200); }
   if (p.stages['6-3'] && p.stages['6-3'].cleared) applyCrystal(p); // 第6章のあとは魔力回復ずみ
   if (p.stages['8-4'] && p.stages['8-4'].cleared) applyUltimate(p); // 第8章のあとは究極進化ずみ
+  // 第7章からは「半分くらい進化させた」想定（バランス確認の基準・2026-11-25）：闇の騎士・弓ゴブリン・魔法使いを第2形態Lv1に
+  if (p.stages['6-3'] && p.stages['6-3'].cleared && !over.noEvolve) for (const k of ['vanguard', 'ranged', 'area']) evolveUnit(p, k, k + '_2');
   p.stones = 0;
   if (upgraded) {
     const plan = { '1-1': [], '1-2': ['vanguard'], '1-3': ['vanguard', 'area'], '1-4': ['vanguard', 'area', 'vanguard'], '1-5': ['vanguard', 'area', 'vanguard', 'tank', 'area'] };
