@@ -39,7 +39,9 @@ export const CHAPTER3 = { id: 3, name: '地方王国の城を攻略せよ', stag
 export const CHAPTER4 = { id: 4, name: '港町を制圧せよ', stages: ['4-1', '4-2', '4-3'], needsEvent: 'ruin' };
 // 第5章（2026-11-25）：鉄鋼の要塞都市（4ステージ）。台本は承認済み。防衛兵器・重装兵でこれまでより難しい。敵編成・ボス・報酬は仮
 export const CHAPTER5 = { id: 5, name: '鉄鋼の要塞都市を攻略せよ', stages: ['5-1', '5-2', '5-3', '5-4'] };
-export const CHAPTERS = [CHAPTER1, CHAPTER2, CHAPTER3, CHAPTER4, CHAPTER5];
+// 第6章（2026-11-25）：砂漠の古代王国（3ステージ）。6-3 の初回クリアで「大魔王の魔力回復」と上位進化の解放。敵・ボス・報酬は仮
+export const CHAPTER6 = { id: 6, name: '砂漠の古代王国', stages: ['6-1', '6-2', '6-3'] };
+export const CHAPTERS = [CHAPTER1, CHAPTER2, CHAPTER3, CHAPTER4, CHAPTER5, CHAPTER6];
 // 全ステージの順番（章をまたいで、前のステージをクリアすると次が開く）
 export const STAGE_ORDER = CHAPTERS.flatMap((c) => c.stages);
 // 特別（2026-11-25）：特殊イベント「壊滅した町」。ステージ選択の「特別」タブ（イベントのあとだけ出る）。通常の進行（STAGE_ORDER）には入れない
@@ -367,6 +369,49 @@ export const STAGES = {
       { trigger: { baseBelow: 0.25 }, wave: [{ who: 'heavy', count: 2 }, { who: 'rider', count: 3 }, { who: 'archer', count: 2 }], gap: 0.5 },
     ],
     reward: { stones: 600 },
+  },
+  // ---------------- 第6章 砂漠の古代王国（敵編成・ボス・報酬は仮）。守護者（古代の石像兵）・古代王 ----------------
+  '6-1': {
+    id: '6-1', chapter: 6, name: '砂漠の古代遺跡', theme: 'desert',
+    length: L(2400), shrineHp: 10500, baseHp: 8500, enemyScale: 1.4, mana: MANA,
+    spawns: [
+      { who: 'swordsman', start: 3, every: 7, max: 4 },
+      { who: 'archer', start: 8, every: 9, max: 3 },
+      { who: 'guardian', start: 15, every: 20, max: 2 },
+      { who: 'rider', start: 30, every: 13, max: 3 },
+      { who: 'priest', start: 45, every: 24, max: 1 },
+      { trigger: { baseBelow: 0.6 }, wave: [{ who: 'guardian', count: 2 }, { who: 'archer', count: 2 }], gap: 0.6 },
+      { trigger: { baseBelow: 0.3 }, wave: [{ who: 'guardian', count: 1 }, { who: 'rider', count: 3 }, { who: 'priest', count: 1 }], gap: 0.6 },
+    ],
+    reward: { stones: 480 },
+  },
+  '6-2': {
+    id: '6-2', chapter: 6, name: '巨大ピラミッド', theme: 'desert',
+    length: L(2400), shrineHp: 11000, baseHp: 9000, enemyScale: 1.45, mana: MANA,
+    spawns: [
+      { who: 'guardian', start: 3, every: 14, max: 3 },
+      { who: 'swordsman', start: 6, every: 8, max: 3 },
+      { who: 'archer', start: 10, every: 10, max: 3 },
+      { who: 'priest', start: 30, every: 22, max: 2 },
+      { who: 'heavy', start: 50, every: 26, max: 1 },
+      { trigger: { baseBelow: 0.6 }, wave: [{ who: 'guardian', count: 2 }, { who: 'priest', count: 1 }], gap: 0.6 },
+      { trigger: { baseBelow: 0.3 }, wave: [{ who: 'guardian', count: 2 }, { who: 'archer', count: 3 }], gap: 0.6 },
+    ],
+    reward: { stones: 500 },
+  },
+  '6-3': {
+    id: '6-3', chapter: 6, name: '古代王の眠る間', theme: 'desert', boss: true,
+    length: L(2500), shrineHp: 11500, baseHp: 8500, enemyScale: 1.35, mana: { ...MANA, start: 400 },
+    spawns: [
+      { who: 'guardian', start: 3, every: 16, max: 2 },
+      { who: 'swordsman', start: 5, every: 8, max: 3 },
+      { who: 'archer', start: 12, every: 11, max: 3 },
+      { who: 'priest', start: 35, every: 24, max: 1 },
+      { who: 'rider', start: 50, every: 14, max: 3 },
+      { trigger: { baseBelow: 0.6 }, hero: 'ancient_king', wave: [{ who: 'ancient_king', count: 1 }, { who: 'guardian', count: 1 }], gap: 0.8 },
+      { trigger: { baseBelow: 0.25 }, wave: [{ who: 'guardian', count: 2 }, { who: 'rider', count: 3 }], gap: 0.5 },
+    ],
+    reward: { stones: 650 },
   },
   // ---------------- 特別：壊滅した町（竜人オルド）。能力・報酬は仮（別途調整） ----------------
   // forced：初戦は強制敗北（main.js が台本の秒数で終わらせる）。再戦は通常の勝敗で、勝つとオルドが加入（reward.unlock）

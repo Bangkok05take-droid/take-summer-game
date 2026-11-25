@@ -411,3 +411,15 @@ body.portrait #rotate { display: flex; }
 .choiceRow { gap: calc(var(--u) * 16); }
 .chapTab.special { border-color: #b4532a; }
 .chapTab.special.on { background: rgba(120, 30, 20, .85); }
+/* 上位進化のボタン（強化画面） */
+.upCol li .evo { margin-top: calc(var(--u) * 3); display: flex; gap: calc(var(--u) * 4); flex-wrap: wrap; font-size: calc(var(--u) * 11); color: var(--dim); }
+.upCol li .evo button { min-width: 0; padding: calc(var(--u) * 2) calc(var(--u) * 8); font-size: calc(var(--u) * 11); border-color: #c9a24a; background: linear-gradient(180deg, #b4532a, #6a2410); }
+/* 新機能の解放画面 */
+.panel.feature h2 { color: var(--gold2); text-shadow: 0 0 calc(var(--u) * 16) #c084fc; }
+/* 会話の演出：魔力の吸収（発光と放出）・祠の振動 */
+#scTalk.fx-absorb .talkBg::after { content: ""; position: absolute; inset: 0; background: radial-gradient(circle at 30% 45%, rgba(255, 220, 255, .95), rgba(190, 90, 255, .6) 25%, rgba(120, 40, 220, 0) 60%); animation: absorbGlow 1.4s ease-out forwards; pointer-events: none; }
+@keyframes absorbGlow { 0% { opacity: 0; transform: scale(.4); } 40% { opacity: 1; transform: scale(1.1); } 100% { opacity: .35; transform: scale(1.6); } }
+#scTalk.fx-quake { animation: talkQuake .9s ease-in-out; }
+#scTalk.fx-quake .talkBg::after { content: ""; position: absolute; inset: 0; background: radial-gradient(circle at 30% 45%, rgba(200, 120, 255, .7), rgba(80, 20, 160, 0) 70%); animation: absorbGlow 1.2s ease-out forwards; pointer-events: none; }
+@keyframes talkQuake { 0%, 100% { translate: 0 0; } 10% { translate: calc(var(--u) * -10) calc(var(--u) * 4); } 20% { translate: calc(var(--u) * 9) calc(var(--u) * -5); } 30% { translate: calc(var(--u) * -8) calc(var(--u) * 3); } 40% { translate: calc(var(--u) * 7) calc(var(--u) * -3); } 55% { translate: calc(var(--u) * -5) 0; } 70% { translate: calc(var(--u) * 3) calc(var(--u) * 2); } 85% { translate: calc(var(--u) * -2) 0; } }
+@media (prefers-reduced-motion: reduce) { #scTalk.fx-quake { animation: none; } }

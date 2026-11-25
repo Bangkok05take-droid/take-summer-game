@@ -682,7 +682,7 @@ test('第5章（鉄鋼の要塞都市）：4ステージ。4-3 のあと開き�
     const p = clearTo33(); pr.finishRuinEvent(p, choice);
     for (const id of ['4-1', '4-2', '4-3']) applyResult(p, id, 'win', 100);
     for (const id of CHAPTER5.stages) { assert.ok(isStageOpen(p, id), id); applyResult(p, id, 'win', 100); }
-    assert.equal(nextStage(p), null, '第6章は台本待ち');
+    assert.equal(nextStage(p), '6-1', '第5章をクリアすると第6章へ');
   }
   for (const id of CHAPTER5.stages) assert.ok(!STAGES[id].talk, id);
   assert.equal(STORY.before['5-1'].map((l) => l.who).join(','), 'aide,lord,aide,lord,人間軍兵士');
@@ -719,4 +719,48 @@ test('貫通斬撃は速くても敵を飛び越さない（区間で判定）',
   b.pierces.push({ id: 999, src: o, side: 'demon', dir: -1, x: 1380, prevX: 1400, speed: 30000, dmg: 50, hit: new Set(), done: false, lane: 0.5 });
   b.step();
   assert.equal(99999 - h.hp >= 50, true, '1手で何百も進んでも当たる');
+});
+test('第6章（砂漠の古代王国）：3ステージ・台本どおり。6-3 の初回だけ魔力回復と上位進化の解放（重複しない・セーブ）', async () => {
+  const pr = await import('../js/data/progress.js');
+  const { STORY, CRYSTAL_EVENT } = await import('../js/data/story.js');
+  const { CHAPTER6 } = await import('../js/data/stages.js');
+  assert.deepEqual(CHAPTER6.stages, ['6-1', '6-2', '6-3']);
+  assert.equal(CHAPTER6.name, '砂漠の古代王国');
+  assert.equal(STORY.before['6-3'].map((l) => l.who).join(','), 'narr,古代王,aide,lord,古代王,lord');
+  assert.equal(STORY.after['6-3'].length, 5);
+  assert.equal(CRYSTAL_EVENT.LINES.length, 15); assert.equal(CRYSTAL_EVENT.LINES[10].text, 'なんでじゃぁぁぁ！！');
+  assert.equal(CRYSTAL_EVENT.AFTER[3].text, '――第6章クリア。');
+  assert.ok(CRYSTAL_EVENT.LINES.some((l) => l.fx === 'absorb') && CRYSTAL_EVENT.LINES.some((l) => l.fx === 'quake'));
+  const p = clearTo33(); pr.finishRuinEvent(p, 'reject');
+  for (const id of ['4-1', '4-2', '4-3', '5-1', '5-2', '5-3', '5-4', '6-1', '6-2']) applyResult(p, id, 'win', 100);
+  assert.ok(isStageOpen(p, '6-3'));
+  const m0 = pr.resolveMana(STAGES['6-3'].mana, p);
+  applyResult(p, '6-3', 'win', 100);
+  assert.ok(pr.crystalPending(p) && pr.evolveTierCap(p) === 1, 'クリア直後（イベント前）');
+  assert.equal(pr.applyCrystal(p), true);
+  assert.equal(pr.applyCrystal(p), false, '再クリアでは回復しない');
+  const m1 = pr.resolveMana(STAGES['6-3'].mana, p);
+  assert.equal(m1.max - m0.max, pr.CRYSTAL_BONUS.max + 60, '結晶の分（＋大魔王Lvの分）だけ増える');
+  applyResult(p, '6-3', 'win', 100);
+  assert.equal(pr.resolveMana(STAGES['6-3'].mana, p).max, m1.max, '2回目のクリアで結晶の回復は重ならない');
+  assert.ok(!pr.crystalPending(p));
+  assert.equal(nextStage(p), null, '第7章は台本待ち');
+  const st = memStore(); saveProfile(p, st); const q = loadProfile(st);
+  assert.ok(pr.crystalDone(q) && pr.evolveTierCap(q) === 2, 'セーブから戻る');
+});
+test('上位進化：魔力結晶の前はできない・Lv5と魔界石が必要・最上位はまだ・デザイン待ちの進化先は不可', async () => {
+  const pr = await import('../js/data/progress.js');
+  const p = newProfile(); p.stones = 9999;
+  assert.equal(pr.tryEvolve(p, 'mallet', 'mallet_2').reason, 'feature');
+  pr.applyCrystal(p);
+  assert.equal(pr.tryEvolve(p, 'mallet', 'mallet_2').reason, 'level');
+  p.units.mallet.level = 5;
+  assert.equal(pr.tryEvolve(p, 'mallet', 'mallet_2').reason, 'planned', '進化先のデザイン待ち（ready: false）');
+  EVOLUTIONS.mallet_2.ready = true;
+  try {
+    const r = pr.tryEvolve(p, 'mallet', 'mallet_2');
+    assert.ok(r.ok && p.stones === 9999 - r.cost && resolveUnit('mallet', p).tier === 2);
+    EVOLUTIONS.mallet_3a.ready = true;
+    assert.equal(pr.tryEvolve(p, 'mallet', 'mallet_3a').reason, 'tier', '最上位はまだ解放しない');
+  } finally { EVOLUTIONS.mallet_2.ready = false; EVOLUTIONS.mallet_3a.ready = false; }
 });

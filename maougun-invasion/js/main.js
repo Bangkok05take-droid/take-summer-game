@@ -4,12 +4,12 @@ import { createBattle, STEP } from './core/battle.js';
 import { createClock } from './core/clock.js';
 import { HUMANS } from './data/humans.js';
 import { STAGES, CONFIG } from './data/stages.js';
-import { STORY } from './data/story.js';
+import { STORY, CRYSTAL_EVENT } from './data/story.js';
 import { SKIN } from './data/skin.js';
 import {
   loadProfile, saveProfile, resetProfile, buildDeck, resolveMana, applyResult, isStageOpen, nextStage,
   levelUpUnit, buyUpgrade, SAVE_KEY, resolveSpell, addToFormation, removeFromFormation, normalizeFormation,
-  ruinPending, finishRuinEvent,
+  ruinPending, finishRuinEvent, crystalPending, applyCrystal, tryEvolve,
 } from './data/progress.js';
 import { Renderer, VIEW_W, VIEW_H, MINIMAP } from './render/renderer.js';
 import { Hud, reasonText } from './ui/hud.js';
@@ -165,7 +165,7 @@ $('btnUpgrade').addEventListener('click', toUpgrade);
 
 // ---------- 強化 ----------
 function toUpgrade() {
-  const redraw = () => renderUpgrade(app.profile, (k) => { if (levelUpUnit(app.profile, k).ok) { save(); redraw(); } }, (id) => { if (buyUpgrade(app.profile, id).ok) { save(); redraw(); } });
+  const redraw = () => renderUpgrade(app.profile, (k) => { if (levelUpUnit(app.profile, k).ok) { save(); redraw(); } }, (id) => { if (buyUpgrade(app.profile, id).ok) { save(); redraw(); } }, (k, t) => { if (tryEvolve(app.profile, k, t).ok) { save(); redraw(); } });
   redraw();
   show('scUpgrade');
 }
@@ -316,10 +316,23 @@ function afterWin() {
   show(null);
   talk.play(lines, 'shrine', () => {
     if (lines) { app.profile.story[key] = true; save(); }
-    renderLoot(app.stageId, res, res.firstClear);
-    show('scLoot');
+    const toLoot = () => { renderLoot(app.stageId, res, res.firstClear); show('scLoot'); };
+    // 6-3 の初回クリア：特殊イベント「大魔王の魔力回復」→ 新機能の解放画面 → 続きの会話（1回だけ・再クリアでは起きない）
+    if (app.stageId === '6-3' && crystalPending(app.profile)) { playCrystalEvent(toLoot); return; }
+    toLoot();
   });
 }
+function playCrystalEvent(done) {
+  talk.play(CRYSTAL_EVENT.LINES, 'shrine', () => {
+    applyCrystal(app.profile); save(); // 回復と進化の解放を記録（重複しない）
+    const F = CRYSTAL_EVENT.FEATURE;
+    $('featTitle').textContent = F.title; $('featText').textContent = F.text;
+    $('featItems').innerHTML = F.items.map((t) => `<li>・${t}</li>`).join('');
+    $('ovFeature').hidden = false;
+    app.afterFeature = () => talk.play(CRYSTAL_EVENT.AFTER, 'shrine', done);
+  });
+}
+$('btnFeatNext').addEventListener('click', () => { $('ovFeature').hidden = true; const f = app.afterFeature; app.afterFeature = null; if (f) f(); });
 // 解放した仲間を1体ずつ見せる（複数のときは順に）
 function nextUnlock() {
   const q = app.unlockQueue || [];

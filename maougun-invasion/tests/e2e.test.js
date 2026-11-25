@@ -61,7 +61,7 @@ try {
   // ---- 1-1 の操作 ----
   check('初期の召喚カードは5枚（8体のうち編成した5体）', (await page.locator('.slot').count()) === 5);
   const bgs = await ev(async () => { const { SKIN } = await import('./js/data/skin.js'); const r = window.__game.renderer; const g = SKIN.images.stageBg; return { s11: (g['1-1'] || g.chapter1).src, s12: (g['1-2'] || g.chapter1).src, s13: (g['1-3'] || g.chapter1).src, drawn: !!document.querySelector('canvas') }; });
-  check('背景：第1章はすべて村のパノラマ', bgs.s11 === 'assets/approved/bg/pano_village_small.png' && bgs.s12 === bgs.s11 && bgs.s13 === bgs.s11, JSON.stringify(bgs));
+  check('背景：第1章はすべて村の本番背景', bgs.s11 === 'assets/approved/bg/ch1_village_v2.png' && bgs.s12 === bgs.s11 && bgs.s13 === bgs.s11, JSON.stringify(bgs));
   await waitSprite('mass');
   const gumi = await ev(async () => { const { spriteFor } = await import('./js/render/shapes.js'); const sp = spriteFor('mass'); const cv = document.querySelector('.slot[data-key="mass"] canvas'); const px = cv && cv.getContext('2d').getImageData(cv.width / 2, cv.height - 8, 1, 1).data; return { label: document.querySelector('.slot[data-key="mass"]').textContent, w: sp.img.width, src: sp.src, px: px && [...px] }; });
   check('グミ：名前が「グミ」・承認済みの画像が読み込まれる', gumi.label.includes('グミ') && gumi.src === 'assets/approved/units/mass.png', JSON.stringify({ label: gumi.label, w: gumi.w }));
@@ -342,6 +342,34 @@ try {
     }
     check(`壊滅した町（${choice}）：エラーなし`, e6.length === 0, e6.join(' / '));
     await c6.close();
+  }
+
+  // ---- 第6章：6-3 の初回クリア → 大魔王の魔力回復 → 新機能の解放画面 → 続き → 戦利品／再クリアでは起きない ----
+  {
+    const c7 = await browser.newContext({ ...devices['iPhone 13 landscape'] });
+    const p7 = await c7.newPage(); const e7 = []; p7.on('pageerror', (e) => e7.push(String(e)));
+    await p7.goto(`http://localhost:${PORT}/?seed=7`); await p7.waitForFunction(() => window.__game);
+    await p7.evaluate(async () => { const m = await import('./js/data/progress.js'); const g = window.__game; const p = m.newProfile(); for (const id of ['1-1','1-2','1-3','2-1','2-2','2-3','3-1','3-2','3-3']) m.applyResult(p, id, 'win', 100); m.finishRuinEvent(p, 'recruit'); for (const id of ['4-1','4-2','4-3','5-1','5-2','5-3','5-4','6-1','6-2']) m.applyResult(p, id, 'win', 100); Object.assign(p.story, { opening: true, 'tip:recon': true, 'tip:form': true, 'tip:upgrade': true, 'before:6-3': true }); p.stones = 5000; g.app.profile = p; m.saveProfile(p); g.startStage('6-3'); });
+    const win7 = async () => { await p7.waitForTimeout(150); await p7.evaluate(() => { const b = window.__game.battle; b.damageBase(b.base, b.base.hp); }); await p7.waitForSelector('#scResult:not([hidden])', { timeout: 4000 }); await p7.tap('#btnReport'); await p7.waitForTimeout(100); };
+    const read7 = async () => { const o = []; let fx = 0; for (let i = 0; i < 40 && await p7.locator('#scTalk').isVisible(); i++) { o.push(await p7.locator('#talkText').textContent()); if (await p7.evaluate(() => /fx-/.test(document.getElementById('scTalk').className))) fx++; await p7.tap('#talkBox'); await p7.waitForTimeout(25); } return { o, fx }; };
+    await win7();
+    const a7 = await read7();
+    const feat = await p7.locator('#ovFeature').isVisible() && (await p7.locator('#featTitle').textContent()) === '上位モンスター進化';
+    await p7.tap('#btnFeatNext'); await p7.waitForTimeout(80);
+    const b7 = await read7();
+    const st7 = await p7.evaluate(() => ({ crystal: window.__game.app.profile.events.crystal, saved: JSON.parse(localStorage.getItem('maougunInvasion.save')).events.crystal, loot: !document.getElementById('scLoot').hidden }));
+    check('6-3 初回：勝利後の会話（5行）→ 魔力回復（15行・発光と振動）→ 新機能の解放画面 → 続き（4行）→ 戦利品', a7.o.length === 20 && a7.o[4] === 'おおおお！ でかしたぞ、ヴェイル！！' && a7.o[19] === 'ふっふっふ……。人間どもよ、ここからが本当の恐怖の始まりじゃ！' && a7.fx >= 2 && feat && b7.o.length === 4 && b7.o[3] === '――第6章クリア。' && st7.crystal.done && st7.saved.done && st7.loot, JSON.stringify({ a: a7.o.length, fx: a7.fx, feat, b: b7.o.length, st7 }));
+    await p7.tap('#btnLootNext'); await p7.waitForTimeout(100);
+    if (await p7.locator('#scUnlock').isVisible()) await p7.tap('#btnUnlockNext');
+    await p7.tap('#btnUpgrade'); await p7.waitForTimeout(100);
+    check('魔力回復のあと、強化画面に進化の欄が出る（進化先はデザイン待ち）', (await p7.locator('#upUnits .evo').count()) >= 8);
+    await p7.tap('#btnUpBack');
+    await p7.evaluate(() => window.__game.startStage('6-3'));
+    await win7();
+    const again7 = await p7.locator('#scTalk').isVisible();
+    check('6-3 の再クリアでは魔力回復のイベントが起きない（会話なしで戦利品へ）', !again7 && await p7.locator('#scLoot').isVisible() && !(await p7.locator('#ovFeature').isVisible()));
+    check('第6章：エラーなし', e7.length === 0, e7.join(' / '));
+    await c7.close();
   }
 
   // ---- 縦持ち ----

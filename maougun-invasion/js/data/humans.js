@@ -85,6 +85,21 @@ export const HUMANS = {
       { id: 'wave', name: '一斉砲撃', type: 'wave', every: 11, first: 5, windup: 1.0, recover: 0.4, reach: 260, mult: 1.5 },
     ],
   },
+  // ---- 第6章（2026-11-25・仮）。守護者・古代王のデザインは未承認なので、絵は既存の兵士の代用 ----
+  guardian: {
+    name: '守護者', role: '古代の守り手',
+    note: '何百年も宝を守り続ける古代王国の兵。硬く、倒れるまで退かない', counter: '魔法使いの範囲と木槌小鬼の重い一撃、ワニ将軍の突進で崩す',
+    hp: 1000, atk: 32, range: 36, speed: 20, interval: 1.9, windup: 0.5, kb: 2, attack: 'single', guard: 0.25, noKbFromSmall: true, mana: 140, size: 1.15,
+  },
+  ancient_king: {
+    name: '古代王', role: '強敵', hero: true, noKbFromSmall: true,
+    note: '魔力結晶を守る古代王国の王。守護者を癒やし、古代の魔力で前方の魔物をなぎ払う', counter: '回復役を先に倒し、呪文と幹部で一気に押し切る',
+    hp: 2600, atk: 34, range: 44, speed: 18, interval: 2.0, windup: 0.6, kb: 6, attack: 'single', mana: 600, size: 1.45,
+    skills: [
+      { id: 'heal', name: '古代の加護', type: 'heal', every: 18, first: 8, windup: 0.6, recover: 0.4, radius: 220, ratio: 0.08 },
+      { id: 'wave', name: '古代の魔力', type: 'wave', every: 10, first: 5, windup: 1.0, recover: 0.4, reach: 280, mult: 1.6 },
+    ],
+  },
   // ---- 特殊イベント「壊滅した町」（2026-11-25・仮）。絵はビジュアル制作室の納品待ち（それまでは仮の絵） ----
   ord: {
     name: '竜人オルド', role: '竜の戦士', hero: true, noKbFromSmall: true,

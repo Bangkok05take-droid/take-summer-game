@@ -1,13 +1,14 @@
 /* 戦闘以外の画面：ステージ選択・会話・戦利品・ユニット解放・強化 */
 import { SKIN } from '../data/skin.js';
 import { STAGES, CHAPTER1, CHAPTERS, CHAPTER_EX } from '../data/stages.js';
-import { UNITS, BOSSES, UNIT_ORDER, BOSS_ORDER, ATTACK_TYPES } from '../data/units.js';
+import { UNITS, BOSSES, UNIT_ORDER, BOSS_ORDER, ATTACK_TYPES, EVOLUTIONS } from '../data/units.js';
 import { HUMANS } from '../data/humans.js';
 import { enemiesOf, reconLine } from '../data/recon.js';
 import { LOOT } from '../data/story.js';
 import {
   UPGRADES, UPGRADE_GROUPS, unitLevelCost, MAX_UNIT_LEVEL, resolveUnit, isStageOpen, nextStage, lordLevel,
   slotsFor, slotUnlockLv, normalizeFormation, canForm, MAX_UNIT_SLOTS, MAX_BOSS_SLOTS, SLOTS,
+  crystalDone, evolutionChoices, evolveTierCap, EVOLVE_NEED,
 } from '../data/progress.js';
 import { Renderer } from '../render/renderer.js';
 import { drawPortrait } from '../render/shapes.js';
@@ -19,7 +20,7 @@ const fmtTime = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padSt
 // ---------- ステージ選択 ----------
 // 地図の上の位置（%）：左下の見張り小屋から、右上の村の広場へ
 // 地図の上の位置（%）。章ごとに3つ
-const NODE_POS = { '1-1': [18, 66], '1-2': [50, 36], '1-3': [82, 62], '2-1': [18, 40], '2-2': [50, 66], '2-3': [82, 40], '3-1': [18, 66], '3-2': [50, 38], '3-3': [82, 62], 'ex-1': [50, 55], '4-1': [18, 40], '4-2': [50, 66], '4-3': [82, 40], '5-1': [14, 66], '5-2': [38, 36], '5-3': [62, 66], '5-4': [86, 36] };
+const NODE_POS = { '1-1': [18, 66], '1-2': [50, 36], '1-3': [82, 62], '2-1': [18, 40], '2-2': [50, 66], '2-3': [82, 40], '3-1': [18, 66], '3-2': [50, 38], '3-3': [82, 62], 'ex-1': [50, 55], '4-1': [18, 40], '4-2': [50, 66], '4-3': [82, 40], '5-1': [14, 66], '5-2': [38, 36], '5-3': [62, 66], '5-4': [86, 36], '6-1': [18, 62], '6-2': [50, 38], '6-3': [82, 62] };
 
 // ch：表示する章（CHAPTERS の1つ）。onChapter(ch)：章のタブを押したとき
 export function renderSelect(p, onPick, ch = CHAPTER1, onChapter = null) {
@@ -79,7 +80,7 @@ export function renderSelect(p, onPick, ch = CHAPTER1, onChapter = null) {
 
 // ---------- 会話 ----------
 const SIDE = { ord: 'right', lord: 'left', aide: 'right', take: 'right', sai: 'right', tiw: 'left', mot: 'left', waan: 'left', koi: 'left', yanai: 'left' };
-const HUMAN_SPEAKERS = ['take', 'sai', 'tiw', 'mot', 'waan', 'koi', 'yanai', '門番', '商人', '警備隊長', '王国兵', '王国騎士', '国王', '港の警備兵', '港の守備隊長', '人間軍兵士', '人間軍技師', '重装兵団長', '要塞司令官'];
+const HUMAN_SPEAKERS = ['take', 'sai', 'tiw', 'mot', 'waan', 'koi', 'yanai', '門番', '商人', '警備隊長', '王国兵', '王国騎士', '国王', '港の警備兵', '港の守備隊長', '人間軍兵士', '人間軍技師', '重装兵団長', '要塞司令官', '古代王'];
 
 export class TalkPlayer {
   constructor() {
@@ -111,6 +112,8 @@ export class TalkPlayer {
     $('talkWho').textContent = who;
     $('talkWho').classList.toggle('human', HUMAN_SPEAKERS.includes(l.who));
     $('talkText').textContent = l.text;
+    // 演出（台詞は変えない）：absorb＝発光と魔力の放出／quake＝画面の振動
+    { const sc = $('scTalk'); sc.classList.remove('fx-absorb', 'fx-quake'); if (l.fx) { void sc.offsetWidth; sc.classList.add('fx-' + l.fx); } }
     if (l.who !== 'narr') {
       const side = SIDE[l.who] || 'left';
       const c = side === 'left' ? $('ptLeft') : $('ptRight');
@@ -187,7 +190,7 @@ export function renderUnlock(key) {
 }
 
 // ---------- 強化 ----------
-export function renderUpgrade(p, onUnit, onGlobal) {
+export function renderUpgrade(p, onUnit, onGlobal, onEvolve = null) {
   $('upStones').textContent = p.stones;
   const ul = $('upUnits'); ul.innerHTML = '';
   for (const k of UNIT_ORDER) {
@@ -204,7 +207,24 @@ export function renderUpgrade(p, onUnit, onGlobal) {
       const now = resolveUnit(k, p);
       const max = u.level >= MAX_UNIT_LEVEL;
       const cost = unitLevelCost(u.level);
-      info.innerHTML = `<div class="nm">${SKIN.names[k]}　Lv${u.level}</div><div class="ds">HP ${now.hp}・攻撃 ${now.atk}${max ? '' : `　→ 次 HP ${Math.round(UNITS[k].hp * (1 + UNITS[k].growth.hp * u.level))}`}</div>`;
+      info.innerHTML = `<div class="nm">${SKIN.names[u.formKey || k] || SKIN.names[k]}　Lv${u.level}</div><div class="ds">HP ${now.hp}・攻撃 ${now.atk}${max ? '' : `　→ 次 HP ${Math.round(UNITS[k].hp * (1 + UNITS[k].growth.hp * u.level))}`}</div>`;
+      // 上位進化（古代の魔力結晶のあと）：進化先ごとのボタン。進化先のデザインが届いていなければ「準備中」
+      if (crystalDone(p)) {
+        const ev = document.createElement('div'); ev.className = 'evo';
+        const ch = evolutionChoices(p, k).filter((t) => EVOLUTIONS[t].tier <= evolveTierCap(p));
+        if (!ch.length) ev.textContent = now.tier >= evolveTierCap(p) && now.tier > 1 ? '進化：上位まで進化ずみ' : '進化：進化先は準備中';
+        for (const t of ch) {
+          const b2 = document.createElement('button'); b2.type = 'button'; b2.dataset.evolve = t;
+          const cost = EVOLVE_NEED.stones(EVOLUTIONS[t].tier);
+          const ready = EVOLUTIONS[t].ready !== false;
+          b2.textContent = ready ? `進化：${SKIN.names[t] || t} ${cost}` : `進化：${SKIN.names[t] || t}（準備中）`;
+          b2.disabled = !ready || u.level < EVOLVE_NEED.level || p.stones < cost;
+          if (ready && u.level < EVOLVE_NEED.level) b2.title = `Lv${EVOLVE_NEED.level}から`;
+          if (onEvolve) b2.addEventListener('click', () => onEvolve(k, t));
+          ev.appendChild(b2);
+        }
+        info.appendChild(ev);
+      }
       btn.textContent = max ? 'MAX' : `Lv上げ ${cost}`;
       btn.disabled = max || p.stones < cost;
       btn.addEventListener('click', () => onUnit(k));

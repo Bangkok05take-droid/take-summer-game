@@ -6,6 +6,7 @@
  *   units[key]  { unlocked, level, form, formKey }   form：進化の段階（0 = 基本形）。formKey：今の進化形のキー（分岐する進化用。無ければ基本形）
  *   upgrades    { manaMax, manaRegen, cooldown, spellPower, spellCharge } の段階
  *   events      { ruin: { done, choice: 'recruit'|'reject', recruited, rematches } }  特殊イベント「壊滅した町」
+ *               { crystal: { done } }  特殊イベント「大魔王の魔力回復」（6-3 の初回クリア）。魔力の部分回復と上位進化の解放
  *   formation   { units: [key…], bosses: [key…] }  出撃する編成（次のステージにも引き継ぐ）。枠の数は大魔王Lvで決まる（SLOTS）
  *   stages[id]  { cleared, clears, bestTime }
  *   seen        { [key]: true }  解放画面を見たユニット
@@ -273,10 +274,11 @@ export function lordLevel(p) { return 1 + Object.values((p && p.stages) || {}).f
 export function resolveMana(stageMana, p) {
   const up = (p && p.upgrades) || {};
   const lv = lordLevel(p) - 1;
+  const cr = crystalDone(p) ? CRYSTAL_BONUS : { max: 0, regen: 0 }; // 古代の魔力結晶（部分的な回復）
   return {
     start: stageMana.start,
-    max: stageMana.max + (up.manaMax || 0) * UPGRADES.manaMax.per + lv * LORD_GROWTH.max,
-    regen: stageMana.regen + (up.manaRegen || 0) * UPGRADES.manaRegen.per + lv * LORD_GROWTH.regen,
+    max: stageMana.max + (up.manaMax || 0) * UPGRADES.manaMax.per + lv * LORD_GROWTH.max + cr.max,
+    regen: stageMana.regen + (up.manaRegen || 0) * UPGRADES.manaRegen.per + lv * LORD_GROWTH.regen + cr.regen,
   };
 }
 
@@ -312,4 +314,37 @@ export function evolveUnit(p, key, toKey) {
   if (EVOLUTIONS[toKey].ready === false) return { ok: false, reason: 'planned' };
   u.formKey = toKey; u.form = EVOLUTIONS[toKey].tier - 1;
   return { ok: true };
+}
+
+// ---------- 特殊イベント「大魔王の魔力回復」（第6章・古代の魔力結晶） ----------
+// 部分的な回復：戦いを始めるときの最大魔力 +400・回復 +8/秒（大魔王の肉体は戻らない）。数値は仮（バトル設計で調整）
+export const CRYSTAL_BONUS = { max: 400, regen: 8 };
+export function crystalDone(p) { return !!(p && p.events && p.events.crystal && p.events.crystal.done); }
+export function crystalPending(p) { return !!(p.stages['6-3'] && p.stages['6-3'].cleared) && !crystalDone(p); }
+// 1回だけ。戻り値：今回はじめて回復したら true（再クリアでは false＝重複しない）
+export function applyCrystal(p) {
+  if (crystalDone(p)) return false;
+  p.events = p.events || {};
+  p.events.crystal = { done: true };
+  return true;
+}
+
+// ---------- 進化（上位まで。最上位はまだ解放しない） ----------
+// 進化できる段階の上限：魔力結晶の前は進化なし（1）、あとは上位（2）まで
+export function evolveTierCap(p) { return crystalDone(p) ? 2 : 1; }
+export const EVOLVE_NEED = { level: 5, stones: (tier) => 300 + tier * 200 }; // 仮：Lv5 以上と魔界石（上位 700）
+// 進化する。{ ok, reason }：'feature'＝まだ進化できない（魔力結晶の前）／'tier'＝最上位はまだ／'level'／'stones'／'planned'（進化先のデザイン待ち）など
+export function tryEvolve(p, key, toKey) {
+  if (!crystalDone(p)) return { ok: false, reason: 'feature' };
+  const to = EVOLUTIONS[toKey];
+  if (!to) return { ok: false, reason: 'invalid' };
+  if (to.tier > evolveTierCap(p)) return { ok: false, reason: 'tier' };
+  const u = p.units[key];
+  if (!u || !u.unlocked) return { ok: false, reason: 'locked' };
+  if (u.level < EVOLVE_NEED.level) return { ok: false, reason: 'level', need: EVOLVE_NEED.level };
+  const cost = EVOLVE_NEED.stones(to.tier);
+  if (p.stones < cost) return { ok: false, reason: 'stones', need: cost - p.stones };
+  const r = evolveUnit(p, key, toKey);
+  if (r.ok) p.stones -= cost;
+  return { ...r, cost };
 }

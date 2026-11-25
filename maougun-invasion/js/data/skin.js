@@ -69,6 +69,8 @@ export const SKIN = {
       chapter4: { src: 'assets/approved/bg/pano_village_town.png', scale: 1.36, offsetY: 0, parallax: 0.35, focus: 0.5 },
       // 第5章 鉄鋼の要塞都市：承認済みの背景が届いたら src をその画像にする（今は町のパノラマを暗くして代用）
       chapter5: { src: 'assets/approved/bg/pano_village_town.png', scale: 1.36, offsetY: 0, parallax: 0.35, focus: 0.5, tint: 'rgba(30,30,45,.35)' },
+      // 第6章 砂漠の古代王国：承認済みの砂漠・ピラミッド背景が届いたら src をその画像にする（今は町のパノラマを砂色に染めて代用）
+      chapter6: { src: 'assets/approved/bg/pano_village_town.png', scale: 1.36, offsetY: 0, parallax: 0.35, focus: 0.5, tint: 'rgba(200,150,60,.35)' },
       chapter3: { src: 'assets/approved/bg/ch3_castle_v2.png', scale: 1.22, offsetY: -358, parallax: 0.35, focus: 0.5 },
     },
     // 人間軍の拠点（tower：1-1〜1-3、gate：1-4、castle：1-5）と、魔王軍の祠。{ src, width, footY }
@@ -174,6 +176,9 @@ if (SKIN.sprites.swordsman && !SKIN.sprites.harbor_captain) SKIN.sprites.harbor_
 if (SKIN.sprites.archer && !SKIN.sprites.turret) SKIN.sprites.turret = { ...SKIN.sprites.archer, scale: (SKIN.sprites.archer.scale || 0.25) * 1.2 };
 if (SKIN.sprites.shield && !SKIN.sprites.heavy) SKIN.sprites.heavy = { ...SKIN.sprites.shield, scale: (SKIN.sprites.shield.scale || 0.25) * 1.2 };
 if (SKIN.sprites.swordsman && !SKIN.sprites.commander) SKIN.sprites.commander = { ...SKIN.sprites.swordsman, scale: (SKIN.sprites.swordsman.scale || 0.25) * 1.5 };
+// 第6章（仮）：守護者は盾兵の絵を1.2倍、古代王は盾兵の絵を1.5倍で代用（デザイン未承認）
+if (SKIN.sprites.shield && !SKIN.sprites.guardian) SKIN.sprites.guardian = { ...SKIN.sprites.shield, scale: (SKIN.sprites.shield.scale || 0.25) * 1.2 };
+if (SKIN.sprites.shield && !SKIN.sprites.ancient_king) SKIN.sprites.ancient_king = { ...SKIN.sprites.shield, scale: (SKIN.sprites.shield.scale || 0.25) * 1.5 };
 if (SKIN.sprites.vanguard && !SKIN.sprites.ord) SKIN.sprites.ord = { ...SKIN.sprites.vanguard, scale: (SKIN.sprites.vanguard.scale || 0.25) * 1.6 };
 if (SKIN.sprites.shield && !SKIN.sprites.king) SKIN.sprites.king = { ...SKIN.sprites.shield, scale: (SKIN.sprites.shield.scale || 0.25) * 1.45 };
 Object.assign(SKIN.portraits, APPROVED.portraits);
