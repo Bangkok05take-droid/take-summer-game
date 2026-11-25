@@ -289,7 +289,8 @@ test('第1章は3ステージ。順に解放され、1-3 クリアで幹部・�
     const i = CHAPTER1.stages.indexOf(id);
     if (i < CHAPTER1.stages.length - 1) assert.ok(isStageOpen(p, CHAPTER1.stages[i + 1]));
   }
-  assert.equal(nextStage(p), null);
+  assert.equal(nextStage(p), '2-1', '第1章をクリアすると第2章へ');
+  assert.ok(isStageOpen(p, '2-1') && !isStageOpen(p, '2-2'));
   assert.equal(p.loot.length, 3);
   assert.equal(lordLevel(p), 4);
   assert.deepEqual(buildDeck(p).map((d) => d.key), ['mass', 'vanguard', 'tank', 'ranged', 'fast', 'area', 'charger'], '1-3 クリアで大魔王Lv4（増えた6枠目は控えから自動で埋まる）＋幹部・突進');
@@ -451,9 +452,9 @@ const sniperBattle = () => {
 };
 test('後衛狙撃：前衛を無視して、射程内の後衛（回復役を優先）を狙う', () => {
   const { b, m } = sniperBattle();
-  const front = b.spawnHuman('shield'); front.x = 1300;
-  const archer = b.spawnHuman('archer'); archer.x = 1120;
-  const priest = b.spawnHuman('priest'); priest.x = 1100;
+  const front = b.spawnHuman('shield'); front.x = 1330;
+  const archer = b.spawnHuman('archer'); archer.x = 1240;
+  const priest = b.spawnHuman('priest'); priest.x = 1220;
   const hp = [front.hp, archer.hp, priest.hp];
   b.resolveAttack(m); run(b, 0.6); // 木槌が届くまで待つ
   assert.equal(front.hp, hp[0], '前衛には当てない');
@@ -470,7 +471,7 @@ test('後衛狙撃：後衛がいなければ前衛に切り替えず空振り�
 });
 test('後衛狙撃：前衛が射程にいれば止まって構える（前に出すぎない）', () => {
   const { b, m } = sniperBattle();
-  const front = b.spawnHuman('swordsman'); front.x = 1150; front.def = { ...front.def, speed: 0 };
+  const front = b.spawnHuman('swordsman'); front.x = 1230; front.def = { ...front.def, speed: 0 };
   const x0 = m.x; run(b, 1);
   assert.ok(Math.abs(m.x - x0) < 1 && m.state === 'attack');
 });
@@ -525,4 +526,39 @@ test('飛び道具（弓ゴブリン・魔法使い）は届いた瞬間にダ�
   const far = b.spawnHuman('swordsman'); far.x = 1200 - 205; far.def = { ...far.def, speed: 0 };
   near.x = -999; b.resolveAttack(a);
   assert.ok(b.inFlight[0].at - b.t > 0.33, '遠いほど遅い');
+});
+
+test('後衛狙撃の空振り：前線の頭上を越えて後ろ（射程いっぱい）に落ち、誰にも当たらない', () => {
+  const b = makeBattle({ stage: noEnemies(), deck: ['mallet'] });
+  const m = b.spawn('demon', b.deckDef('mallet'), 1400); m.x = 1400;
+  const front = b.spawnHuman('swordsman'); front.x = 1300; front.def = { ...front.def, speed: 0 }; const hp = front.hp;
+  b.events.length = 0; b.resolveAttack(m);
+  const shot = b.events.find((e) => e.type === 'shot');
+  assert.ok(shot.miss && shot.over && shot.to < front.x - 20, `前線（1300）の頭上を越えて後ろに落ちる：${shot.to}`);
+  run(b, 0.7); assert.equal(front.hp, hp);
+  assert.ok(UNITS.mallet.stopRange > UNITS.area.range && UNITS.mallet.stopRange <= UNITS.area.range + 60, '止まる位置は魔法使いのすぐ後ろ');
+  assert.ok(UNITS.mallet.range > UNITS.mallet.stopRange + 80, '投げる距離は前線の後ろまで届く');
+});
+test('後衛狙撃：前衛は stopRange で止まる／前線の後ろの後衛には range まで届く', () => {
+  const b = makeBattle({ stage: noEnemies(), deck: ['mallet'] });
+  const m = b.spawn('demon', b.deckDef('mallet'), 1400); m.x = 1400;
+  const front = b.spawnHuman('swordsman'); front.x = 1300; front.def = { ...front.def, speed: 0 };
+  run(b, 0.5); assert.ok(m.state === 'attack' && Math.abs(m.x - 1400) < 2, '前衛が stopRange（200）以内なら止まって構える');
+  const b2 = makeBattle({ stage: noEnemies(), deck: ['mallet'] });
+  const m2 = b2.spawn('demon', b2.deckDef('mallet'), 1400); m2.x = 1400;
+  const f2 = b2.spawnHuman('swordsman'); f2.x = 1180; f2.def = { ...f2.def, speed: 0 }; // 220 先：stopRange の外
+  const ar = b2.spawnHuman('archer'); ar.x = 1100; ar.def = { ...ar.def, speed: 0 }; const ah = ar.hp; // 300 先：range の中
+  run(b2, 3); assert.ok(Math.abs(m2.x - 1400) < 2, '後衛が届く距離なので、その場で止まって投げる'); assert.ok(ar.hp < ah, '前線の後ろの弓兵に当たる');
+});
+
+test('第2章（城下町）：3ステージ。順に開き、2-3 は警備隊長が出る強敵ステージ', () => {
+  const p = newProfile();
+  for (const id of CHAPTER1.stages) applyResult(p, id, 'win', 100);
+  for (const id of ['2-1', '2-2', '2-3']) { assert.ok(isStageOpen(p, id), id); applyResult(p, id, 'win', 100); }
+  assert.equal(nextStage(p), null);
+  assert.equal(lordLevel(p), 7);
+  assert.ok(STAGES['2-3'].spawns.some((s) => s.hero === 'captain'));
+  const b = makeBattle({ stageId: '2-3', seed: 1 });
+  b.damageBase(b.base, b.base.hp - b.base.maxHp * 0.59); run(b, 3);
+  assert.ok(b.entities.some((e) => e.key === 'captain'), '拠点HP60%で警備隊長');
 });

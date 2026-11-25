@@ -302,7 +302,11 @@ export class Battle {
     }
 
     // 射程に相手がいれば攻撃を始める。いなければ前進
-    if (this.targetsInRange(e).length) {
+    // stopRange（後衛狙撃）：前衛の敵は stopRange で止まり、狙える後衛・拠点は range まで届けば止まる
+    const engage = d.stopRange
+      ? this.targetsAhead(e, -12, d.stopRange).length > 0 || this.backlineTargets(this.targetsInRange(e)).length > 0
+      : this.targetsInRange(e).length > 0;
+    if (engage) {
       e.state = 'attack'; e.timer = 0; e.hitsDone = 0;
       this.events.push({ type: 'windup', id: e.id });
       return;
@@ -342,12 +346,18 @@ export class Battle {
 
   resolveAttack(e) {
     const d = e.def;
-    let list = this.targetsInRange(e, 10); // 準備のあいだに少し離れても当たる
-    if (d.target === 'backline') list = this.backlineTargets(list);
+    const all = this.targetsInRange(e, 10); // 準備のあいだに少し離れても当たる
+    let list = all;
+    if (d.target === 'backline') list = this.backlineTargets(all);
     if (!list.length) {
       // 空振り：攻撃の演出は続ける（飛び道具は手前に落ちる）
       this.events.push({ type: 'whiff', id: e.id, x: e.x, side: e.side });
-      if (d.projectile) this.events.push({ type: 'shot', id: e.id, kind: d.projectile, from: e.x, to: e.x + e.dir * d.range * 0.6, side: e.side, miss: true });
+      // 後衛狙撃の空振り：前線の敵の頭上を越えて、射程いっぱいの後ろの地面に落ちる（誰にも当たらない）
+      const over = d.target === 'backline';
+      // 落ちる所：射程内でいちばん奥の敵のさらに後ろ（射程いっぱいまで）
+      const far = all.filter((t) => !t.isBase).reduce((m, t) => Math.max(m, t.dist), 0);
+      const land = over ? Math.min(d.range, far + 40) : d.range * 0.6;
+      if (d.projectile) this.events.push({ type: 'shot', id: e.id, kind: d.projectile, from: e.x, to: e.x + e.dir * land, side: e.side, miss: true, over, delay: over && d.flight ? d.flight[1] : 0 });
       this.events.push({ type: 'strike', id: e.id, area: false, side: e.side });
       return;
     }

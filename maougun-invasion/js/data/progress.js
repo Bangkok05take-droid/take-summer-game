@@ -12,7 +12,7 @@
  *   loot        集めた戦利品（手がかり）のステージID
  */
 import { ALL_DEMONS, UNIT_ORDER, BOSSES, BOSS_ORDER, EVOLUTIONS } from './units.js';
-import { STAGES, CHAPTER1 } from './stages.js';
+import { STAGES, CHAPTER1, STAGE_ORDER, chapterOf } from './stages.js';
 
 export const SAVE_KEY = 'maougunInvasion.save';
 export const SAVE_VERSION = 2; // 2：編成（formation）と魔王の力の強化を追加
@@ -113,15 +113,18 @@ export function resetProfile(storage) {
 }
 
 // ---------- 進行 ----------
+// 章をまたいで順に開く（1-3 をクリアすると 2-1 が開く）
 export function isStageOpen(p, id) {
-  const i = CHAPTER1.stages.indexOf(id);
+  const i = STAGE_ORDER.indexOf(id);
   if (i <= 0) return i === 0;
-  return !!(p.stages[CHAPTER1.stages[i - 1]] && p.stages[CHAPTER1.stages[i - 1]].cleared);
+  return !!(p.stages[STAGE_ORDER[i - 1]] && p.stages[STAGE_ORDER[i - 1]].cleared);
 }
 export function nextStage(p) {
-  return CHAPTER1.stages.find((id) => !(p.stages[id] && p.stages[id].cleared)) || null;
+  return STAGE_ORDER.find((id) => !(p.stages[id] && p.stages[id].cleared)) || null;
 }
-export function chapterCleared(p) { return CHAPTER1.stages.every((id) => p.stages[id] && p.stages[id].cleared); }
+export function chapterCleared(p, ch = CHAPTER1) { return ch.stages.every((id) => p.stages[id] && p.stages[id].cleared); }
+export function isChapterOpen(p, ch) { return isStageOpen(p, ch.stages[0]); }
+export { chapterOf };
 
 // 戦闘の結果を反映。戻り値：{ stones, firstClear, unlocked }
 export function applyResult(p, stageId, result, time) {

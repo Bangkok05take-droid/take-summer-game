@@ -1,6 +1,6 @@
 /* 戦闘以外の画面：ステージ選択・会話・戦利品・ユニット解放・強化 */
 import { SKIN } from '../data/skin.js';
-import { STAGES, CHAPTER1 } from '../data/stages.js';
+import { STAGES, CHAPTER1, CHAPTERS } from '../data/stages.js';
 import { UNITS, BOSSES, UNIT_ORDER, BOSS_ORDER, ATTACK_TYPES } from '../data/units.js';
 import { HUMANS } from '../data/humans.js';
 import { enemiesOf, reconLine } from '../data/recon.js';
@@ -18,19 +18,31 @@ const fmtTime = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padSt
 
 // ---------- ステージ選択 ----------
 // 地図の上の位置（%）：左下の見張り小屋から、右上の村の広場へ
-const NODE_POS = { '1-1': [18, 66], '1-2': [50, 36], '1-3': [82, 62] }; // 第1章（チュートリアル・3ステージ）
+// 地図の上の位置（%）。章ごとに3つ
+const NODE_POS = { '1-1': [18, 66], '1-2': [50, 36], '1-3': [82, 62], '2-1': [18, 40], '2-2': [50, 66], '2-3': [82, 40] };
 
-export function renderSelect(p, onPick) {
+// ch：表示する章（CHAPTERS の1つ）。onChapter(ch)：章のタブを押したとき
+export function renderSelect(p, onPick, ch = CHAPTER1, onChapter = null) {
+  $('selChap').textContent = `第${ch.id}章`;
+  $('selChapName').textContent = ch.name;
+  const tabs = $('chapTabs'); tabs.innerHTML = '';
+  for (const c of CHAPTERS) {
+    const t = document.createElement('button'); t.type = 'button'; t.className = 'chapTab' + (c === ch ? ' on' : ''); t.dataset.chapter = c.id;
+    const open = isStageOpen(p, c.stages[0]);
+    t.textContent = open ? `第${c.id}章` : `第${c.id}章 🔒`; t.disabled = !open;
+    if (onChapter) t.addEventListener('click', () => onChapter(c));
+    tabs.appendChild(t);
+  }
   $('selStones').textContent = p.stones;
   $('selLord').textContent = lordLevel(p);
-  $('selLoot').textContent = p.loot.filter((id) => CHAPTER1.stages.includes(id)).length;
-  $('selLootMax').textContent = CHAPTER1.stages.length;
+  $('selLoot').textContent = p.loot.filter((id) => ch.stages.includes(id)).length;
+  $('selLootMax').textContent = ch.stages.length;
   const map = $('stageMap');
   map.innerHTML = '';
   const ns = 'http://www.w3.org/2000/svg';
   const svg = document.createElementNS(ns, 'svg');
   svg.setAttribute('viewBox', '0 0 100 100'); svg.setAttribute('preserveAspectRatio', 'none'); svg.setAttribute('aria-hidden', 'true');
-  const ids = CHAPTER1.stages;
+  const ids = ch.stages;
   for (let i = 0; i < ids.length - 1; i++) {
     const [x1, y1] = NODE_POS[ids[i]]; const [x2, y2] = NODE_POS[ids[i + 1]];
     const line = document.createElementNS(ns, 'line');
@@ -64,7 +76,7 @@ export function renderSelect(p, onPick) {
 
 // ---------- 会話 ----------
 const SIDE = { lord: 'left', aide: 'right', take: 'right', sai: 'right', tiw: 'left', mot: 'left', waan: 'left', koi: 'left', yanai: 'left' };
-const HUMAN_SPEAKERS = ['take', 'sai', 'tiw', 'mot', 'waan', 'koi', 'yanai'];
+const HUMAN_SPEAKERS = ['take', 'sai', 'tiw', 'mot', 'waan', 'koi', 'yanai', '門番', '商人', '警備隊長'];
 
 export class TalkPlayer {
   constructor() {

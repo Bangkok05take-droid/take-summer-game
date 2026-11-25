@@ -31,6 +31,12 @@ export const CONFIG = {
  * tutorial：'guide'＝手順つきの説明（js/data/tutorial.js）／'hints'＝敵の登場などでヒント／'self'＝ヒントなし
  * 旧 1-4「村の門」・1-5「村の広場（勇者戦）」のデータは第2章（城下町）づくりの素材として下に残す（遊べない）。勇者たけ・サイは最後まで出さない */
 export const CHAPTER1 = { id: 1, name: 'はじまりの村を侵略せよ', stages: ['1-1', '1-2', '1-3'], unlockOnClear: 'charger' };
+// 第2章（2026-11-25）：城下町。旧 1-4「村の門」の敵構成をもとに、後衛（弓兵・僧侶）が多く、最後に強敵「警備隊長」
+export const CHAPTER2 = { id: 2, name: '城下町を制圧せよ', stages: ['2-1', '2-2', '2-3'] };
+export const CHAPTERS = [CHAPTER1, CHAPTER2];
+// 全ステージの順番（章をまたいで、前のステージをクリアすると次が開く）
+export const STAGE_ORDER = CHAPTERS.flatMap((c) => c.stages);
+export const chapterOf = (id) => CHAPTERS.find((c) => c.stages.includes(id)) || CHAPTER1;
 
 const MANA = { start: 200, max: 1000, regen: 28 };
 
@@ -141,6 +147,64 @@ export const STAGES = {
     talk: [
       { who: 'ワーン', text: 'みんな、広場まで下がって！ 勇者さまたちが来てくれるまで、ふんばるよ！' },
       { who: 'ティウ', text: '勇者たけとサイが帰ってきたら、魔物なんてあっという間さ！ ……たぶん。' },
+    ],
+  },
+  // ---------------- 第2章 城下町 ----------------
+  '2-1': {
+    id: '2-1', chapter: 2, name: '城下町の門', theme: 'gate',
+    length: L(2400), shrineHp: 6500, baseHp: 6500, enemyScale: 1.2, mana: MANA,
+    spawns: [
+      { who: 'militia', start: 3, every: 4.5, max: 6 },
+      { who: 'shield', start: 10, every: 26, max: 2 },
+      { who: 'swordsman', start: 14, every: 10, max: 4 },
+      { who: 'archer', start: 22, every: 12, max: 3 },
+      { who: 'priest', start: 45, every: 28, max: 1 },
+      { who: 'rider', start: 60, every: 16, max: 2 },
+      { who: 'militia', start: 120, every: 3.5, max: 7 },
+      { trigger: { baseBelow: 0.6 }, wave: [{ who: 'shield', count: 1 }, { who: 'swordsman', count: 3 }, { who: 'priest', count: 1 }], gap: 0.6 },
+      { trigger: { baseBelow: 0.3 }, wave: [{ who: 'shield', count: 2 }, { who: 'archer', count: 3 }, { who: 'rider', count: 2 }], gap: 0.6 },
+    ],
+    reward: { stones: 280 },
+    talk: [
+      { who: '門番', text: '魔物の軍勢だ！ 門を閉めろ！ 盾兵は前へ！' },
+    ],
+  },
+  '2-2': {
+    id: '2-2', chapter: 2, name: '市場通り', theme: 'market',
+    length: L(2400), shrineHp: 7000, baseHp: 7000, enemyScale: 1.25, mana: MANA,
+    spawns: [
+      { who: 'militia', start: 3, every: 4, max: 6 },
+      { who: 'archer', start: 8, every: 9, max: 4 },
+      { who: 'swordsman', start: 12, every: 10, max: 3 },
+      { who: 'priest', start: 25, every: 20, max: 2 },
+      { who: 'archer', start: 70, every: 7, max: 4 },
+      { who: 'rider', start: 90, every: 14, max: 3 },
+      { who: 'priest', start: 110, every: 18, max: 2 },
+      { trigger: { baseBelow: 0.6 }, wave: [{ who: 'archer', count: 3 }, { who: 'priest', count: 1 }, { who: 'swordsman', count: 2 }], gap: 0.6 },
+      { trigger: { baseBelow: 0.3 }, wave: [{ who: 'rider', count: 3 }, { who: 'archer', count: 3 }, { who: 'priest', count: 1 }], gap: 0.6 },
+    ],
+    reward: { stones: 300 },
+    talk: [
+      { who: '商人', text: '屋台の上から弓で狙え！ 僧侶さまは後ろで手当てを！' },
+    ],
+  },
+  '2-3': {
+    id: '2-3', chapter: 2, name: '城下町の広場', theme: 'plaza', boss: true,
+    length: L(2500), shrineHp: 7500, baseHp: 6500, enemyScale: 1.25, mana: { ...MANA, start: 400 },
+    spawns: [
+      { who: 'militia', start: 2, every: 4, max: 6 },
+      { who: 'swordsman', start: 8, every: 9, max: 4 },
+      { who: 'archer', start: 15, every: 11, max: 3 },
+      { who: 'shield', start: 25, every: 24, max: 2 },
+      { who: 'priest', start: 45, every: 26, max: 2 },
+      { who: 'rider', start: 55, every: 14, max: 3 },
+      { who: 'militia', start: 110, every: 3.5, max: 7 },
+      { trigger: { baseBelow: 0.6 }, hero: 'captain', wave: [{ who: 'captain', count: 1 }, { who: 'shield', count: 1 }, { who: 'swordsman', count: 2 }], gap: 0.8 },
+      { trigger: { baseBelow: 0.25 }, wave: [{ who: 'rider', count: 3 }, { who: 'swordsman', count: 3 }, { who: 'priest', count: 1 }], gap: 0.5 },
+    ],
+    reward: { stones: 400 },
+    talk: [
+      { who: '警備隊長', text: '城下町の守りは、この私が預かっている。魔物ども、ここで終わりだ！' },
     ],
   },
 };

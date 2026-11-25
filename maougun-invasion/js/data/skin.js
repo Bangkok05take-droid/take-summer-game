@@ -57,6 +57,7 @@ export const SKIN = {
       // カメラの移動量の35%だけ背景が動く（parallax）。focus：動く範囲の中心を画像のどこに置くか（0＝左端・0.5＝中央・1＝右端）
       // 町のパノラマ（pano_village_town.png）は第2章（城下町）用に残す。16:9 の旧背景（village_small.png・village_town.png）もファイルは残す
       chapter1: { src: 'assets/approved/bg/pano_village_small.png', scale: 1.36, offsetY: 0, parallax: 0.35, focus: 0.5 },
+      chapter2: { src: 'assets/approved/bg/pano_village_town.png', scale: 1.36, offsetY: 0, parallax: 0.35, focus: 0.5 }, // 第2章 城下町（町のパノラマ）
     },
     // 人間軍の拠点（tower：1-1〜1-3、gate：1-4、castle：1-5）と、魔王軍の祠。{ src, width, footY }
     base: {},
@@ -135,6 +136,8 @@ export const SKIN = {
 
 // 承認済み素材（tools/accept_assets.py が書いた js/data/approved.js）を重ねる。手で書いた登録より優先
 Object.assign(SKIN.sprites, APPROVED.sprites);
+// 警備隊長（第2章のボス・仮）：専用の絵が届くまで、見習い剣士の絵を1.4倍で使う
+if (SKIN.sprites.swordsman && !SKIN.sprites.captain) SKIN.sprites.captain = { ...SKIN.sprites.swordsman, scale: (SKIN.sprites.swordsman.scale || 0.25) * 1.4 };
 Object.assign(SKIN.portraits, APPROVED.portraits);
 Object.assign(SKIN.images.stageBg, APPROVED.images.stageBg);
 Object.assign(SKIN.images.base, APPROVED.images.base);

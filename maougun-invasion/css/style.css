@@ -395,3 +395,8 @@ body.portrait #rotate { display: flex; }
 }
 #tutorHint .who { flex: none; padding: 0 calc(var(--u) * 8); background: #6d28d9; border-radius: calc(var(--u) * 6); font-size: calc(var(--u) * 12); }
 @media (prefers-reduced-motion: reduce) { .tutor-focus { animation: none; box-shadow: 0 0 0 calc(var(--u) * 4) #ffe39a; } }
+/* 章の切り替え（ステージ選択） */
+.chapTabs { display: flex; gap: calc(var(--u) * 6); margin-top: calc(var(--u) * 6); }
+.chapTab { padding: calc(var(--u) * 3) calc(var(--u) * 12); border-radius: 999px; border: calc(var(--u) * 2) solid var(--line); background: rgba(0,0,0,.35); color: var(--dim); font-weight: 800; font-size: calc(var(--u) * 12); }
+.chapTab.on { border-color: var(--gold); color: var(--gold2); background: rgba(90, 30, 150, .8); }
+.chapTab:disabled { opacity: .5; }

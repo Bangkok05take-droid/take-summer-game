@@ -105,7 +105,7 @@ export class Renderer {
             const sx = e.x + e.dir * 10; const sy = laneY(e.lane) - this.headDrop(e) * 0.65;
             const ex = ev.to; const ey = ev.miss ? laneY(e.lane) - 6 : ev.toLane != null ? laneY(ev.toLane) - 22 : GROUND_Y - 50;
             const fl = ev.delay || 0.45;
-            this.add({ kind: 'mThrow', sx, sy, ex, ey, life: fl });
+            this.add({ kind: 'mThrow', sx, sy, ex, ey, lift: ev.over ? 70 : null, life: fl }); // 空振りは前線の頭上を越える高い弧
             if (getImage(mt.impact.src)) this.add({ kind: 'ufx', d: { ...mt.impact, anim: 'ground' }, x: ex, y: ey + 14, flip: 1, delay: fl, life: fl + mt.impact.life });
             break;
           }
@@ -169,7 +169,7 @@ export class Renderer {
         case 'spawn':
           break;
         case 'alarm': this.add({ kind: 'banner', text: '人間軍の増援！', color: '#8a1c2c', life: 1.6 }); break;
-        case 'heroAlarm': this.add({ kind: 'banner', text: ev.who === 'take' ? '勇者たけ 参上！' : '勇者サイ 参上！', sub: ev.line, color: '#1d4f9a', life: 2.6, hero: true }); this.shake = 6; break;
+        case 'heroAlarm': this.add({ kind: 'banner', text: `${(b.humanDefs[ev.who] || {}).name || '強敵'} 参上！`, sub: ev.line, color: '#1d4f9a', life: 2.6, hero: true }); this.shake = 6; break;
         default: break;
       }
     }
@@ -483,7 +483,8 @@ export class Renderer {
         }
         case 'mThrow': { // ゆるい弧＋約1回転。同じ絵を薄く短く重ねて残像
           const d = SKIN.malletThrow.shot; const img = getImage(d.src); if (!img) break;
-          const pos = (u) => [f.sx + (f.ex - f.sx) * u, f.sy + (f.ey - f.sy) * u - 4 * d.lift * u * (1 - u)];
+          const lift = f.lift || d.lift;
+          const pos = (u) => [f.sx + (f.ex - f.sx) * u, f.sy + (f.ey - f.sy) * u - 4 * lift * u * (1 - u)];
           const k = d.w / img.naturalWidth;
           for (const [lag, al] of [[0.1, 0.18], [0.05, 0.32], [0, 1]]) {
             const u = Math.max(0, p - lag); const [x, y] = pos(u);

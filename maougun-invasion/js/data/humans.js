@@ -35,6 +35,14 @@ export const HUMANS = {
     note: '足が速く、一気に祠へ迫る', counter: '前衛で足止め',
     hp: 270, atk: 26, range: 34, speed: 88, interval: 1.1, windup: 0.3, kb: 2, attack: 'single', mana: 60, size: 1.0, // 2026-11-25：320 → 270（しぶといので弱く）
   },
+  // ---- 第2章のボス（2026-11-25・仮）。拠点HP60%で1回だけ登場。絵は届くまで見習い剣士の絵を大きくして使う ----
+  captain: {
+    name: '警備隊長', role: '強敵', hero: true, noKbFromSmall: true,
+    note: '2連撃と飛ぶ斬撃。小さな魔物では押し返せない', counter: '岩男で受け止め、魔法使い・呪文・幹部で押し切る',
+    hp: 2800, atk: 42, range: 40, speed: 32, interval: 1.6, windup: 0.4, kb: 6, attack: 'single', mana: 350, size: 1.3,
+    hits: 2, hitGap: 0.2,
+    skills: [{ id: 'wave', name: '鋭い一閃', type: 'wave', every: 8, first: 4, windup: 0.8, recover: 0.4, reach: 280, mult: 1.8 }],
+  },
   // ---- 勇者（1-5 のボス）。拠点HPの割合で1回だけ登場。倒すと撤退 ----
   take: {
     name: '勇者たけ', role: '勇者', hero: true, noKbFromSmall: true,

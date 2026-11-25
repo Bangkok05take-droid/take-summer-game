@@ -16,7 +16,8 @@ export const GROWTH = { hp: 0.12, atk: 0.12 }; // 簡易強化：レベル1ご�
  *               long＝遠距離（後方から敵の最前線）／sniper＝後衛狙撃（後方から敵の後衛を直接）
  *   target      front＝いちばん近い相手（既定）／backline＝敵の後衛（line: 'back'）と敵拠点だけ。
  *               backline は前衛に標的を切り替えない。射程に後衛も拠点も無ければ空振りする（battle.js resolveAttack）
- *   line        自分が前衛（front・既定）か後衛（back）か。相手の後衛狙撃の対象になる */
+ *   line        自分が前衛（front・既定）か後衛（back）か。相手の後衛狙撃の対象になる
+ *   stopRange   前衛の敵がこの距離に入ったら止まって攻撃を始める（無ければ range）。狙える後衛・拠点は range まで届く */
 export const ATTACK_TYPES = {
   melee: { name: '近距離', short: '近' },
   mid: { name: '中距離魔法', short: '中' },
@@ -75,7 +76,8 @@ export const UNITS = {
   // 高火力・高コスト・低HP・長い構え。3段階に進化し、最終形態は2方向に分かれる（EVOLUTIONS）
   mallet: {
     role: '後衛狙撃', attackType: 'sniper', target: 'backline', line: 'back', tier: 1, evolvesTo: 'mallet_2', growth: GROWTH,
-    cost: 450, cooldown: 18, hp: 160, atk: 190, range: 330, speed: 30,
+    // 2026-11-25：止まる位置（stopRange）は 200＝魔法使い（射程160）のすぐ後ろ。投げる距離（range）は 330 で、前線の後ろの後衛・拠点まで届く
+    cost: 450, cooldown: 18, hp: 160, atk: 190, range: 330, stopRange: 200, speed: 30,
     interval: 3.6, windup: 1.4, kb: 2, attack: 'single', projectile: 'hammer', size: 0.8,
     flight: [0.42, 0.56], // 2026-11-25：投げた木槌が届いた瞬間にダメージ（演出の飛翔時間に合わせる）
   },

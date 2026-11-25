@@ -1,7 +1,7 @@
 /* 偵察：ステージの出現データから、人間軍の兵種・特徴をまとめる（編成画面・偵察報告で使う）
  * 報告する側近の表示名は SKIN.speakers.aide（ストーリー側の正式名称が決まったら skin.js の1か所を変えるだけ）。 */
 import { HUMANS } from './humans.js';
-import { STAGES, CHAPTER1 } from './stages.js';
+import { STAGES, STAGE_ORDER } from './stages.js';
 
 // 出てくる順に、兵種ごとの情報を返す。[{ key, name, role, note, counter, hero, when }]
 export function enemiesOf(stageId) {
@@ -20,8 +20,8 @@ export function enemiesOf(stageId) {
     else if (s.wave) for (const w of s.wave) add(w.who, `拠点HP${Math.round(s.trigger.baseBelow * 100)}%で登場`, s.hero === w.who);
   }
   // 前のステージにいなかった兵種に NEW の印
-  const i = CHAPTER1.stages.indexOf(stageId);
-  const prev = i > 0 ? enemyKeys(CHAPTER1.stages[i - 1]) : null;
+  const i = STAGE_ORDER.indexOf(stageId);
+  const prev = i > 0 ? enemyKeys(STAGE_ORDER[i - 1]) : null;
   for (const e of list) e.isNew = !!prev && !prev.has(e.key);
   return list;
 }

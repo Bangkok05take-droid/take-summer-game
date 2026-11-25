@@ -223,6 +223,10 @@ try {
   await playStage('1-3', '幹部・突進');
   const prof = await ev(() => window.__game.app.profile);
   check('第1章の全3ステージを制圧', ['1-1', '1-2', '1-3'].every((id) => prof.stages[id] && prof.stages[id].cleared) && prof.loot.length === 3);
+  check('第1章クリア後のステージ選択は第2章（城下町）で、2-1 が開いている', (await page.locator('#selChapName').textContent()) === '城下町を制圧せよ' && !(await page.locator('.node[data-stage="2-1"]').isDisabled()) && await page.locator('.node[data-stage="2-2"]').isDisabled());
+  await shot(page, '16_chapter2');
+  await page.tap('.chapTab[data-chapter="1"]');
+  check('章のタブで第1章に戻れる', (await page.locator('#selChapName').textContent()) === 'はじまりの村を侵略せよ');
   const again = await sortie('1-2');
   check('2回目の偵察は1行だけ（会話・説明なし）', again.recon.text.startsWith('大魔王様。') && again.recon.enemies === 4);
   check('第1章クリア後：編成は通常6＋幹部1（突進が自動で入る）・木槌小鬼は控え', again.form.units === 6 && again.form.bosses === 1 && (await page.locator('#formPool .fcard[data-key="mallet"]').count()) === 1, JSON.stringify(again.form));

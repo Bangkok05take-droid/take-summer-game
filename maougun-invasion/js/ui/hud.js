@@ -1,6 +1,7 @@
 /* 戦闘画面の上下（DOM）：HP・魔力・召喚カード・魔力炉・呪文・お知らせ */
 import { SKIN } from '../data/skin.js';
 import { Renderer } from '../render/renderer.js';
+import { chapterOf } from '../data/stages.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -18,7 +19,7 @@ export class Hud {
   }
 
   build(battle, stage) {
-    $('tagChap').textContent = `第${stage.chapter}章 はじまりの村を侵略せよ`;
+    $('tagChap').textContent = `第${chapterOf(stage.id).id}章 ${chapterOf(stage.id).name}`;
     $('tagStage').textContent = `${stage.id}　${stage.name}`;
     const wrap = $('slots');
     wrap.innerHTML = '';

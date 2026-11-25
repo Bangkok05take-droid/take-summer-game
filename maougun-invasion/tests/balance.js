@@ -1,11 +1,12 @@
 // 第1章のテンポの参考値：ボットごとのクリア時間（ゲーム内の秒）
 //   node tests/balance.js [シード数] [ステージ]
-import { makeBattle, run, botPlayer, CHAPTER1 } from './helpers.js';
+import { makeBattle, run, botPlayer } from './helpers.js';
+import { STAGE_ORDER } from '../js/data/stages.js';
 
 const seeds = Number(process.argv[2] || 10);
 const only = process.argv[3];
 const fmt = (s) => `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, '0')}`;
-for (const id of CHAPTER1.stages) {
+for (const id of STAGE_ORDER) {
   if (only && id !== only) continue;
   console.log(`== ${id}`);
   for (const style of ['normal', 'upgraded', 'slow', 'massonly', 'idle']) {

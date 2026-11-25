@@ -16,7 +16,7 @@ import { TalkPlayer, renderSelect, renderLoot, renderUnlock, renderUpgrade, rend
 import { applyUiSkin } from './ui/uiskin.js';
 import { Tutor } from './ui/tutorial.js';
 import { SCREEN_TIPS, LOSE_TIPS, SELF_HINT } from './data/tutorial.js';
-import { CHAPTER1 } from './data/stages.js';
+import { CHAPTER1, STAGE_ORDER, chapterOf } from './data/stages.js';
 
 const $ = (id) => document.getElementById(id);
 const params = new URLSearchParams(location.search);
@@ -85,11 +85,14 @@ $('btnResetYes').addEventListener('click', () => {
 });
 
 // ---------- ステージ選択 ----------
-function toSelect() {
-  const id = nextStage(app.profile) || CHAPTER1.stages[CHAPTER1.stages.length - 1];
-  makeScene(id);
+// ch：見せる章（省略すると、つぎに攻めるステージの章）
+function toSelect(ch) {
+  const id = nextStage(app.profile) || STAGE_ORDER[STAGE_ORDER.length - 1];
+  const show1 = ch && ch.stages ? ch : chapterOf(id);
+  const sceneId = show1.stages.includes(id) ? id : show1.stages[0];
+  makeScene(sceneId);
   renderer.centerOn(app.scene, app.scene.stage.length / 2);
-  renderSelect(app.profile, pickStage);
+  renderSelect(app.profile, pickStage, show1, (c) => toSelect(c));
   show('scSelect');
 }
 function pickStage(id) {
@@ -212,7 +215,7 @@ $('btnQuit').addEventListener('click', () => { app.battle = null; toSelect(); })
 
 function onBattleEvent(ev) {
   if (ev.type === 'denied') hud.deny(ev.key);
-  if (ev.type === 'heroAlarm' && STORY.heroLines[ev.who]) {
+  if (ev.type === 'heroAlarm' && STORY.heroLines && STORY.heroLines[ev.who]) {
     const l = STORY.heroLines[ev.who];
     ev.line = { who: SKIN.speakers[l.who], text: l.text };
   }
