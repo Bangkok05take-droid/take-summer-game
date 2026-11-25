@@ -9,6 +9,9 @@ import { SKIN } from '../data/skin.js';
 // 魔法使いの火球の画像は先に読み込んでおく（最初の1発から出るように）
 if (SKIN.mageFire) preload([SKIN.mageFire.charge.src, SKIN.mageFire.shot.src, SKIN.mageFire.impact.src]);
 if (SKIN.goblinArrow) preload([SKIN.goblinArrow.src]);
+if (SKIN.unitFx) preload(Object.values(SKIN.unitFx).flatMap((u) => Object.values(u).filter((v) => v && v.src).map((v) => v.src)));
+// ユニット別エフェクトの設定（画像が読めていれば返す）
+const ufx = (key, on) => { const d = SKIN.unitFx && SKIN.unitFx[key] && SKIN.unitFx[key][on]; return d && getImage(d.src) ? d : null; };
 
 export const VIEW_W = 960;
 export const VIEW_H = 540;
@@ -74,7 +77,8 @@ export class Renderer {
           break;
         }
         case 'manaGain': this.add({ kind: 'num', x: ev.x, y: GROUND_Y - 84, text: '+' + ev.amount, color: '#e2c6ff', life: 0.9, small: true }); break;
-        case 'heal': if (ev.amount > 0) this.add({ kind: 'num', x: ev.x, y: laneY(ev.lane) - 56, text: '+' + ev.amount, color: '#7ef0b0', life: 0.8, small: true }); break;
+        case 'heal': if (ev.amount > 0 && ev.srcKey && ufx(ev.srcKey, 'heal')) { const d = ufx(ev.srcKey, 'heal'); this.add({ kind: 'ufx', d, x: ev.x, y: laneY(ev.lane) + 2, flip: 1, life: d.life }); }
+          if (ev.amount > 0) this.add({ kind: 'num', x: ev.x, y: laneY(ev.lane) - 56, text: '+' + ev.amount, color: '#7ef0b0', life: 0.8, small: true }); break;
         case 'healCast': this.add({ kind: 'ring', heal: true, x: ev.x, y: GROUND_Y + 10, color: '#7ef0b0', life: 0.7, w: ev.radius }); break;
         case 'shot': {
           const e = byId(ev.id);
@@ -88,6 +92,10 @@ export class Renderer {
             if (!ev.miss) this.add({ kind: 'fireRing', x: ev.to, y: gy, delay: fl, life: fl + mf.impact.life });
             break;
           }
+          // 特殊魔法の大当たり：弾は重ねず、着弾側に金紫の閃光
+          if (e && ev.big && ufx(e.key, 'jackpot')) { const d = ufx(e.key, 'jackpot'); this.add({ kind: 'ufx', d, x: ev.to, y: laneY(ev.toLane ?? e.lane) - 30, flip: 1, life: d.life }); break; }
+          // 森のお化けの種・悪魔くんの小弾：まっすぐ飛ぶ専用の弾
+          if (e && ufx(e.key, 'shot')) { const d = ufx(e.key, 'shot'); const y0 = laneY(e.lane) - 32; this.add({ kind: 'ufxShot', d, from: e.x + e.dir * 10, to: ev.to, y: y0, ty: ev.toLane != null ? laneY(ev.toLane) - 30 : y0, life: ev.delay || 0.26 }); break; }
           // 弓ゴブリンの矢：弓の位置から放物線で飛び、届いたら黄緑の火花
           const ga = SKIN.goblinArrow;
           if (e && ga && ga.keys.includes(e.key) && getImage(ga.src)) {
@@ -105,11 +113,22 @@ export class Renderer {
         }
         case 'strike': {
           const e = byId(ev.id);
-          if (e && !e.def.projectile) this.add({ kind: 'slash', x: e.x + e.dir * 22, y: laneY(e.lane) - 30, dir: e.dir, area: ev.area, life: 0.18 });
+          const d = e && ufx(e.key, 'strike');
+          if (d) { this.add({ kind: 'ufx', d, x: e.x + e.dir * d.ahead, y: laneY(e.lane) - d.up, flip: -e.dir, life: d.life }); break; } // 闇の騎士の三日月・こうもりの翼の残像
+          if (e && !e.def.projectile && !ufx(e.key, 'impact')) this.add({ kind: 'slash', x: e.x + e.dir * 22, y: laneY(e.lane) - 30, dir: e.dir, area: ev.area, life: 0.18 });
           break;
         }
-        case 'fizzle': this.add({ kind: 'fizzle', x: ev.x, y: laneY(ev.lane) - 60, life: 1.0 }); break;
-        case 'bigMagic': this.add({ kind: 'boom', x: ev.x, y: GROUND_Y - 10, r: ev.radius, life: 0.6 }); this.shake = Math.max(this.shake, 6); break;
+        case 'impact': { // 近接の命中地点（攻撃した本人の ID つき）：グミのしぶき・岩男のひび
+          const d = ufx(ev.key, 'impact');
+          if (d) this.add({ kind: 'ufx', d, x: ev.x, y: d.anim === 'ground' ? laneY(ev.lane) + 2 : laneY(ev.lane) - 22, flip: ev.side === 'demon' ? 1 : -1, life: d.life });
+          break;
+        }
+        case 'fizzle': {
+          const e = byId(ev.id); const d = e && ufx(e.key, 'fizzle');
+          if (d) { this.add({ kind: 'ufx', d, x: ev.x + e.dir * 12, y: laneY(ev.lane) - 26, flip: 1, life: d.life }); break; } // 手元に小さな煙
+          this.add({ kind: 'fizzle', x: ev.x, y: laneY(ev.lane) - 60, life: 1.0 }); break;
+        }
+        case 'bigMagic': if (byId(ev.id) && ufx(byId(ev.id).key, 'jackpot')) { this.shake = Math.max(this.shake, 4); break; } this.add({ kind: 'boom', x: ev.x, y: GROUND_Y - 10, r: ev.radius, life: 0.6 }); this.shake = Math.max(this.shake, 6); break;
         case 'stun': this.add({ kind: 'flashRing', x: ev.x, y: laneY(ev.lane) - 30, life: 0.4 }); break;
         case 'skillStart': {
           const e = byId(ev.id);
@@ -329,6 +348,9 @@ export class Renderer {
     else if (e.state === 'kb') { pose = 'kb'; lean = -0.5 * (1 - e.timer / 0.45); rise = Math.sin(Math.min(1, e.timer / 0.45) * Math.PI) * 18; }
     else if (e.state === 'dead') { pose = 'dead'; a = Math.max(0, 1 - e.timer / 0.7); lean = -0.6; rise = e.timer * 30; }
     if (e.stun > 0) pose = 'idle';
+    // こうもり：攻撃の瞬間だけ描画で少し低く（急降下の見た目）
+    const dip = SKIN.unitFx && SKIN.unitFx[e.key] && SKIN.unitFx[e.key].dip;
+    if (dip && pose === 'strike') rise -= dip;
 
     const px = unitSprite(e.key);
     const sz = d.size * UNIT_SCALE;
@@ -439,6 +461,26 @@ export class Renderer {
           const k = d.w / img.naturalWidth;
           ctx.save(); ctx.translate(x, y); ctx.rotate(Math.atan2(f.toY - f.fromY, f.to - f.from) - d.angle);
           ctx.drawImage(img, -d.ax * k, -d.ay * k, img.naturalWidth * k, img.naturalHeight * k); ctx.restore();
+          break;
+        }
+        case 'ufx': { // ユニット別エフェクト（1コマ）。動きは anim で付ける
+          const d = f.d; const img = getImage(d.src); if (!img) break;
+          let sx = 1; let sy = 1; let dy = 0; let a = 1;
+          if (d.anim === 'pop') { sx = sy = 0.7 + 0.45 * Math.min(1, p * 2); a = p < 0.5 ? 1 : 1 - (p - 0.5) * 2; }
+          else if (d.anim === 'ground') { sx = 0.6 + 0.6 * p; sy = 0.6 + 0.3 * p; a = p < 0.5 ? 1 : 1 - (p - 0.5) * 2; }
+          else if (d.anim === 'rise') { sx = sy = 0.85 + 0.2 * p; dy = -14 * p; a = 1 - p * p; }
+          else if (d.anim === 'streak') { sx = sy = 0.9 + 0.2 * p; dy = 6 * p; a = 1 - p; }
+          const k = d.w / img.naturalWidth;
+          ctx.save(); ctx.globalAlpha = a; ctx.translate(f.x, f.y + dy); ctx.scale(f.flip * sx * k, sy * k);
+          ctx.drawImage(img, -d.ax, -d.ay); ctx.restore();
+          break;
+        }
+        case 'ufxShot': { // まっすぐ飛ぶ専用の弾（画像は左向き。進む向きに回す）
+          const d = f.d; const img = getImage(d.src); if (!img) break;
+          const x = f.from + (f.to - f.from) * p; const y = f.y + (f.ty - f.y) * p;
+          const k = d.w / img.naturalWidth;
+          ctx.save(); ctx.translate(x, y); ctx.rotate(Math.atan2(f.ty - f.y, f.to - f.from) - Math.PI); ctx.scale(k, k);
+          ctx.drawImage(img, -d.ax, -d.ay); ctx.restore();
           break;
         }
         case 'gArrow': { // 放物線の矢：接線の向きに回す（画像は左向きなので −π）。直近だけ薄い黄緑の残光

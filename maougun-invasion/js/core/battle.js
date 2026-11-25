@@ -317,13 +317,13 @@ export class Battle {
     if (!hurt.length) return;
     e.healTimer = 0;
     this.events.push({ type: 'healCast', id: e.id, x: e.x, radius: h.radius, side: e.side });
-    for (const o of hurt) this.healUnit(o, Math.round(o.maxHp * h.ratio));
+    for (const o of hurt) this.healUnit(o, Math.round(o.maxHp * h.ratio), e);
   }
 
-  healUnit(o, amt) {
+  healUnit(o, amt, src = null) {
     const before = o.hp;
     o.hp = Math.min(o.maxHp, o.hp + amt);
-    this.events.push({ type: 'heal', id: o.id, x: o.x, amount: Math.round(o.hp - before), side: o.side, lane: o.lane });
+    this.events.push({ type: 'heal', id: o.id, x: o.x, amount: Math.round(o.hp - before), side: o.side, lane: o.lane, src: src ? src.id : null, srcKey: src ? src.key : null });
   }
 
   // 後衛狙撃（target: 'backline'）が狙える相手：射程内の敵の後衛（line: 'back'）と敵拠点だけ。
@@ -377,6 +377,8 @@ export class Battle {
     }
     if (d.projectile) this.events.push({ type: 'shot', id: e.id, kind: d.projectile, from: e.x, to: hits[0].target.x, toLane: hits[0].isBase ? null : hits[0].target.lane, side: e.side, big: mult > 1, delay });
     this.events.push({ type: 'strike', id: e.id, area, side: e.side });
+    // 近接の命中地点（見た目用）：攻撃した本人の ID と、最初の相手の位置
+    if (!d.projectile) this.events.push({ type: 'impact', id: e.id, key: e.key, side: e.side, x: hits[0].isBase ? e.x + e.dir * hits[0].dist : hits[0].target.x, lane: hits[0].isBase ? e.lane : hits[0].target.lane });
     const dmg = Math.round(d.atk * mult);
     if (delay > 0) { this.inFlight.push({ at: this.t + delay, hits, dmg, src: e }); return; }
     this.applyHits(hits, dmg, e);

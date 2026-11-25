@@ -78,6 +78,24 @@ export const SKIN = {
     src: 'assets/approved/fx/goblin_arrow.png', ax: 6, ay: 24, w: 40,
     liftRate: 0.28, liftMin: 18, liftMax: 62, glow: '#c8ff6a',
   },
+  /* 基本6タイプの戦闘エフェクト（2026-11-25・maougun_remaining_unit_fx.zip）。各1コマ。ax・ay：基準点、w：表示の幅、life：秒（見え方の目安）
+   *   on：impact＝近接が当たった地点／strike＝攻撃の瞬間（本人の前）／heal＝回復できた仲間の足元／shot＝通常の弾／jackpot・fizzle＝特殊魔法
+   *   anim：pop＝弾けて消える／ground＝足元で低く広がる／rise＝上へ薄れる／streak＝前方斜め下に一瞬 */
+  unitFx: {
+    mass: { impact: { src: 'assets/approved/fx/gummy_splash.png', ax: 96, ay: 110, w: 46, life: 0.16, anim: 'pop' } },
+    vanguard: { strike: { src: 'assets/approved/fx/knight_slash.png', ax: 135, ay: 126, w: 58, life: 0.16, anim: 'pop', ahead: 20, up: 30 } },
+    tank: { impact: { src: 'assets/approved/fx/rock_impact.png', ax: 128, ay: 103, w: 84, life: 0.26, anim: 'ground' } },
+    fast: { strike: { src: 'assets/approved/fx/bat_dive.png', ax: 126, ay: 98, w: 52, life: 0.14, anim: 'streak', ahead: 14, up: 28 }, dip: 6 },
+    healer: {
+      heal: { src: 'assets/approved/fx/forest_heal.png', ax: 128, ay: 144, w: 62, life: 0.45, anim: 'rise' },
+      shot: { src: 'assets/approved/fx/forest_seed.png', ax: 70, ay: 48, w: 30 },
+    },
+    special: {
+      shot: { src: 'assets/approved/fx/imp_magic.png', ax: 79, ay: 57, w: 34 },
+      jackpot: { src: 'assets/approved/fx/imp_jackpot.png', ax: 160, ay: 133, w: 96, life: 0.4, anim: 'pop' },
+      fizzle: { src: 'assets/approved/fx/imp_fizzle.png', ax: 96, ay: 122, w: 42, life: 0.6, anim: 'rise' },
+    },
+  },
   colors: {
     mass: ['#8b5cf6', '#3b1d74'],
     vanguard: ['#6d6a86', '#25233a'],
