@@ -96,6 +96,11 @@ export const SKIN = {
   // 会話の立ち絵（2026-11-24 ユーザー承認。大魔王は左枠・右向き、影の側近は右枠・左向き）。表情差分が無いときは _normal を使う
   portraits: {
     lord_normal: 'assets/approved/talk/lord_normal.png',
+    // 2026-11-25：大魔王の表情差分（maougun_lord_dialogue_portraits.zip・通常顔からの表情加工。manifest のユーザー承認欄は「未」）
+    lord_happy: 'assets/approved/talk/lord_happy.png',
+    lord_angry: 'assets/approved/talk/lord_angry.png',
+    lord_sad: 'assets/approved/talk/lord_sad.png',
+    ord_normal: 'assets/approved/talk/ord_normal.png', // 竜人オルドの会話の顔（同じZIP・戦闘素材から胸元まで切り出し・左向き）
     lord_revived: 'assets/approved/talk/lord_revived.png', // 2026-11-25：完全復活後の大魔王（11551.png・全身。正方形の透明な余白を足しただけ）。エンディングの復活の場面から使う
     aide_normal: 'assets/approved/talk/aide_normal.png',
   },
@@ -264,7 +269,7 @@ if (SKIN.sprites.vanguard && !SKIN.sprites.ord) SKIN.sprites.ord = { ...SKIN.spr
 if (SKIN.sprites.shield && !SKIN.sprites.king) SKIN.sprites.king = { ...SKIN.sprites.shield, scale: (SKIN.sprites.shield.scale || 0.25) * 1.45 };
 Object.assign(SKIN.portraits, APPROVED.portraits);
 // 竜人オルドは会話の顔が未着のため、戦闘の絵（全身・左向き）を会話でも使う（右側に置くので大魔王のほうを向く）
-if (!SKIN.portraits.ord_normal) SKIN.portraits.ord_normal = 'assets/approved/units/ord.png';
+if (!SKIN.portraits.ord_normal) SKIN.portraits.ord_normal = 'assets/approved/units/ord.png'; // ↑会話の顔が届いたので通常は使われない
 // 2026-11-25：会話の顔（maougun_dialogue_portraits.zip・portrait_registry.json そのまま。512×512・通常の表情のみ・右向き）
 Object.assign(SKIN.portraits, {
   "yanai_normal": "assets/approved/talk/yanai_normal.png",
