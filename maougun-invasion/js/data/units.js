@@ -104,7 +104,8 @@ export const BOSSES = {
     role: '幹部・竜の戦士', attackType: 'melee', target: 'front', unique: true, ready: true, special: true, growth: GROWTH,
     cost: 5000, needFurnace: 8, cooldown: 90, hp: 16000, atk: 240, range: 60, speed: 28,
     interval: 2.4, windup: 0.6, kb: 8, attack: 'area', size: 1.7, blowAway: true,
-    skills: [{ id: 'wave', name: '竜の一閃', type: 'wave', every: 9, first: 3, windup: 0.9, recover: 0.4, reach: 320, mult: 2.2 }],
+    // 2026-11-25：「カミナリスラッシュ」：落雷を浴びて雷をため（1.1秒）、前方の敵すべてと敵の砦を貫く斬撃（各1回・攻撃力×2.5）
+    skills: [{ id: 'thunder', name: 'カミナリスラッシュ', type: 'pierce', every: 12, first: 4, windup: 1.1, recover: 0.5, speed: 900, mult: 2.5 }],
   },
   // ---- 構想（ready: false）。数値は仮。能力（skills）と絵ができたら ready: true にする ----
   trickster: { attackType: 'mid', target: 'front', role: '幹部・罠と身代わり', unique: true, ready: false, cost: 1300, needFurnace: 3, cooldown: 60, hp: 4500, atk: 120, range: 120, speed: 34, interval: 2.6, windup: 0.6, kb: 6, attack: 'single', size: 1.5, growth: GROWTH },

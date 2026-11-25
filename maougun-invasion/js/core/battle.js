@@ -53,7 +53,8 @@ export class Battle {
     this.pending = []; // { at, who }
     this.spawnT = 0;
     this.inFlight = [];       // 飛んでいる最中の攻撃 { at, hits, dmg, src }
-    this.pendingSpells = [];  // 飛んでいる最中の魔王の呪文 { at, cx, damage, radius }          // 敵の出現の時計（spawnerOff の間は進まない）
+    this.pendingSpells = [];  // 飛んでいる最中の魔王の呪文 { at, cx, damage, radius }
+    this.pierces = [];        // 進んでいる貫通斬撃 { x, prevX, dir, speed, dmg, hit }          // 敵の出現の時計（spawnerOff の間は進まない）
     this.spawnerOff = false;  // true：敵が出てこない（チュートリアル用）
   }
 
@@ -124,6 +125,7 @@ export class Battle {
     if (!this.spawnerOff) { this.runSpawner(); this.spawnT += dt; }
 
     for (const e of this.entities) { e.px = e.x; this.updateEntity(e, dt); }
+    if (this.pierces.length) this.stepPierces(dt);
     if (this.pendingSpells.length) {
       const due = this.pendingSpells.filter((f) => f.at <= this.t + 1e-9);
       if (due.length) { this.pendingSpells = this.pendingSpells.filter((f) => f.at > this.t + 1e-9); for (const f of due) this.landSpell(f); }
@@ -409,8 +411,32 @@ export class Battle {
     }
   }
 
+  // 貫通斬撃を進める。直前と今の位置の間（区間）にいる敵に当てる（倍速・描画の間引きで飛び越さない）
+  stepPierces(dt) {
+    for (const p of this.pierces) {
+      p.prevX = p.x; p.x += p.dir * p.speed * dt;
+      const lo = Math.min(p.prevX, p.x) - 8; const hi = Math.max(p.prevX, p.x) + 8;
+      for (const o of this.entities) {
+        if (o.side === p.side || o.state === 'dead' || p.hit.has(o.id)) continue;
+        if (o.x < lo || o.x > hi) continue;
+        p.hit.add(o.id);
+        this.damageUnit(o, p.dmg, p.src, true);
+        this.events.push({ type: 'pierceHit', x: o.x, lane: o.lane, big: false });
+      }
+      const b = p.side === 'demon' ? this.base : this.shrine;
+      const face = b.x - p.dir * b.halfWidth;
+      if ((p.x - face) * p.dir >= 0) {
+        this.damageBase(b, p.dmg, p.src);
+        this.events.push({ type: 'pierceHit', x: face, lane: 0.5, big: true });
+        p.done = true;
+      }
+    }
+    this.pierces = this.pierces.filter((p) => !p.done);
+  }
+
   // 特技が使える状況か（前方の射程に相手がいる・回復が必要な味方がいる）
   skillReady(e, s) {
+    if (s.type === 'pierce') return true; // 貫通斬撃：敵がいなくても砦に届くので、たまったら使う
     if (s.type === 'heal') return this.entities.some((o) => o.side === e.side && o.state !== 'dead' && o.hp < o.maxHp * 0.8 && Math.abs(o.x - e.x) <= s.radius);
     return this.targetsAhead(e, -12, s.trigger ?? s.reach).some((t) => !t.isBase); // trigger：この距離まで近づいてから使う
   }
@@ -418,6 +444,11 @@ export class Battle {
   useSkill(e, s) {
     const ev = { type: 'skill', id: e.id, skill: s.id, side: e.side, x: e.x, dir: e.dir, reach: s.reach, name: s.name };
     this.events.push(ev);
+    if (s.type === 'pierce') {
+      // 貫通斬撃（竜人オルド）：剣先から敵の砦へ向かって進み、途中の敵すべてに1回ずつ、砦にも1回当たる（止まらない）
+      this.pierces.push({ id: this.nextId++, src: e, side: e.side, dir: e.dir, x: e.x + e.dir * 30, prevX: e.x, speed: s.speed || 900, dmg: Math.round(e.def.atk * s.mult), hit: new Set(), done: false, lane: e.lane });
+      return;
+    }
     if (s.type === 'wave') {
       // 前方へ飛ぶ斬撃：届く範囲の全員にダメージと吹き飛ばし
       for (const t of this.targetsAhead(e, -12, s.reach)) {

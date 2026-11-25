@@ -45,3 +45,6 @@
 | 2026-11-25 | `628dddca-maougun_kaiser_phoenix_fx.zip` | `fx/phoenix_charge.png`・`phoenix_flight.png`・`phoenix_impact.png` | — | `assets/approved/fx/` | — | 加工なし。大魔王の呪文の不死鳥。ゲーム内の名前は「魔王の呪文」（既存作品の技名は使わない） |
 | 2026-11-25 | （チャットで受け取った画像 1000021128.png） | — | — | `assets/approved/units/charger.png` | — | 加工なし。幹部1体目・ワニ将軍。1254×1254・左向き・透過 |
 | 2026-11-25 | `62f4443a-maougun_crocodile_charge_fx.zip` | `fx/crocodile_charge_wind.png`・`dust.png`・`impact.png` | — | `assets/approved/fx/` | — | 加工なし。ワニ将軍の大盾突進 |
+| 2026-11-25 | （チャットで受け取った画像 1000021131.png） | — | — | `assets/approved/units/ord.png` | — | 加工なし。竜人オルド。1254×1254・左向き・透過 |
+| 2026-11-25 | `b400a0bd-maougun_ordo_thunder_slash_fx.zip` | `fx/ordo_thunder_bolt/charge/slash/hit.png` | — | `assets/approved/fx/` | — | 加工なし。オルドの「カミナリスラッシュ」 |
+| 2026-11-25 | （チャットの画像 11525.png・11526.png・11527.png） | — | — | `assets/approved/bg/ch1_village_v2.png`・`ch2_town_v2.png`・`ch3_castle_v2.png` | — | 加工なし。第1〜3章の戦闘背景（2172×724） |

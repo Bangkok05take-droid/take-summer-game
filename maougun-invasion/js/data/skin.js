@@ -27,6 +27,8 @@ export const SKIN = {
     tiw: 'ティウ', mot: 'モッ', waan: 'ワーン', koi: 'コイ', take: '勇者たけ', sai: '勇者サイ', yanai: 'マスター・ヤナイ',
   },
   sprites: {
+    // 2026-11-25：竜人オルド（ビジュアル制作室の納品・画像 1000021131.png。1254×1254・左向き・透過）。敵（壊滅した町）・味方の両方で使う
+    ord: { src: 'assets/approved/units/ord.png', frameW: 1254, frameH: 1254, frames: { walk: [0], windup: 0, attack: 0 }, footY: 1236, facing: 'left', scale: 0.092 },
     // 2026-11-25：ワニ将軍（幹部1体目・画像 1000021128.png。1254×1254・左向き・透過）
     charger: { src: 'assets/approved/units/charger.png', frameW: 1254, frameH: 1254, frames: { walk: [0], windup: 0, attack: 0 }, footY: 1195, facing: 'left', scale: 0.082 },
     // 2026-11-25：木槌小鬼（ユーザー承認のデザイン・画像 11481.png）。元画像は背景の市松模様が焼き込まれていたため、端からつながる白・薄灰だけを透明にした（キャラクターは加工なし）。1312×1199・左向き
@@ -59,14 +61,15 @@ export const SKIN = {
       // 2026-11-25：第1章（はじまりの村・3ステージ）はすべて横長パノラマの村（2172×358）。高さを画面に合わせて ×1.36。
       // カメラの移動量の35%だけ背景が動く（parallax）。focus：動く範囲の中心を画像のどこに置くか（0＝左端・0.5＝中央・1＝右端）
       // 町のパノラマ（pano_village_town.png）は第2章（城下町）用に残す。16:9 の旧背景（village_small.png・village_town.png）もファイルは残す
-      chapter1: { src: 'assets/approved/bg/pano_village_small.png', scale: 1.36, offsetY: 0, parallax: 0.35, focus: 0.5 },
-      chapter2: { src: 'assets/approved/bg/pano_village_town.png', scale: 1.36, offsetY: 0, parallax: 0.35, focus: 0.5 }, // 第2章 城下町（町のパノラマ）
+      // 2026-11-25：第1〜3章の本番背景（ビジュアル制作室・2172×724）。土の道の上端がユニットの足元（画面 y≈372）に来るよう倍率と上下の位置を合わせた
+      chapter1: { src: 'assets/approved/bg/ch1_village_v2.png', scale: 0.76, offsetY: -1, parallax: 0.35, focus: 0.5 },
+      chapter2: { src: 'assets/approved/bg/ch2_town_v2.png', scale: 0.98, offsetY: -165, parallax: 0.35, focus: 0.5 },
       'ex-1': { src: 'assets/approved/bg/pano_village_town.png', scale: 1.36, offsetY: 0, parallax: 0.35, focus: 0.5, tint: 'rgba(40,10,20,.55)' }, // 壊滅した町（仮）：専用背景の納品待ち。町のパノラマを暗く
       // 第4章 港町：承認済みの港町背景が届いたら src をその画像にする（今は町のパノラマで代用）
       chapter4: { src: 'assets/approved/bg/pano_village_town.png', scale: 1.36, offsetY: 0, parallax: 0.35, focus: 0.5 },
       // 第5章 鉄鋼の要塞都市：承認済みの背景が届いたら src をその画像にする（今は町のパノラマを暗くして代用）
       chapter5: { src: 'assets/approved/bg/pano_village_town.png', scale: 1.36, offsetY: 0, parallax: 0.35, focus: 0.5, tint: 'rgba(30,30,45,.35)' },
-      chapter3: { src: 'assets/approved/bg/pano_village_town.png', scale: 1.36, offsetY: 0, parallax: 0.35, focus: 0.5 }, // 第3章（仮）：城の背景が届くまで町のパノラマ
+      chapter3: { src: 'assets/approved/bg/ch3_castle_v2.png', scale: 1.22, offsetY: -358, parallax: 0.35, focus: 0.5 },
     },
     // 人間軍の拠点（tower：1-1〜1-3、gate：1-4、castle：1-5）と、魔王軍の祠。{ src, width, footY }
     base: {},
@@ -128,6 +131,14 @@ export const SKIN = {
     wind: { src: 'assets/approved/fx/crocodile_charge_wind.png', ax: 102, ay: 148, h: 120, ahead: 34, life: 0.35 },
     dust: { src: 'assets/approved/fx/crocodile_charge_dust.png', ax: 75, ay: 103, w: 100, behind: 18, life: 0.45 },
     impact: { src: 'assets/approved/fx/crocodile_charge_impact.png', ax: 241, ay: 116, w: 120, life: 0.2 },
+  },
+  /* 竜人オルド「カミナリスラッシュ」（2026-11-25・maougun_ordo_thunder_slash_fx.zip）
+   *   bolt：溜めの最初0.25秒、頭上から落雷（下端をオルドに）／charge：足元から吹き上がる雷のオーラ（発射直前に強まる）／slash：砦まで進む斬撃／hit：通過した敵は小さく、砦は大きく */
+  ordThunder: {
+    bolt: { src: 'assets/approved/fx/ordo_thunder_bolt.png', ax: 179, ay: 419, h: 170 },
+    charge: { src: 'assets/approved/fx/ordo_thunder_charge.png', ax: 192, ay: 374, h: 150 },
+    slash: { src: 'assets/approved/fx/ordo_thunder_slash.png', ax: 79, ay: 147, w: 120 },
+    hit: { src: 'assets/approved/fx/ordo_thunder_hit.png', ax: 144, ay: 114, w: 44, wBig: 110 },
   },
   colors: {
     mass: ['#8b5cf6', '#3b1d74'],

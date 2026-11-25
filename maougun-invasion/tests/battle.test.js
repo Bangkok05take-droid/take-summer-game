@@ -696,3 +696,27 @@ test('第5章（鉄鋼の要塞都市）：4ステージ。4-3 のあと開き�
   assert.ok(STAGES['5-4'].boss && STAGES['5-4'].spawns.some((r) => r.hero === 'commander'));
   assert.ok(STAGES['5-1'].enemyScale >= STAGES['4-1'].enemyScale, 'これまでより手ごわい');
 });
+test('竜人オルド「カミナリスラッシュ」：溜め中はダメージなし。前方の敵すべてと砦に各1回（敵がいなくても砦に届く）', () => {
+  const mk = () => { const b = makeBattle({ stage: noEnemies({ mana: { start: 0, max: 0, regen: 0 } }), deck: ['ord'] }); const o = b.spawn('demon', b.deckDef('ord'), 1400); o.x = 1400; o.def = { ...o.def, speed: 0 }; return { b, o, s: b.deckDef('ord').skills[0] }; };
+  const { b, o, s } = mk();
+  const foes = [1300, 1000, 700, 400].map((x) => { const h = b.spawnHuman('heavy'); h.x = x; h.def = { ...h.def, speed: 0, hp: 99999 }; h.hp = 99999; return h; });
+  const base0 = b.base.hp;
+  o.state = 'skill'; o.timer = 0; o.skill = { ...s, done: false };
+  run(b, s.windup - 0.05);
+  assert.ok(foes.every((h) => h.hp === 99999) && b.base.hp === base0, '溜め中はダメージなし');
+  run(b, 2.5);
+  const dmg = foes.map((h) => 99999 - h.hp);
+  assert.ok(dmg.every((d) => d > 0) && new Set(dmg).size === 1, `全員に1回ずつ同じダメージ ${dmg}`);
+  assert.ok(b.base.hp < base0 && base0 - b.base.hp === Math.round(o.def.atk * s.mult), '砦にも1回');
+  assert.equal(b.pierces.length, 0);
+  const m = mk(); const b0 = m.b.base.hp; m.b.useSkill(m.o, m.s); run(m.b, 2.5);
+  assert.ok(m.b.base.hp < b0, '敵がいなくても砦に届く');
+});
+test('貫通斬撃は速くても敵を飛び越さない（区間で判定）', () => {
+  const b = makeBattle({ stage: noEnemies(), deck: ['ord'] });
+  const o = b.spawn('demon', b.deckDef('ord'), 1400); o.x = 1400;
+  const h = b.spawnHuman('swordsman'); h.x = 1100; h.def = { ...h.def, speed: 0, hp: 99999 }; h.hp = 99999;
+  b.pierces.push({ id: 999, src: o, side: 'demon', dir: -1, x: 1380, prevX: 1400, speed: 30000, dmg: 50, hit: new Set(), done: false, lane: 0.5 });
+  b.step();
+  assert.equal(99999 - h.hp >= 50, true, '1手で何百も進んでも当たる');
+});

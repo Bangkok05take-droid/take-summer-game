@@ -9,6 +9,7 @@ import { SKIN } from '../data/skin.js';
 // 魔法使いの火球の画像は先に読み込んでおく（最初の1発から出るように）
 if (SKIN.mageFire) preload([SKIN.mageFire.charge.src, SKIN.mageFire.shot.src, SKIN.mageFire.impact.src]);
 if (SKIN.goblinArrow) preload([SKIN.goblinArrow.src]);
+if (SKIN.ordThunder) preload(Object.values(SKIN.ordThunder).map((d) => d.src));
 if (SKIN.chargeFx) preload([SKIN.chargeFx.wind.src, SKIN.chargeFx.dust.src, SKIN.chargeFx.impact.src]);
 if (SKIN.malletThrow) preload([SKIN.malletThrow.shot.src, SKIN.malletThrow.impact.src]);
 if (SKIN.spellPhoenix) preload([SKIN.spellPhoenix.charge.src, SKIN.spellPhoenix.flight.src, SKIN.spellPhoenix.impact.src]);
@@ -80,6 +81,7 @@ export class Renderer {
           if (ev.hero) this.add({ kind: 'banner', text: '勇者が撤退した！', color: '#5b2a99', life: 1.8 });
           break;
         }
+        case 'pierceHit': { const d = SKIN.ordThunder && SKIN.ordThunder.hit; if (d && getImage(d.src)) this.add({ kind: 'oHit', x: ev.x, y: ev.big ? GROUND_Y - 50 : laneY(ev.lane) - 28, big: ev.big, life: ev.big ? 0.35 : 0.22 }); if (ev.big) this.shake = Math.max(this.shake, 5); break; }
         case 'immune': this.add({ kind: 'num', x: ev.x, y: laneY(ev.lane) - 70, text: '効かない！', color: '#ff9aa8', life: 1.0, big: true }); break;
         case 'manaGain': this.add({ kind: 'num', x: ev.x, y: GROUND_Y - 84, text: '+' + ev.amount, color: '#e2c6ff', life: 0.9, small: true }); break;
         case 'heal': if (ev.amount > 0 && ev.srcKey && ufx(ev.srcKey, 'heal')) { const d = ufx(ev.srcKey, 'heal'); this.add({ kind: 'ufx', d, x: ev.x, y: laneY(ev.lane) + 2, flip: 1, life: d.life }); }
@@ -458,6 +460,15 @@ export class Renderer {
         ctx.fillStyle = `rgba(200,120,255,${0.35 * (1 - q)})`; ctx.beginPath(); ctx.arc(x - e.dir * 14, y - sh * 0.75, 7, 0, Math.PI * 2); ctx.fill(); // 杖の宝玉の紫の光
       }
     }
+    // 竜人オルドの溜め：最初の0.25秒に落雷、足元から雷のオーラ（発射直前に強まる）
+    const ot = SKIN.ordThunder;
+    if (ot && e.state === 'skill' && e.skill && e.skill.type === 'pierce' && e.timer < e.skill.windup) {
+      const q = e.timer / e.skill.windup; const T = e.timer;
+      const ci = getImage(ot.charge.src);
+      if (ci && T > 0.15) { const k = ot.charge.h / ci.naturalHeight * (0.7 + 0.5 * q) ; ctx.save(); ctx.globalAlpha = 0.55 + 0.45 * q; ctx.translate(x, y); ctx.scale(k * (0.9 + 0.1 * Math.sin(T * 30)), k * (0.85 + 0.35 * q)); ctx.drawImage(ci, -ot.charge.ax, -ot.charge.ay); ctx.restore(); }
+      const bi = getImage(ot.bolt.src);
+      if (bi && T < 0.25) { const k = ot.bolt.h / bi.naturalHeight; ctx.save(); ctx.globalAlpha = 1 - T / 0.25 * 0.5; ctx.translate(x, y - sh * 0.9); ctx.scale(k, k); ctx.drawImage(bi, -ot.bolt.ax, -ot.bolt.ay); ctx.restore(); }
+    }
     const top = y - sh - float - 8;
     // 気絶：頭の上で星が回る
     if (e.stun > 0 && e.state !== 'dead') {
@@ -479,6 +490,14 @@ export class Renderer {
   }
 
   drawFx(ctx, screen, b) {
+    // 進んでいる貫通斬撃（戦闘の状態をそのまま描く。カメラの外でも進む）
+    if (!screen && b && b.pierces && SKIN.ordThunder) {
+      const d = SKIN.ordThunder.slash; const img = getImage(d.src);
+      if (img) for (const pc of b.pierces) {
+        const k = d.w / img.naturalWidth;
+        ctx.save(); ctx.translate(pc.x, GROUND_Y + pc.lane * LANE_DEPTH - 40); ctx.scale(-pc.dir * k, k); ctx.drawImage(img, -d.ax, -d.ay); ctx.restore();
+      }
+    }
     for (const f of this.fx) {
       let p = f.age / f.life;
       if ((f.kind === 'banner') !== screen) continue;
@@ -492,6 +511,9 @@ export class Renderer {
           ctx.drawImage(img, -d.ax * k, -d.ay * k, img.naturalWidth * k, img.naturalHeight * k); ctx.restore();
           break;
         }
+        case 'oHit': { const d = SKIN.ordThunder.hit; const img = getImage(d.src); if (!img) break;
+          const k = (f.big ? d.wBig : d.w) / img.naturalWidth * (0.8 + 0.4 * p);
+          ctx.save(); ctx.globalAlpha = 1 - p; ctx.translate(f.x, f.y); ctx.scale(k, k); ctx.drawImage(img, -d.ax, -d.ay); ctx.restore(); break; }
         case 'cWind': { // 盾の前の風圧：本人の前に付いていき、膨らんで薄れる。高さは盾の約2倍まで
           const d = SKIN.chargeFx.wind; const img = getImage(d.src); const e = b && b.entities.find((x) => x.id === f.id); if (!img || !e) break;
           const k = d.h / img.naturalHeight * (0.6 + 0.6 * Math.min(1, p * 2));
