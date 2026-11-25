@@ -22,6 +22,7 @@ export class ScreenTutor {
     this.timer = setInterval(() => this.refocus(), 250); // 画面の描き直しで消えた光を付け直す
   }
   get active() { return !!this.steps; }
+  get atLastStep() { return !!this.steps && this.i >= this.steps.length - 1; }
   start(steps, done) { this.steps = steps; this.i = 0; this.done = done; this.show(); }
   next() { if (!this.steps) return; this.i++; this.show(); }
   show() {
@@ -47,6 +48,8 @@ export class ScreenTutor {
     if (this.focusEl) this.focusEl.classList.remove('tutor-focus');
     this.focusEl = el; if (el) el.classList.add('tutor-focus');
   }
+  // 途中でやめる（見た記録は残さない）
+  cancel() { if (!this.steps) return; this.done = null; this.finish(); }
   finish() {
     if (!this.steps) return;
     this.steps = null; $('stutor').hidden = true;

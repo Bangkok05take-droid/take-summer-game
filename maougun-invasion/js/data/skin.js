@@ -71,6 +71,8 @@ export const SKIN = {
       chapter5: { src: 'assets/approved/bg/pano_village_town.png', scale: 1.36, offsetY: 0, parallax: 0.35, focus: 0.5, tint: 'rgba(30,30,45,.35)' },
       // 第6章 砂漠の古代王国：承認済みの砂漠・ピラミッド背景が届いたら src をその画像にする（今は町のパノラマを砂色に染めて代用）
       chapter6: { src: 'assets/approved/bg/pano_village_town.png', scale: 1.36, offsetY: 0, parallax: 0.35, focus: 0.5, tint: 'rgba(200,150,60,.35)' },
+      // 第7章 聖なる都：承認済みの背景が届いたら src をその画像にする（今は城の背景を白く明るくして代用）
+      chapter7: { src: 'assets/approved/bg/ch3_castle_v2.png', scale: 1.22, offsetY: -358, parallax: 0.35, focus: 0.5, tint: 'rgba(255,250,220,.3)' },
       chapter3: { src: 'assets/approved/bg/ch3_castle_v2.png', scale: 1.22, offsetY: -358, parallax: 0.35, focus: 0.5 },
     },
     // 人間軍の拠点（tower：1-1〜1-3、gate：1-4、castle：1-5）と、魔王軍の祠。{ src, width, footY }
@@ -179,6 +181,9 @@ if (SKIN.sprites.swordsman && !SKIN.sprites.commander) SKIN.sprites.commander = 
 // 第6章（仮）：守護者は盾兵の絵を1.2倍、古代王は盾兵の絵を1.5倍で代用（デザイン未承認）
 if (SKIN.sprites.shield && !SKIN.sprites.guardian) SKIN.sprites.guardian = { ...SKIN.sprites.shield, scale: (SKIN.sprites.shield.scale || 0.25) * 1.2 };
 if (SKIN.sprites.shield && !SKIN.sprites.ancient_king) SKIN.sprites.ancient_king = { ...SKIN.sprites.shield, scale: (SKIN.sprites.shield.scale || 0.25) * 1.5 };
+// 第7章（仮）：聖騎士は見習い剣士の絵を1.2倍、聖騎士団長は見習い僧侶の絵を1.5倍で代用（デザイン未承認）
+if (SKIN.sprites.swordsman && !SKIN.sprites.paladin) SKIN.sprites.paladin = { ...SKIN.sprites.swordsman, scale: (SKIN.sprites.swordsman.scale || 0.25) * 1.2 };
+if (SKIN.sprites.priest && !SKIN.sprites.holy_captain) SKIN.sprites.holy_captain = { ...SKIN.sprites.priest, scale: (SKIN.sprites.priest.scale || 0.25) * 1.5 };
 if (SKIN.sprites.vanguard && !SKIN.sprites.ord) SKIN.sprites.ord = { ...SKIN.sprites.vanguard, scale: (SKIN.sprites.vanguard.scale || 0.25) * 1.6 };
 if (SKIN.sprites.shield && !SKIN.sprites.king) SKIN.sprites.king = { ...SKIN.sprites.shield, scale: (SKIN.sprites.shield.scale || 0.25) * 1.45 };
 Object.assign(SKIN.portraits, APPROVED.portraits);

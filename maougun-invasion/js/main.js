@@ -47,6 +47,8 @@ function show(id) {
   $('ovPause').hidden = true;
   $('ovEnemy').hidden = true;
   if (id !== 'battle') tutor.stop();
+  // 画面の説明（編成・強化）は戦闘に持ちこまない。最後の手順（出撃！）から始まった戦闘なら、説明は済んだことにする
+  if (id === 'battle' && stutor.active) { if (stutor.atLastStep) stutor.finish(); else stutor.cancel(); }
   app.screen = id;
 }
 const save = () => saveProfile(app.profile);

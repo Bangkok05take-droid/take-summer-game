@@ -100,6 +100,22 @@ export const HUMANS = {
       { id: 'wave', name: '古代の魔力', type: 'wave', every: 10, first: 5, windup: 1.0, recover: 0.4, reach: 280, mult: 1.6 },
     ],
   },
+  // ---- 第7章（2026-11-25・仮）。聖騎士・聖騎士団長のデザインは未承認なので、絵は既存の兵士の代用 ----
+  paladin: {
+    name: '聖騎士', role: '聖なる前衛',
+    note: '聖なる加護で、自分とまわりの仲間を少しずつ癒やす。硬い', counter: '魔法使いの範囲と木槌小鬼の重い一撃で一気に削る',
+    hp: 950, atk: 34, range: 36, speed: 26, interval: 1.7, windup: 0.45, kb: 3, attack: 'single', guard: 0.2, noKbFromSmall: true, mana: 140, size: 1.15,
+    heal: { every: 7, ratio: 0.06, radius: 90 },
+  },
+  holy_captain: {
+    name: '聖騎士団長', role: '強敵', hero: true, noKbFromSmall: true,
+    note: '聖なる光で仲間を回復し、まばゆい光で魔物を気絶させる', counter: '回復役を先に倒し、呪文と幹部で押し切る',
+    hp: 2800, atk: 40, range: 44, speed: 24, interval: 1.7, windup: 0.45, kb: 6, attack: 'single', guard: 0.1, mana: 650, size: 1.45,
+    skills: [
+      { id: 'heal', name: '聖なる光', type: 'heal', every: 16, first: 6, windup: 0.6, recover: 0.4, radius: 220, ratio: 0.08 },
+      { id: 'stun', name: '裁きの光', type: 'stun', every: 12, first: 8, windup: 0.9, recover: 0.4, reach: 220, duration: 2.0 },
+    ],
+  },
   // ---- 特殊イベント「壊滅した町」（2026-11-25・仮）。絵はビジュアル制作室の納品待ち（それまでは仮の絵） ----
   ord: {
     name: '竜人オルド', role: '竜の戦士', hero: true, noKbFromSmall: true,

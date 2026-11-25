@@ -744,7 +744,7 @@ test('第6章（砂漠の古代王国）：3ステージ・台本どおり。6-3
   applyResult(p, '6-3', 'win', 100);
   assert.equal(pr.resolveMana(STAGES['6-3'].mana, p).max, m1.max, '2回目のクリアで結晶の回復は重ならない');
   assert.ok(!pr.crystalPending(p));
-  assert.equal(nextStage(p), null, '第7章は台本待ち');
+  assert.equal(nextStage(p), '7-1', '第6章をクリアすると第7章へ');
   const st = memStore(); saveProfile(p, st); const q = loadProfile(st);
   assert.ok(pr.crystalDone(q) && pr.evolveTierCap(q) === 2, 'セーブから戻る');
 });
@@ -763,4 +763,25 @@ test('上位進化：魔力結晶の前はできない・Lv5と魔界石が必�
     EVOLUTIONS.mallet_3a.ready = true;
     assert.equal(pr.tryEvolve(p, 'mallet', 'mallet_3a').reason, 'tier', '最上位はまだ解放しない');
   } finally { EVOLUTIONS.mallet_2.ready = false; EVOLUTIONS.mallet_3a.ready = false; }
+});
+
+test('第7章（聖なる都）：2ステージ・台本どおり。6-3 のあと開き、7-2 は聖騎士団長', async () => {
+  const pr = await import('../js/data/progress.js');
+  const { STORY } = await import('../js/data/story.js');
+  const { CHAPTER7 } = await import('../js/data/stages.js');
+  assert.deepEqual(CHAPTER7.stages, ['7-1', '7-2']); assert.equal(CHAPTER7.name, '聖なる都を攻略せよ');
+  assert.equal(STORY.before['7-1'].map((l) => l.who).join(','), 'aide,lord,aide,lord,聖騎士,lord');
+  assert.equal(STORY.before['7-2'].map((l) => l.who).join(','), '聖騎士団長,聖騎士団長,lord,aide,lord,聖騎士団長,lord');
+  const a = STORY.after['7-2']; assert.equal(a.length, 12); assert.equal(a[10].text, '――第7章クリア。'); assert.equal(a[11].text, '――魔王軍は魔法都市へと向かった。');
+  for (const choice of ['recruit', 'reject']) {
+    const p = clearTo33(); pr.finishRuinEvent(p, choice);
+    for (const id of ['4-1', '4-2', '4-3', '5-1', '5-2', '5-3', '5-4', '6-1', '6-2', '6-3']) applyResult(p, id, 'win', 100);
+    pr.applyCrystal(p);
+    for (const id of CHAPTER7.stages) { assert.ok(isStageOpen(p, id), id); applyResult(p, id, 'win', 100); }
+    assert.equal(nextStage(p), null, '第8章は台本待ち');
+    assert.equal(pr.evolveTierCap(p), 2, '最上位はまだ');
+  }
+  const b = makeBattle({ stageId: '7-2', seed: 1 });
+  b.damageBase(b.base, b.base.hp - b.base.maxHp * 0.59); run(b, 3);
+  assert.ok(b.entities.some((e) => e.key === 'holy_captain'));
 });

@@ -309,4 +309,4 @@ export function baseArt(kind) {
   return a;
 }
 
-export const BASE_KIND = { watch: 'tower', wheat: 'tower', river: 'tower', gate: 'gate', plaza: 'castle', harbor: 'gate', ruin: 'castle', market: 'gate', fortress: 'castle', desert: 'castle' };
+export const BASE_KIND = { watch: 'tower', wheat: 'tower', river: 'tower', gate: 'gate', plaza: 'castle', harbor: 'gate', ruin: 'castle', market: 'gate', fortress: 'castle', desert: 'castle', holy: 'castle' };

@@ -41,7 +41,9 @@ export const CHAPTER4 = { id: 4, name: '港町を制圧せよ', stages: ['4-1', 
 export const CHAPTER5 = { id: 5, name: '鉄鋼の要塞都市を攻略せよ', stages: ['5-1', '5-2', '5-3', '5-4'] };
 // 第6章（2026-11-25）：砂漠の古代王国（3ステージ）。6-3 の初回クリアで「大魔王の魔力回復」と上位進化の解放。敵・ボス・報酬は仮
 export const CHAPTER6 = { id: 6, name: '砂漠の古代王国', stages: ['6-1', '6-2', '6-3'] };
-export const CHAPTERS = [CHAPTER1, CHAPTER2, CHAPTER3, CHAPTER4, CHAPTER5, CHAPTER6];
+// 第7章（2026-11-25）：聖なる都（2ステージ）。聖騎士（聖なる加護で自分を癒やす）・聖騎士団長。敵・ボス・報酬は仮
+export const CHAPTER7 = { id: 7, name: '聖なる都を攻略せよ', stages: ['7-1', '7-2'] };
+export const CHAPTERS = [CHAPTER1, CHAPTER2, CHAPTER3, CHAPTER4, CHAPTER5, CHAPTER6, CHAPTER7];
 // 全ステージの順番（章をまたいで、前のステージをクリアすると次が開く）
 export const STAGE_ORDER = CHAPTERS.flatMap((c) => c.stages);
 // 特別（2026-11-25）：特殊イベント「壊滅した町」。ステージ選択の「特別」タブ（イベントのあとだけ出る）。通常の進行（STAGE_ORDER）には入れない
@@ -412,6 +414,35 @@ export const STAGES = {
       { trigger: { baseBelow: 0.25 }, wave: [{ who: 'guardian', count: 2 }, { who: 'rider', count: 3 }], gap: 0.5 },
     ],
     reward: { stones: 650 },
+  },
+  // ---------------- 第7章 聖なる都（敵編成・ボス・報酬は仮） ----------------
+  '7-1': {
+    id: '7-1', chapter: 7, name: '聖都の大門', theme: 'holy',
+    length: L(2400), shrineHp: 12000, baseHp: 9000, enemyScale: 1.4, mana: MANA,
+    spawns: [
+      { who: 'swordsman', start: 3, every: 7, max: 4 },
+      { who: 'paladin', start: 8, every: 14, max: 3 },
+      { who: 'archer', start: 12, every: 10, max: 3 },
+      { who: 'priest', start: 25, every: 20, max: 2 },
+      { who: 'heavy', start: 50, every: 26, max: 1 },
+      { trigger: { baseBelow: 0.6 }, wave: [{ who: 'paladin', count: 2 }, { who: 'priest', count: 1 }], gap: 0.6 },
+      { trigger: { baseBelow: 0.3 }, wave: [{ who: 'paladin', count: 2 }, { who: 'archer', count: 3 }], gap: 0.6 },
+    ],
+    reward: { stones: 560 },
+  },
+  '7-2': {
+    id: '7-2', chapter: 7, name: '聖なる大聖堂', theme: 'holy', boss: true,
+    length: L(2500), shrineHp: 12500, baseHp: 9500, enemyScale: 1.4, mana: { ...MANA, start: 400 },
+    spawns: [
+      { who: 'paladin', start: 3, every: 13, max: 3 },
+      { who: 'swordsman', start: 6, every: 8, max: 3 },
+      { who: 'archer', start: 12, every: 10, max: 3 },
+      { who: 'priest', start: 30, every: 22, max: 2 },
+      { who: 'rider', start: 45, every: 14, max: 2 },
+      { trigger: { baseBelow: 0.6 }, hero: 'holy_captain', wave: [{ who: 'holy_captain', count: 1 }, { who: 'paladin', count: 2 }], gap: 0.8 },
+      { trigger: { baseBelow: 0.25 }, wave: [{ who: 'paladin', count: 2 }, { who: 'priest', count: 1 }, { who: 'archer', count: 2 }], gap: 0.5 },
+    ],
+    reward: { stones: 750 },
   },
   // ---------------- 特別：壊滅した町（竜人オルド）。能力・報酬は仮（別途調整） ----------------
   // forced：初戦は強制敗北（main.js が台本の秒数で終わらせる）。再戦は通常の勝敗で、勝つとオルドが加入（reward.unlock）

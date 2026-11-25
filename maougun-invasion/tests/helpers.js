@@ -3,7 +3,7 @@ import { createBattle, STEP } from '../js/core/battle.js';
 import { UNITS, ALL_DEMONS, UNIT_ORDER } from '../js/data/units.js';
 import { HUMANS } from '../js/data/humans.js';
 import { STAGES, CONFIG, CHAPTER1, STAGE_ORDER } from '../js/data/stages.js';
-import { newProfile, buildDeck, resolveMana, resolveUnit, applyResult } from '../js/data/progress.js';
+import { newProfile, buildDeck, resolveMana, resolveUnit, applyResult, applyCrystal } from '../js/data/progress.js';
 
 export { STEP, UNITS, ALL_DEMONS, UNIT_ORDER, HUMANS, STAGES, CONFIG, CHAPTER1, newProfile };
 
@@ -12,6 +12,7 @@ export { STEP, UNITS, ALL_DEMONS, UNIT_ORDER, HUMANS, STAGES, CONFIG, CHAPTER1, 
 export function profileFor(stageId, upgraded = false) {
   const p = newProfile();
   for (const id of STAGE_ORDER) { if (id === stageId) break; applyResult(p, id, 'win', 200); }
+  if (p.stages['6-3'] && p.stages['6-3'].cleared) applyCrystal(p); // 第6章のあとは魔力回復ずみ
   p.stones = 0;
   if (upgraded) {
     const plan = { '1-1': [], '1-2': ['vanguard'], '1-3': ['vanguard', 'area'], '1-4': ['vanguard', 'area', 'vanguard'], '1-5': ['vanguard', 'area', 'vanguard', 'tank', 'area'] };
