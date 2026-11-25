@@ -225,6 +225,8 @@ Object.assign(SKIN.portraits, APPROVED.portraits);
 Object.assign(SKIN.images.stageBg, APPROVED.images.stageBg);
 Object.assign(SKIN.images.base, APPROVED.images.base);
 Object.assign(SKIN.images.talkBg, APPROVED.images.talkBg);
+// 2026-11-25：大魔王とヴェイルの会話シーン（封印の祠）の背景（ユーザー指定・11462.png・1920×1080）
+if (!SKIN.images.talkBg.shrine) SKIN.images.talkBg.shrine = 'assets/approved/talk/bg_shrine.png';
 if (APPROVED.images.shrine) SKIN.images.shrine = APPROVED.images.shrine;
 // エフェクト（{ src, frameW, frameH, frames }）と UI 画像（ファイルのパス）。docs/ASSET_MAP.md
 SKIN.fx = { ...(APPROVED.fx || {}) };
