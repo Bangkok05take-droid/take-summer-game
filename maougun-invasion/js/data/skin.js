@@ -29,6 +29,13 @@ export const SKIN = {
   // エンディングのムービー（保留中・2026-11-25）。{ src: 'assets/approved/movie/…mp4', replaces: ['lines'] } を入れると、その段の代わりに動画を流す
   movies: { ending: null },
   sprites: {
+    // 2026-11-25：追加6体（batch04）。承認済みの一覧画像 11550.png から Claude Code が背景を抜いて1体ずつに分け、256／384 の枠に収めた（描き直しなし）。倍率は batch03 と同じ
+    heavy_captain: { src: 'assets/approved/humans/heavy_commander.png', frameW: 384, frameH: 384, frames: { walk: [0], windup: 0, attack: 0 }, footY: 367, facing: 'right', scale: 0.23 },
+    elite_mage: { src: 'assets/approved/humans/elite_mage.png', frameW: 256, frameH: 256, frames: { walk: [0], windup: 0, attack: 0 }, footY: 239, facing: 'right', scale: 0.25 },
+    mage_captain: { src: 'assets/approved/humans/mage_commander.png', frameW: 384, frameH: 384, frames: { walk: [0], windup: 0, attack: 0 }, footY: 367, facing: 'right', scale: 0.2 }, // 一覧画像での大きさに合わせて調整
+    royal_commander: { src: 'assets/approved/humans/royal_commander.png', frameW: 384, frameH: 384, frames: { walk: [0], windup: 0, attack: 0 }, footY: 367, facing: 'right', scale: 0.265 }, // 一覧画像での大きさに合わせて調整
+    sky_commander: { src: 'assets/approved/humans/celestial_commander.png', frameW: 384, frameH: 384, frames: { walk: [0], windup: 0, attack: 0 }, footY: 367, facing: 'right', scale: 0.28 }, // 一覧画像での大きさに合わせて調整
+    sky_guardian: { src: 'assets/approved/humans/celestial_guardian.png', frameW: 384, frameH: 384, frames: { walk: [0], windup: 0, attack: 0 }, footY: 367, facing: 'right', scale: 0.25 }, // 一覧画像での大きさに合わせて調整
     // 2026-11-25：素材 batch03（ビジュアル制作室・maougun_assets_batch03.zip・manifest.csv）。26体の個別透過PNG・右向き・静止画1コマ。絵は変更なし
     // 倍率：通常兵 256×256 は基本の兵士と同じ 0.25／ボス 384×384 は 0.23（兵士の約1.4倍）／勇者 0.245（約1.5倍）／聖竜は manifest どおりボスの1.65倍（0.38）
     naval_soldier: { src: 'assets/approved/humans/naval_soldier.png', frameW: 256, frameH: 256, frames: { walk: [0], windup: 0, attack: 0 }, footY: 239, facing: 'right', scale: 0.25 },

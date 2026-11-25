@@ -1,0 +1,7 @@
+filename,frames,frame_width,frame_height,direction,user_approved,notes
+humans/heavy_commander.png,1,384,384,right,yes,static; cut from 11550.png by Claude Code (background removed / no redraw)
+humans/elite_mage.png,1,256,256,right,yes,static; cut from 11550.png by Claude Code (background removed / no redraw)
+humans/mage_commander.png,1,384,384,right,yes,static; cut from 11550.png by Claude Code (background removed / no redraw)
+humans/royal_commander.png,1,384,384,right,yes,static; cut from 11550.png by Claude Code (background removed / no redraw)
+humans/celestial_commander.png,1,384,384,right,yes,static; cut from 11550.png by Claude Code (background removed / no redraw)
+humans/celestial_guardian.png,1,384,384,right,yes,static; cut from 11550.png by Claude Code (background removed / no redraw)
