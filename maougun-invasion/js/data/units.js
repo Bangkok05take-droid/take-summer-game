@@ -27,39 +27,39 @@ export const ATTACK_TYPES = {
 
 export const UNITS = {
   mass: {
-    role: '量産型', attackType: 'melee', target: 'front', tier: 1, evolvesTo: null, growth: GROWTH,
+    role: '量産型', attackType: 'melee', target: 'front', tier: 1, evolvesTo: 'mass_2', growth: GROWTH,
     cost: 50, cooldown: 2, hp: 120, atk: 11, range: 26, speed: 48,
     interval: 1.1, windup: 0.3, kb: 3, attack: 'single', size: 0.8,
   },
   vanguard: {
-    role: '前衛', attackType: 'melee', target: 'front', tier: 1, evolvesTo: null, growth: GROWTH,
+    role: '前衛', attackType: 'melee', target: 'front', tier: 1, evolvesTo: 'vanguard_2', growth: GROWTH,
     cost: 150, cooldown: 6, hp: 650, atk: 42, range: 38, speed: 36,
     interval: 1.6, windup: 0.45, kb: 3, attack: 'single', size: 1.0,
   },
   tank: {
-    role: '高HPタンク', attackType: 'melee', target: 'front', tier: 1, evolvesTo: null, growth: GROWTH,
+    role: '高HPタンク', attackType: 'melee', target: 'front', tier: 1, evolvesTo: 'tank_2', growth: GROWTH,
     cost: 400, cooldown: 14, hp: 2800, atk: 32, range: 34, speed: 18,
     interval: 2.6, windup: 0.7, kb: 2, attack: 'single', size: 1.3,
   },
   ranged: {
-    role: '遠距離', attackType: 'long', target: 'front', line: 'back', tier: 1, evolvesTo: null, growth: GROWTH,
+    role: '遠距離', attackType: 'long', target: 'front', line: 'back', tier: 1, evolvesTo: 'ranged_2', growth: GROWTH,
     cost: 200, cooldown: 6, hp: 170, atk: 34, range: 210, speed: 36,
     interval: 2.3, windup: 0.5, kb: 2, attack: 'single', projectile: 'arrow', size: 0.85,
     flight: [0.22, 0.35], // 2026-11-25：放物線の矢。近いほど早く届き、届いた瞬間にダメージ
   },
   fast: {
-    role: '高速型', attackType: 'melee', target: 'front', tier: 1, evolvesTo: null, growth: GROWTH, flying: true,
+    role: '高速型', attackType: 'melee', target: 'front', tier: 1, evolvesTo: 'fast_2', growth: GROWTH, flying: true,
     cost: 100, cooldown: 3, hp: 170, atk: 17, range: 28, speed: 105,
     interval: 0.8, windup: 0.2, kb: 3, attack: 'single', size: 0.8,
   },
   area: {
-    role: '範囲攻撃', attackType: 'mid', target: 'front', line: 'back', tier: 1, evolvesTo: null, growth: GROWTH,
+    role: '範囲攻撃', attackType: 'mid', target: 'front', line: 'back', tier: 1, evolvesTo: 'area_2', growth: GROWTH,
     cost: 300, cooldown: 10, hp: 260, atk: 28, range: 160, speed: 32,
     interval: 2.6, windup: 0.7, kb: 2, attack: 'area', projectile: 'magic', size: 0.9,
     flight: [0.16, 0.16], // 2026-11-25：火球が届いた瞬間にダメージ（演出と数字を合わせる）
   },
   healer: {
-    role: '回復支援', attackType: 'mid', target: 'front', line: 'back', tier: 1, evolvesTo: null, growth: GROWTH,
+    role: '回復支援', attackType: 'mid', target: 'front', line: 'back', tier: 1, evolvesTo: 'healer_2', growth: GROWTH,
     cost: 250, cooldown: 14, hp: 320, atk: 8, range: 120, speed: 34,
     interval: 2.0, windup: 0.4, kb: 2, attack: 'single', projectile: 'bubble', size: 0.85,
     heal: { every: 4, ratio: 0.18, radius: 190 },
@@ -123,11 +123,14 @@ export const LORD = {
 
 /* 進化形（UNITS の evolvesTo から参照）。evolvesTo が配列なら分岐。ready: false は数値だけの構想（進化はまだできない）。
  * 名前・絵・詳しい能力はビジュアル制作室で確定する */
+/* 第2形態（2026-11-25 企画回答 Ver.1）：基本形の役割のまま純粋に強くなる。能力は基本形から自動で作る（EVOLVE_FORM2）。
+ * ready: false＝デザイン待ち（森のお化け・木槌小鬼）。第3形態は保留 */
+export const EVOLVE_FORM2 = { stat: 1.8, cost: 1.4 }; // 仮：HP・攻撃は基本形の1.8倍（Lv1で基本形Lv5の1.48倍より強い）、召喚の魔力は1.4倍
+const form2 = (key, ready) => { const b = UNITS[key]; return { ...b, tier: 2, evolvesTo: null, ready, baseKey: key, hp: Math.round(b.hp * EVOLVE_FORM2.stat), atk: Math.round(b.atk * EVOLVE_FORM2.stat), cost: Math.round(b.cost * EVOLVE_FORM2.cost / 10) * 10 }; };
 export const EVOLUTIONS = {
-  mallet_2: { // 第2形態：大きな木槌を遠投
-    role: '後衛狙撃', attackType: 'sniper', target: 'backline', line: 'back', tier: 2, evolvesTo: ['mallet_3a', 'mallet_3b'], growth: GROWTH, ready: false,
-    cost: 520, cooldown: 18, hp: 200, atk: 260, range: 380, speed: 30, interval: 3.8, windup: 1.5, kb: 3, attack: 'single', projectile: 'hammer', size: 0.9,
-  },
+  mass_2: form2('mass', true), vanguard_2: form2('vanguard', true), tank_2: form2('tank', true), ranged_2: form2('ranged', true),
+  fast_2: form2('fast', true), area_2: form2('area', true), healer_2: form2('healer', false),
+  mallet_2: { ...form2('mallet', false), evolvesTo: ['mallet_3a', 'mallet_3b'] }, // 第3形態（下の2つ）は保留・使わない
   mallet_3a: { // 第3形態A：超巨大木槌の一撃特化
     role: '後衛狙撃（一撃）', attackType: 'sniper', target: 'backline', line: 'back', tier: 3, evolvesTo: null, growth: GROWTH, ready: false,
     cost: 620, cooldown: 20, hp: 240, atk: 560, range: 400, speed: 28, interval: 4.6, windup: 1.9, kb: 5, attack: 'single', projectile: 'hammer', size: 1.0,

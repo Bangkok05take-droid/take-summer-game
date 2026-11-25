@@ -263,6 +263,7 @@ export function resolveUnit(key, p) {
   return {
     ...def,
     key,
+    skin: (u && u.formKey && ALL_DEMONS[u.formKey]) ? u.formKey : key, // 絵と名前のキー（進化形なら進化形）
     level: lv,
     hp: Math.round(def.hp * (1 + g.hp * (lv - 1))),
     atk: Math.round(def.atk * (1 + g.atk * (lv - 1))),
@@ -288,7 +289,7 @@ export function resolveMana(stageMana, p) {
 export function levelUpUnit(p, key) {
   const u = p.units[key];
   if (!u || !u.unlocked || u.level >= MAX_UNIT_LEVEL) return { ok: false, reason: u && u.level >= MAX_UNIT_LEVEL ? 'max' : 'locked' };
-  const cost = unitLevelCost(u.level);
+  const cost = levelCostFor(p, key);
   if (p.stones < cost) return { ok: false, reason: 'stones', need: cost - p.stones };
   p.stones -= cost; u.level++;
   return { ok: true, cost };
@@ -316,6 +317,7 @@ export function evolveUnit(p, key, toKey) {
   if (!evolutionChoices(p, key).includes(toKey)) return { ok: false, reason: 'invalid' };
   if (EVOLUTIONS[toKey].ready === false) return { ok: false, reason: 'planned' };
   u.formKey = toKey; u.form = EVOLUTIONS[toKey].tier - 1;
+  u.level = 1; // 2026-11-25：進化するとLv1に戻る（第2形態のLv1は基本形のLv5より強い）
   return { ok: true };
 }
 
@@ -355,7 +357,10 @@ export function resolveFurnace(furnace, p) {
 // ---------- 進化 ----------
 // 進化できる段階の上限：魔力結晶の前は進化なし（1）、魔力結晶のあとは上位（2）、究極進化のあとは最上位（3）まで
 export function evolveTierCap(p) { return ultimateDone(p) ? 3 : crystalDone(p) ? 2 : 1; }
-export const EVOLVE_NEED = { level: 5, stones: (tier) => 300 + tier * 200 }; // 仮：Lv5 以上と魔界石（上位 700）
+export const EVOLVE_NEED = { level: 5, stones: (tier) => (tier >= 3 ? 1200 : 800) }; // 2026-11-25 企画回答 Ver.1（仮の数値）：基本形Lv5以上＋魔界石800。第3形態は保留
+export const EVOLVED_LEVEL_COST = 1.5; // 進化形のレベル上げは基本形の1.5倍（仮）
+// そのモンスターの今のレベル上げ費用（進化形は高い）
+export function levelCostFor(p, key) { const u = p.units[key]; const c = unitLevelCost(u.level); return u && u.form > 0 ? Math.round(c * EVOLVED_LEVEL_COST / 10) * 10 : c; }
 // 進化する。{ ok, reason }：'feature'＝まだ進化できない（魔力結晶の前）／'tier'＝最上位はまだ／'level'／'stones'／'planned'（進化先のデザイン待ち）など
 export function tryEvolve(p, key, toKey) {
   if (!crystalDone(p)) return { ok: false, reason: 'feature' };
@@ -364,6 +369,7 @@ export function tryEvolve(p, key, toKey) {
   if (to.tier > evolveTierCap(p)) return { ok: false, reason: 'tier' };
   const u = p.units[key];
   if (!u || !u.unlocked) return { ok: false, reason: 'locked' };
+  if (!evolutionChoices(p, key).includes(toKey)) return { ok: false, reason: 'invalid' }; // 今の形から進化できない（2回目など）
   if (u.level < EVOLVE_NEED.level) return { ok: false, reason: 'level', need: EVOLVE_NEED.level };
   const cost = EVOLVE_NEED.stones(to.tier);
   if (p.stones < cost) return { ok: false, reason: 'stones', need: cost - p.stones };

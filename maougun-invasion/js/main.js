@@ -14,7 +14,7 @@ import {
 } from './data/progress.js';
 import { Renderer, VIEW_W, VIEW_H, MINIMAP } from './render/renderer.js';
 import { Hud, reasonText } from './ui/hud.js';
-import { TalkPlayer, renderSelect, renderLoot, renderUnlock, renderUpgrade, renderRecon, renderEnemyInfo, renderFormation } from './ui/screens.js';
+import { TalkPlayer, renderSelect, renderLoot, renderUnlock, renderUpgrade, renderRecon, renderEnemyInfo, renderFormation, renderEvolveConfirm } from './ui/screens.js';
 import { applyUiSkin } from './ui/uiskin.js';
 import { Tutor } from './ui/tutorial.js';
 import { RUIN_EVENT } from './data/event_ruin.js';
@@ -168,7 +168,7 @@ $('btnUpgrade').addEventListener('click', toUpgrade);
 
 // ---------- 強化 ----------
 function toUpgrade() {
-  const redraw = () => renderUpgrade(app.profile, (k) => { if (levelUpUnit(app.profile, k).ok) { save(); redraw(); } }, (id) => { if (buyUpgrade(app.profile, id).ok) { save(); redraw(); } }, (k, t) => { if (tryEvolve(app.profile, k, t).ok) { save(); redraw(); } });
+  const redraw = () => renderUpgrade(app.profile, (k) => { if (levelUpUnit(app.profile, k).ok) { save(); redraw(); } }, (id) => { if (buyUpgrade(app.profile, id).ok) { save(); redraw(); } }, (k, t) => { renderEvolveConfirm(app.profile, k, t); $('ovEvolve').hidden = false; app.evolving = { k, t, redraw }; });
   redraw();
   show('scUpgrade');
 }
@@ -385,6 +385,8 @@ function playMovie(src, done) {
   const pr = v.play(); if (pr && pr.catch) pr.catch(() => {});
 }
 $('btnFinalNext').addEventListener('click', () => { $('ovFinal').hidden = true; const f = app.afterFinal; app.afterFinal = null; if (f) f(); });
+$('btnEvoYes').addEventListener('click', () => { const e = app.evolving; $('ovEvolve').hidden = true; app.evolving = null; if (e && tryEvolve(app.profile, e.k, e.t).ok) { save(); e.redraw(); } });
+$('btnEvoNo').addEventListener('click', () => { $('ovEvolve').hidden = true; app.evolving = null; });
 $('btnFeatNext').addEventListener('click', () => { $('ovFeature').hidden = true; const f = app.afterFeature; app.afterFeature = null; if (f) f(); });
 // 解放した仲間を1体ずつ見せる（複数のときは順に）
 function nextUnlock() {

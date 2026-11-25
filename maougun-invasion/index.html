@@ -214,6 +214,18 @@
       <button class="small" id="btnMovieSkip" type="button">スキップ ≫</button>
     </div>
 
+    <!-- 進化の確認（強化画面から） -->
+    <div id="ovEvolve" class="overlay" hidden>
+      <div class="panel evolve">
+        <p class="eyebrow">進化</p>
+        <h2 id="evoTitle"></h2>
+        <div class="evoArt"><canvas id="evoFrom" width="110" height="92"></canvas><span>▶</span><canvas id="evoTo" width="130" height="108"></canvas></div>
+        <table class="evoTable" id="evoTable"></table>
+        <p class="evoNote">進化するとレベルが1に戻ります（それでも今より強くなります）。魔界石 <b id="evoCost"></b> を使います。元の姿には戻せません。</p>
+        <div class="row"><button class="big" id="btnEvoYes" type="button">進化する</button><button class="big sub" id="btnEvoNo" type="button">やめる</button></div>
+      </div>
+    </div>
+
     <div id="ovPause" class="overlay" hidden>
       <div class="panel">
         <h2>一時停止</h2>

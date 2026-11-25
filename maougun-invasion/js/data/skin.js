@@ -18,6 +18,8 @@ export const SKIN = {
     special: 'プチデビル', // 2026-11-24：既存作品名と重なる旧名から変更
     mallet: '木槌小鬼', // 2026-11-24 追加の後衛狙撃型（仮称）。正式名はビジュアル制作室で確定
     mallet_2: '木槌小鬼（第2形態）', mallet_3a: '木槌小鬼（一撃）', mallet_3b: '木槌小鬼（連投）', // 進化形（仮称）
+    // 2026-11-25：第2形態の正式名（ユーザー指定）。森のお化け・木槌小鬼はデザイン待ち
+    mass_2: 'ハードグミ', vanguard_2: '悪魔の騎士', tank_2: '鋼男', fast_2: 'イーグル', ranged_2: '弩ゴブリン', area_2: '星炎の魔導士', healer_2: '森のお化け（第2形態）',
     charger: 'ワニ将軍', // 2026-11-25：幹部1体目（ユーザーのデザイン）。内部キーは charger のまま elemental: '幹部・炎氷', trickster: '幹部・罠', thunder: '幹部・落雷', mist: '幹部・霧',
     lord: '大魔王', lordAwakened: '大魔王（真の姿）',
     ord: '竜人オルド', // 2026-11-25（依頼文での呼び方：バラン）
@@ -29,6 +31,13 @@ export const SKIN = {
   // エンディングのムービー（保留中・2026-11-25）。{ src: 'assets/approved/movie/…mp4', replaces: ['lines'] } を入れると、その段の代わりに動画を流す
   movies: { ending: null },
   sprites: {
+    // 2026-11-25：進化形（第2形態）6体（ユーザー納品・透過PNG・左向き・静止画）。表示は基本形の約1.12倍の背の高さ
+    mass_2: { src: 'assets/approved/units/mass_2.png', frameW: 1536, frameH: 1024, frames: { walk: [0], windup: 0, attack: 0 }, footY: 899, facing: 'left', scale: 0.0528 },
+    vanguard_2: { src: 'assets/approved/units/vanguard_2.png', frameW: 1295, frameH: 1215, frames: { walk: [0], windup: 0, attack: 0 }, footY: 1144, facing: 'left', scale: 0.0593 },
+    tank_2: { src: 'assets/approved/units/tank_2.png', frameW: 1312, frameH: 1199, frames: { walk: [0], windup: 0, attack: 0 }, footY: 1117, facing: 'left', scale: 0.0768 },
+    fast_2: { src: 'assets/approved/units/fast_2.png', frameW: 1536, frameH: 1024, frames: { walk: [0], windup: 0, attack: 0 }, footY: 958, facing: 'left', scale: 0.0685, hover: 25 },
+    ranged_2: { src: 'assets/approved/units/ranged_2.png', frameW: 1254, frameH: 1254, frames: { walk: [0], windup: 0, attack: 0 }, footY: 1183, facing: 'left', scale: 0.0529 },
+    area_2: { src: 'assets/approved/units/area_2.png', frameW: 1312, frameH: 1199, frames: { walk: [0], windup: 0, attack: 0 }, footY: 1128, facing: 'left', scale: 0.0669 },
     // 2026-11-25：追加6体（batch04）。承認済みの一覧画像 11550.png から Claude Code が背景を抜いて1体ずつに分け、256／384 の枠に収めた（描き直しなし）。倍率は batch03 と同じ
     heavy_captain: { src: 'assets/approved/humans/heavy_commander.png', frameW: 384, frameH: 384, frames: { walk: [0], windup: 0, attack: 0 }, footY: 367, facing: 'right', scale: 0.23 },
     elite_mage: { src: 'assets/approved/humans/elite_mage.png', frameW: 256, frameH: 256, frames: { walk: [0], windup: 0, attack: 0 }, footY: 239, facing: 'right', scale: 0.25 },

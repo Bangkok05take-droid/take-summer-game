@@ -385,7 +385,7 @@ export class Renderer {
 
     const px = unitSprite(e.key);
     const sz = d.size * UNIT_SCALE;
-    const apr = spriteFor(e.key); // 承認済みの絵（あれば優先）
+    const apr = spriteFor((e.def && e.def.skin) || e.key); // 承認済みの絵（あれば優先）
     const sw = apr ? apr.frameW * apr.scale * 0.6 : px ? px.w * PIX : 32 * sz; // 影・バーの幅の目安
     const sh = apr ? apr.footY * apr.scale : px ? px.h * PIX : 62 * sz;
     const age = this.time - (e.seen ?? (e.seen = this.time));
@@ -420,7 +420,7 @@ export class Renderer {
     ctx.globalAlpha = a;
     if (summon < 1) { ctx.beginPath(); ctx.rect(x - 200, 0, 400, y + 2); ctx.clip(); }
     ctx.translate(x + push * e.dir, y - rise - bob - float + (1 - summon) * sh);
-    const sp = spriteFor(e.key);
+    const sp = spriteFor((e.def && e.def.skin) || e.key);
     if (sp) {
       ctx.scale(e.dir * (1 + squash), 1 - squash); ctx.rotate(lean * 0.6);
       const fr = sp.frames;
@@ -775,10 +775,10 @@ export class Renderer {
 
   // ---------- 承認済みのエフェクト画像（SKIN.fx）。無ければ false を返し、仮の演出を描く ----------
   // ユニットの足元から頭までの高さ
-  headDrop(e) { const apr = spriteFor(e.key); const px = unitSprite(e.key); return apr ? apr.footY * apr.scale : px ? px.h * PIX : 60; }
+  headDrop(e) { const apr = spriteFor((e.def && e.def.skin) || e.key); const px = unitSprite(e.key); return apr ? apr.footY * apr.scale : px ? px.h * PIX : 60; }
   // ユニットの頭上の高さ（火球の溜め・発射の位置）
   headY(e, sh, float = 0) {
-    if (sh == null) { const apr = spriteFor(e.key); const px = unitSprite(e.key); sh = apr ? apr.footY * apr.scale : px ? px.h * PIX : 60; }
+    if (sh == null) { const apr = spriteFor((e.def && e.def.skin) || e.key); const px = unitSprite(e.key); sh = apr ? apr.footY * apr.scale : px ? px.h * PIX : 60; }
     return GROUND_Y + e.lane * LANE_DEPTH - sh - float - 12;
   }
 

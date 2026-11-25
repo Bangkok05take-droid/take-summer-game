@@ -1,12 +1,12 @@
 /* 戦闘以外の画面：ステージ選択・会話・戦利品・ユニット解放・強化 */
 import { SKIN } from '../data/skin.js';
 import { STAGES, CHAPTER1, CHAPTERS, CHAPTER_EX } from '../data/stages.js';
-import { UNITS, BOSSES, UNIT_ORDER, BOSS_ORDER, ATTACK_TYPES, EVOLUTIONS } from '../data/units.js';
+import { UNITS, BOSSES, UNIT_ORDER, BOSS_ORDER, ATTACK_TYPES, EVOLUTIONS, ALL_DEMONS } from '../data/units.js';
 import { HUMANS } from '../data/humans.js';
 import { enemiesOf, reconLine } from '../data/recon.js';
 import { LOOT } from '../data/story.js';
 import {
-  UPGRADES, UPGRADE_GROUPS, unitLevelCost, MAX_UNIT_LEVEL, resolveUnit, isStageOpen, nextStage, lordLevel,
+  UPGRADES, UPGRADE_GROUPS, unitLevelCost, levelCostFor, MAX_UNIT_LEVEL, resolveUnit, isStageOpen, nextStage, lordLevel,
   slotsFor, slotUnlockLv, normalizeFormation, canForm, MAX_UNIT_SLOTS, MAX_BOSS_SLOTS, SLOTS,
   crystalDone, evolutionChoices, evolveTierCap, EVOLVE_NEED,
 } from '../data/progress.js';
@@ -211,8 +211,8 @@ export function renderUpgrade(p, onUnit, onGlobal, onEvolve = null) {
     } else {
       const now = resolveUnit(k, p);
       const max = u.level >= MAX_UNIT_LEVEL;
-      const cost = unitLevelCost(u.level);
-      info.innerHTML = `<div class="nm">${SKIN.names[u.formKey || k] || SKIN.names[k]}　Lv${u.level}</div><div class="ds">HP ${now.hp}・攻撃 ${now.atk}${max ? '' : `　→ 次 HP ${Math.round(UNITS[k].hp * (1 + UNITS[k].growth.hp * u.level))}`}</div>`;
+      const cost = levelCostFor(p, k);
+      info.innerHTML = `<div class="nm">${SKIN.names[u.formKey || k] || SKIN.names[k]}　Lv${u.level}</div><div class="ds">HP ${now.hp}・攻撃 ${now.atk}${max ? '' : `　→ 次 HP ${Math.round((ALL_DEMONS[u.formKey] || UNITS[k]).hp * (1 + UNITS[k].growth.hp * u.level))}`}</div>`;
       // 上位進化（古代の魔力結晶のあと）：進化先ごとのボタン。進化先のデザインが届いていなければ「準備中」
       if (crystalDone(p)) {
         const ev = document.createElement('div'); ev.className = 'evo';
@@ -222,9 +222,9 @@ export function renderUpgrade(p, onUnit, onGlobal, onEvolve = null) {
           const b2 = document.createElement('button'); b2.type = 'button'; b2.dataset.evolve = t;
           const cost = EVOLVE_NEED.stones(EVOLUTIONS[t].tier);
           const ready = EVOLUTIONS[t].ready !== false;
-          b2.textContent = ready ? `進化：${SKIN.names[t] || t} ${cost}` : `進化：${SKIN.names[t] || t}（準備中）`;
+          b2.textContent = ready ? `進化：${SKIN.names[t] || t} ${cost}` : `進化：${SKIN.names[t] || t}（デザイン待ち）`;
           b2.disabled = !ready || u.level < EVOLVE_NEED.level || p.stones < cost;
-          if (ready && u.level < EVOLVE_NEED.level) b2.title = `Lv${EVOLVE_NEED.level}から`;
+          if (ready && u.level < EVOLVE_NEED.level) { b2.title = `Lv${EVOLVE_NEED.level}から`; b2.textContent += `（Lv${EVOLVE_NEED.level}から）`; }
           if (onEvolve) b2.addEventListener('click', () => onEvolve(k, t));
           ev.appendChild(b2);
         }
@@ -236,7 +236,7 @@ export function renderUpgrade(p, onUnit, onGlobal, onEvolve = null) {
     }
     li.append(cv, info, btn);
     ul.appendChild(li);
-    Renderer.thumb(cv, k, UNITS[k].size);
+    Renderer.thumb(cv, u.formKey || k, UNITS[k].size);
     if (!u.unlocked) { const c = cv.getContext('2d'); c.setTransform(1, 0, 0, 1, 0, 0); c.globalCompositeOperation = 'source-atop'; c.fillStyle = '#1a1030'; c.fillRect(0, 0, cv.width, cv.height); }
   }
   const gl = $('upGlobal'); gl.innerHTML = '';
@@ -317,15 +317,15 @@ export function renderFormation(p, stageId, onToggle) {
     const cv = document.createElement('canvas'); cv.width = 112; cv.height = 92;
     b.innerHTML = '';
     b.append(cv);
-    const nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = SKIN.names[key] || key;
+    const nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = SKIN.names[d.skin || key] || key;
     const cs = document.createElement('span'); cs.className = 'cs'; cs.textContent = d.cost;
     b.append(nm, cs);
     if (boss) { const fl = document.createElement('span'); fl.className = 'fl'; fl.textContent = `炉Lv${d.needFurnace}`; b.append(fl); }
     const at = ATTACK_TYPES[d.attackType];
     if (at) { const t = document.createElement('span'); t.className = 'at at-' + d.attackType; t.textContent = at.short; t.title = at.name; b.append(t); }
-    b.setAttribute('aria-label', `${SKIN.names[key]}（${at ? at.name + '・' : ''}魔力${d.cost}${boss ? `・魔力炉Lv${d.needFurnace}以上` : ''}）`);
+    b.setAttribute('aria-label', `${SKIN.names[d.skin || key]}（${at ? at.name + '・' : ''}魔力${d.cost}${boss ? `・魔力炉Lv${d.needFurnace}以上` : ''}）`);
     b.addEventListener('click', () => onToggle(key));
-    Renderer.thumb(cv, key, d.size);
+    Renderer.thumb(cv, d.skin || key, d.size);
     return b;
   };
   const slots = (wrap, list, max, total, kind) => {
@@ -345,4 +345,15 @@ export function renderFormation(p, stageId, onToggle) {
   for (const k of bench) pool.appendChild(card(k, 'out' + (BOSSES[k] ? ' boss' : '')));
   if (!bench.length) { const e = document.createElement('p'); e.className = 'poolEmpty'; e.textContent = '控えの魔物はいません（新しい魔物はステージをクリアすると仲間になります）'; pool.appendChild(e); }
   $('btnSortie').disabled = f.units.length === 0;
+}
+
+// 進化の確認（2026-11-25）：レベルが1に戻ることと、進化の前後の能力を見せる
+export function renderEvolveConfirm(p, key, toKey) {
+  const now = resolveUnit(key, p);
+  const after = resolveUnit(key, { ...p, units: { ...p.units, [key]: { ...p.units[key], formKey: toKey, form: EVOLUTIONS[toKey].tier - 1, level: 1 } } });
+  $('evoTitle').textContent = `${SKIN.names[now.skin] || key} → ${SKIN.names[toKey] || toKey}`;
+  $('evoTable').innerHTML = [['レベル', `Lv${now.level}`, 'Lv1'], ['HP', now.hp, after.hp], ['攻撃', now.atk, after.atk], ['召喚の魔力', now.cost, after.cost]]
+    .map(([k, a, b]) => `<tr><th>${k}</th><td>${a}</td><td>→</td><td><b>${b}</b></td></tr>`).join('');
+  $('evoCost').textContent = EVOLVE_NEED.stones(EVOLUTIONS[toKey].tier);
+  Renderer.thumb($('evoFrom'), now.skin, UNITS[key].size); Renderer.thumb($('evoTo'), toKey, UNITS[key].size);
 }

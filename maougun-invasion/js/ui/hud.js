@@ -29,9 +29,9 @@ export class Hud {
       b.type = 'button';
       b.className = 'slot' + (d.unique ? ' boss' : '');
       b.dataset.key = d.key;
-      b.setAttribute('aria-label', `${SKIN.names[d.key]}を召喚（魔力${d.cost}）キー${i + 1}`);
+      b.setAttribute('aria-label', `${SKIN.names[d.skin || d.key]}を召喚（魔力${d.cost}）キー${i + 1}`);
       const cv = document.createElement('canvas'); cv.width = 128; cv.height = 108;
-      const name = document.createElement('span'); name.className = 'name'; name.textContent = SKIN.names[d.key] || d.key;
+      const name = document.createElement('span'); name.className = 'name'; name.textContent = SKIN.names[d.skin || d.key] || d.key;
       const cost = document.createElement('span'); cost.className = 'cost'; cost.textContent = d.cost;
       const cd = document.createElement('i'); cd.className = 'cd';
       const why = document.createElement('span'); why.className = 'why';
@@ -39,7 +39,7 @@ export class Hud {
       // 押した瞬間に反応させる（click の遅れをなくす）
       b.addEventListener('pointerdown', (ev) => { ev.preventDefault(); this.press(i); this.h.summon(d.key); });
       wrap.appendChild(b);
-      Renderer.thumb(cv, d.key, d.size);
+      Renderer.thumb(cv, d.skin || d.key, d.size);
       return { el: b, key: d.key, def: d, cd, why, state: '' };
     });
     $('capMax').textContent = battle.config.demonCap;

@@ -847,7 +847,7 @@ test('最上位進化：究極進化のあとだけ（上位からのみ・デ�
   try {
     assert.ok(pr.tryEvolve(p, 'mallet', 'mallet_2').ok);
     assert.equal(pr.tryEvolve(p, 'mallet', 'mallet_3a').reason, 'tier');
-    pr.applyUltimate(p);
+    pr.applyUltimate(p); p.units.mallet.level = 5; // 進化でLv1に戻るので、もう一度Lv5に
     const r = pr.tryEvolve(p, 'mallet', 'mallet_3a');
     assert.ok(r.ok && resolveUnit('mallet', p).tier === 3 && r.cost === pr.EVOLVE_NEED.stones(3));
     assert.equal(pr.tryEvolve(p, 'mallet', 'mallet_3b').reason, 'invalid', '分岐はどちらか1つ');
@@ -1072,4 +1072,33 @@ test('第10章の追加キャラクター：天空の魔導士・天空の守護
   assert.equal(easy.base.maxHp, Math.round(STAGES['1-1'].baseHp / 3));
   const h = easy.spawnHuman('swordsman'); const h2 = full.spawnHuman('swordsman');
   assert.ok(Math.abs(h.maxHp - h2.maxHp / 3) <= 1, '敵のHPも1/3');
+});
+
+test('第2形態（企画回答 Ver.1）：Lv5で任意に進化・Lv1に戻る・Lv1でも基本形Lv5より強い・召喚の魔力とレベル上げ費用が上がる・セーブ', async () => {
+  const pr = await import('../js/data/progress.js');
+  const { SKIN } = await import('../js/data/skin.js');
+  const names = { mass_2: 'ハードグミ', vanguard_2: '悪魔の騎士', tank_2: '鋼男', fast_2: 'イーグル', ranged_2: '弩ゴブリン', area_2: '星炎の魔導士' };
+  for (const [k, n] of Object.entries(names)) { assert.equal(SKIN.names[k], n); assert.ok(EVOLUTIONS[k].ready !== false && SKIN.sprites[k] && SKIN.sprites[k].facing === 'left', k); }
+  assert.equal(EVOLUTIONS.healer_2.ready, false, '森のお化けはデザイン待ち'); assert.equal(EVOLUTIONS.mallet_2.ready, false, '木槌小鬼はデザイン待ち');
+  const p = newProfile(); p.stones = 99999; pr.applyCrystal(p);
+  for (const k of ['mass', 'vanguard', 'tank', 'ranged', 'fast', 'area']) {
+    p.units[k].level = 5; const b5 = resolveUnit(k, p);
+    const lv5cost = pr.levelCostFor(p, k);
+    const before = p.stones; const r = pr.tryEvolve(p, k, k + '_2');
+    assert.ok(r.ok && before - p.stones === 800, k + '：魔界石800');
+    const e1 = resolveUnit(k, p);
+    assert.equal(p.units[k].level, 1, 'Lv1に戻る'); assert.equal(e1.skin, k + '_2'); assert.equal(e1.key, k, '出撃のキーはそのまま');
+    assert.ok(e1.hp > b5.hp && e1.atk > b5.atk, k + '：第2形態Lv1は基本形Lv5より強い');
+    assert.ok(e1.cost > UNITS[k].cost, '召喚の魔力が上がる'); assert.equal(e1.attackType, UNITS[k].attackType, '役割はそのまま');
+    assert.ok(pr.levelCostFor(p, k) > pr.unitLevelCost(1), '進化形のレベル上げは高い');
+    assert.ok(lv5cost > 0);
+  }
+  assert.equal(pr.tryEvolve(p, 'mass', 'mass_2').reason, 'invalid', '2回は進化しない');
+  const st = memStore(); saveProfile(p, st); const q = loadProfile(st);
+  assert.equal(q.units.vanguard.formKey, 'vanguard_2'); assert.equal(resolveUnit('vanguard', q).skin, 'vanguard_2');
+  // 進化しなくても使える（任意）
+  const r2 = newProfile(); r2.units.vanguard.level = 7; assert.equal(resolveUnit('vanguard', r2).skin, 'vanguard');
+  // 戦闘に出ると進化形の能力
+  const b = makeBattle({ stageId: '1-1', profile: p, deck: ['vanguard'] });
+  assert.equal(b.deck[0].hp, resolveUnit('vanguard', p).hp);
 });
