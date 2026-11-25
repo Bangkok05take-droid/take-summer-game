@@ -305,15 +305,15 @@ export const HUMANS = {
   },
   // ---- 勇者（1-5 のボス）。拠点HPの割合で1回だけ登場。倒すと撤退 ----
   take: {
-    name: '勇者たけ', role: '勇者', hero: true, noKbFromSmall: true,
-    note: '2連撃と飛ぶ斬撃。小さな魔物では押し返せない', counter: '回復役と高HPで持ちこたえ、呪文や幹部で押す',
+    name: '勇者たけ', role: '勇者', hero: true, noKbFromSmall: true, guard: 0.15, // 2026-11-25：剣と盾の攻守に優れた勇者（盾で被ダメージ −15%）
+    note: '剣と盾で戦う勇者。2連撃と飛ぶ斬撃。盾で守りも固い。小さな魔物では押し返せない', counter: '回復役と高HPで持ちこたえ、呪文や幹部で押す',
     hp: 3400, atk: 56, range: 40, speed: 30, interval: 1.6, windup: 0.35, kb: 6, attack: 'single', mana: 1200, size: 1.35, // 2026-11-25：最終決戦（10-5）用に調整（旧 1-5 は保留）
     hits: 2, hitGap: 0.2,          // 近接の2連撃
     skills: [{ id: 'wave', name: '飛ぶ斬撃', type: 'wave', every: 11, first: 4, windup: 0.9, recover: 0.4, reach: 280, mult: 1.6 }],
   },
   sai: {
     name: '勇者サイ', role: '勇者', hero: true, noKbFromSmall: true, line: 'back',
-    note: '仲間を回復し、光で魔物を気絶させる', counter: '遠距離で狙い、まとめて押し切る',
+    note: '遠くから魔法で攻撃し、仲間を回復し、光で魔物を気絶させる魔導士', counter: '木槌小鬼やこうもりで先に狙い、まとめて押し切る',
     hp: 2400, atk: 36, range: 190, speed: 28, interval: 2.2, windup: 0.45, kb: 5, attack: 'single', projectile: 'orb', mana: 1000, size: 1.3, // 2026-11-25：最終決戦（10-5）用に調整
     skills: [
       { id: 'heal', name: '回復の光', type: 'heal', every: 16, first: 6, windup: 0.6, recover: 0.4, radius: 240, ratio: 0.08 },
