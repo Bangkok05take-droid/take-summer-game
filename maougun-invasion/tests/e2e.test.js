@@ -176,21 +176,24 @@ try {
   // ---- 1-2〜1-5 ----
   // ステージ選択 → （初回は会話）→ 偵察報告 → 編成 → 出撃
   const sortie = async (id) => {
+    if (await vis('#stutor')) { stutorSeen.push(await page.locator('#stutorText').textContent()); await page.tap('#btnSTutorSkip'); }
     await page.tap(`.node[data-stage="${id}"]`, { force: true });
     if (await vis('#scTalk')) await page.tap('#btnSkip');
     await page.waitForSelector('#scRecon:not([hidden])', { timeout: 3000 });
     const recon = { text: await page.locator('#reconText').textContent(), enemies: await page.locator('#reconEnemies .enemy').count() };
     await page.tap('#btnReconNext');
     await page.waitForSelector('#scForm:not([hidden])', { timeout: 3000 });
+    if (await vis('#stutor')) { stutorSeen.push(await page.locator('#stutorText').textContent()); await page.tap('#btnSTutorSkip'); }
     const form = await ev(() => ({ units: document.querySelectorAll('#formUnits .fcard').length, locked: document.querySelectorAll('#formUnits .fslot.locked').length, bosses: document.querySelectorAll('#formBosses .fcard').length, bossLocked: document.querySelectorAll('#formBosses .fslot.locked').length, pool: document.querySelectorAll('#formPool .fcard').length }));
     return { recon, form };
   };
+  const stutorSeen = [];
   const playStage = async (id, unlockName) => {
     const { recon, form } = await sortie(id);
     if (id === '1-2') {
       check('偵察報告（1-2）：使い方の説明と1行報告、敵の兵種カード4種（僧侶を含む）', recon.text.includes('戦う前に') && recon.text.includes('弓兵') && recon.enemies === 4 && await page.locator('#reconWho').textContent() === 'ヴェイル', JSON.stringify(recon));
       check('編成：通常5枠＋6枠目は鍵・幹部1枠＋2枠目は鍵・控えに3体（魔法使い・森のお化け・木槌小鬼）', form.units === 5 && form.locked === 1 && form.bossLocked === 1 && form.pool === 3, JSON.stringify(form));
-      check('編成画面に使い方の説明（1-2 の最初だけ）', (await page.locator('#formHint').textContent()).includes('木槌小鬼'));
+      check('編成の手順つき説明が出る（1-2 の最初だけ）', stutorSeen.some((t) => t.includes('出撃の編成')), JSON.stringify(stutorSeen));
       await shot(page, '12_formation');
       await page.tap('#btnEnemyInfo');
       check('編成画面から敵軍情報を開ける', await vis('#ovEnemy') && (await page.locator('#ovEnemyList .enemy').count()) === 4);
@@ -220,6 +223,13 @@ try {
     check(`${id}：開始・勝利・解放（${unlockName}）`, ok && unl === unlockName, `カード ${ns} 枚`);
   };
   await playStage('1-2', null);
+  check('1-2 クリア後のステージ選択で、強化の手順つき説明が出る', await vis('#stutor') && (await page.locator('#stutorText').textContent()).includes('魔王軍を強化'));
+  await page.tap('#stutor'); await page.waitForTimeout(80);
+  check('強化の説明中は、案内しているボタンしか押せない', (await screen()) === 'scSelect');
+  await page.tap('#btnUpgrade'); await page.waitForTimeout(150);
+  check('案内どおり「魔王軍を強化」を押すと強化画面で説明が続く', (await screen()) === 'scUpgrade' && (await page.locator('#stutorText').textContent()).includes('魔物'));
+  await page.tap('#btnSTutorSkip'); await page.tap('#btnUpBack'); await page.waitForTimeout(100);
+  check('説明は一度きり（とばした後は出ない）', !(await vis('#stutor')));
   await playStage('1-3', '幹部・突進');
   const prof = await ev(() => window.__game.app.profile);
   check('第1章の全3ステージを制圧', ['1-1', '1-2', '1-3'].every((id) => prof.stages[id] && prof.stages[id].cleared) && prof.loot.length === 3);

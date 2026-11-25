@@ -46,3 +46,26 @@ export const LOSE_TIPS = {
 };
 
 export const SELF_HINT = 'ひとつだけ助言を。騎兵が来たら前衛で止め、盾兵には範囲攻撃を。魔力炉は早めに強化しましょう。';
+
+/* 画面の手順つき説明（2026-11-25）。話し手はヴェイル。
+ *   wait：'tap'＝説明の枠をタップで次へ／'click'＝target（CSSセレクタ）を押したら次へ（ほかのボタンは押せない）
+ *   focus：光らせる場所（省略時は target）／at：説明の枠の位置（'top'｜'bottom'）／skipIf：(画面) => true ならとばす
+ * FORM_GUIDE：1-2 の編成画面（最初の1回）／UPGRADE_GUIDE：1-2 をクリアしてステージ選択に戻ったとき（最初の1回） */
+export const FORM_GUIDE = [
+  { wait: 'tap', focus: '#formUnits', at: 'bottom', text: 'ここは出撃の編成です。上の段が、出撃する魔物。下の「控え」が、待っている魔物です。' },
+  { wait: 'click', target: '#btnEnemyInfo', at: 'bottom', text: 'まずは「敵軍情報」で、相手を確かめましょう。' },
+  { wait: 'click', target: '#btnEnemyClose', at: 'top', text: '回復役の「見習い僧侶」がいます。前の兵を倒しても、後ろから治されてしまいます。確かめたら「とじる」を。' },
+  { wait: 'click', target: '#formUnits button.fcard:last-of-type', at: 'bottom', skipIf: () => !!document.querySelector('#formUnits .fcard[data-key="mallet"]'), text: '編成の魔物をタップすると、控えに外せます。右はしの魔物を外してみましょう。' },
+  { wait: 'click', target: '#formPool .fcard[data-key="mallet"]', at: 'bottom', skipIf: () => !!document.querySelector('#formUnits .fcard[data-key="mallet"]'), text: '控えの「木槌小鬼」をタップして、編成に入れましょう。前の兵を飛びこえて、後ろの僧侶を直接ねらえます。' },
+  { wait: 'tap', focus: '#formUnits .fslot.locked', at: 'bottom', text: '鍵のついた枠は、大魔王様の力が戻ると使えるようになります。編成は保存され、次のステージにも引き継がれます。' },
+  { wait: 'click', target: '#btnSortie', at: 'top', text: '準備ができたら「出撃！」です。' },
+];
+
+export const UPGRADE_GUIDE = [
+  { wait: 'click', target: '#btnUpgrade', at: 'top', text: '大魔王様、魔界石がたまってまいりました。「魔王軍を強化」で、軍を強くいたしましょう。' },
+  { wait: 'tap', focus: '#upUnits', at: 'bottom', text: '左は「魔物」の強化です。魔界石でレベルを上げると、その魔物のHPと攻撃が上がります。' },
+  { wait: 'click', target: '#upUnits button[data-unit="mass"]', at: 'bottom', skipIf: () => { const b = document.querySelector('#upUnits button[data-unit="mass"]'); return !b || b.disabled; }, text: 'グミのレベルを上げてみましょう。数で押す魔物なので、強くするとよく効きます。' },
+  { wait: 'tap', focus: '#upGlobal', at: 'bottom', text: '右は「大魔王の力」です。支配力（編成の枠）はステージを制圧すると自動で戻り、魔力と魔王の力は魔界石で強化します。' },
+  { wait: 'click', target: '#upGlobal button[data-up="manaMax"]', at: 'bottom', skipIf: () => { const b = document.querySelector('#upGlobal button[data-up="manaMax"]'); return !b || b.disabled; }, text: '「魔力の器」を強化すると、戦いを始めるときの最大魔力が増えます。押してみてください。' },
+  { wait: 'tap', at: 'bottom', text: '戦闘中の「魔力炉」はその戦いの間だけ。ここでの強化は、ずっと続きます。魔界石はステージを制圧すると手に入ります。' },
+];

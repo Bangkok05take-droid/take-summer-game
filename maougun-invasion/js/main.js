@@ -15,7 +15,8 @@ import { Hud, reasonText } from './ui/hud.js';
 import { TalkPlayer, renderSelect, renderLoot, renderUnlock, renderUpgrade, renderRecon, renderEnemyInfo, renderFormation } from './ui/screens.js';
 import { applyUiSkin } from './ui/uiskin.js';
 import { Tutor } from './ui/tutorial.js';
-import { SCREEN_TIPS, LOSE_TIPS, SELF_HINT } from './data/tutorial.js';
+import { SCREEN_TIPS, LOSE_TIPS, SELF_HINT, FORM_GUIDE, UPGRADE_GUIDE } from './data/tutorial.js';
+import { ScreenTutor } from './ui/screenTutor.js';
 import { CHAPTER1, STAGE_ORDER, chapterOf } from './data/stages.js';
 
 const $ = (id) => document.getElementById(id);
@@ -26,6 +27,7 @@ const renderer = new Renderer(canvas);
 const clock = createClock(STEP);
 const talk = new TalkPlayer();
 const tutor = new Tutor(clock);
+const stutor = new ScreenTutor();
 
 const app = {
   screen: 'title',
@@ -94,6 +96,9 @@ function toSelect(ch) {
   renderer.centerOn(app.scene, app.scene.stage.length / 2);
   renderSelect(app.profile, pickStage, show1, (c) => toSelect(c));
   show('scSelect');
+  // 1-2 をクリアして戻ったら：強化の手順つき説明（最初の1回）
+  const r12 = app.profile.stages['1-2'];
+  if (r12 && r12.cleared && !app.profile.story['tip:upgrade'] && !stutor.active) stutor.start(UPGRADE_GUIDE, () => { app.profile.story['tip:upgrade'] = true; save(); });
 }
 function pickStage(id) {
   if (!isStageOpen(app.profile, id)) return;
@@ -141,7 +146,8 @@ function toForm(id) {
     save(); redraw();
   });
   redraw();
-  if (STAGES[id].tutorial === 'hints' && !app.profile.story['tip:form']) { $('formHint').textContent = SCREEN_TIPS.form; app.profile.story['tip:form'] = true; save(); }
+  // 1-2：編成の手順つき説明（最初の1回）
+  if (STAGES[id].tutorial === 'hints' && !app.profile.story['tip:form'] && !stutor.active) stutor.start(FORM_GUIDE, () => { app.profile.story['tip:form'] = true; save(); });
   show('scForm');
 }
 $('btnSortie').addEventListener('click', () => { if (normalizeFormation(app.profile).units.length) startStage(app.stageId); });
@@ -368,7 +374,7 @@ function frame(now) {
 window.__game = {
   app, clock, renderer, talk, SKIN,
   get battle() { return app.battle; },
-  startStage, toSelect, toTitle, toRecon, toForm, tutor,
+  startStage, toSelect, toTitle, toRecon, toForm, tutor, stutor,
 };
 
 document.addEventListener('visibilitychange', () => { if (document.hidden && app.screen === 'battle' && app.battle && !app.battle.result) setPaused(true); });
