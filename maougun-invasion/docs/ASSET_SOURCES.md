@@ -43,3 +43,4 @@
 | 2026-11-25 | （チャットで受け取った画像 11481.png） | — | — | `assets/approved/units/mallet.png` | — | **背景のみ透明化**：焼き込まれた市松模様（端からつながる白・薄灰）を透明にし、縁を1px整えた。キャラクターの絵・色は加工なし。木槌小鬼・1312×1199・左向き |
 | 2026-11-25 | `7bb948b1-maougun_mallet_throw_fx.zip` | `fx/mallet_projectile.png`・`fx/mallet_impact.png` | — | `assets/approved/fx/` | — | 加工なし。木槌小鬼の木槌投げ |
 | 2026-11-25 | `628dddca-maougun_kaiser_phoenix_fx.zip` | `fx/phoenix_charge.png`・`phoenix_flight.png`・`phoenix_impact.png` | — | `assets/approved/fx/` | — | 加工なし。大魔王の呪文の不死鳥。ゲーム内の名前は「魔王の呪文」（既存作品の技名は使わない） |
+| 2026-11-25 | （チャットで受け取った画像 1000021128.png） | — | — | `assets/approved/units/charger.png` | — | 加工なし。幹部1体目・ワニ将軍。1254×1254・左向き・透過 |

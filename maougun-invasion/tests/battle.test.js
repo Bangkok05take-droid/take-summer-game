@@ -586,3 +586,14 @@ test('第3章（地方王国の城）：3ステージ。台本どおりの順番
   b.damageBase(b.base, b.base.hp - b.base.maxHp * 0.59); run(b, 3);
   assert.ok(b.entities.some((e) => e.key === 'king'), '王の間：拠点HP60%で国王');
 });
+test('ワニ将軍の突進：前方の敵にダメージ、前線を押し下げる（強敵も下がる）', () => {
+  const b = makeBattle({ stage: noEnemies({ mana: { start: 5000, max: 9999, regen: 0 } }), deck: ['charger'] });
+  const g = b.spawn('demon', b.deckDef('charger'), 1300); g.x = 1300;
+  const a = b.spawnHuman('swordsman'); a.x = 1200; a.def = { ...a.def, speed: 0, hp: 99999 }; a.hp = 99999;
+  const k = b.spawnHuman('captain'); k.x = 1150; k.def = { ...k.def, speed: 0, hp: 99999 }; k.hp = 99999;
+  const s = b.deckDef('charger').skills[0];
+  b.useSkill(g, s); run(b, 0.6);
+  assert.ok(a.hp < 99999 && k.hp < 99999, 'ダメージ');
+  assert.ok(1200 - a.x >= s.push - 1 && 1150 - k.x >= s.push - 1, `押し下げ ${(1200 - a.x).toFixed(0)}・${(1150 - k.x).toFixed(0)}`);
+  assert.ok(1300 - g.x > 100, '将軍は前へ出る');
+});

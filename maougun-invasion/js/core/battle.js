@@ -408,7 +408,7 @@ export class Battle {
   // 特技が使える状況か（前方の射程に相手がいる・回復が必要な味方がいる）
   skillReady(e, s) {
     if (s.type === 'heal') return this.entities.some((o) => o.side === e.side && o.state !== 'dead' && o.hp < o.maxHp * 0.8 && Math.abs(o.x - e.x) <= s.radius);
-    return this.targetsAhead(e, -12, s.reach).some((t) => !t.isBase);
+    return this.targetsAhead(e, -12, s.trigger ?? s.reach).some((t) => !t.isBase); // trigger：この距離まで近づいてから使う
   }
 
   useSkill(e, s) {
@@ -432,10 +432,12 @@ export class Battle {
         this.healUnit(o, Math.round(o.maxHp * s.ratio));
       }
     } else if (s.type === 'charge') {
-      // 突進：前方へ進みながら、通り道の敵をまとめて吹き飛ばす
+      // 突進：前方へ進みながら、通り道の敵をまとめて吹き飛ばす。
+      // push があれば、当たった敵の前線を push だけ後ろへ押し下げる（強敵・押されにくい敵も下がる）
       for (const t of this.targetsAhead(e, -12, s.reach)) {
-        if (t.isBase) this.damageBase(t.target, Math.round(e.def.atk * s.mult), e);
-        else this.damageUnit(t.target, Math.round(e.def.atk * s.mult), e, true);
+        if (t.isBase) { this.damageBase(t.target, Math.round(e.def.atk * s.mult), e); continue; }
+        this.damageUnit(t.target, Math.round(e.def.atk * s.mult), e, !s.push);
+        if (s.push && t.target.state !== 'dead') this.knockback(t.target, Math.max(s.push, this.config.kbDistance));
       }
       const b = this.enemyBase(e);
       const limit = b.x - e.dir * (b.halfWidth + 20);

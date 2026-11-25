@@ -91,10 +91,11 @@ export const UNITS = {
  * 未完成の幹部も、ここに1行足せば編成・召喚・解放の仕組みにそのまま乗る（skills・絵は後から足す）。 */
 export const BOSSES = {
   charger: {
-    role: '幹部・突進', attackType: 'melee', target: 'front', unique: true, ready: true, growth: GROWTH,
+    role: '幹部・突進（前線を押し下げる）', attackType: 'melee', target: 'front', unique: true, ready: true, growth: GROWTH,
     cost: 1500, needFurnace: 3, cooldown: 60, hp: 7000, atk: 160, range: 46, speed: 30,
     interval: 2.8, windup: 0.7, kb: 6, attack: 'area', size: 1.6,
-    skills: [{ id: 'charge', name: '突進', type: 'charge', every: 12, first: 3, windup: 0.9, recover: 0.6, reach: 220, move: 180, mult: 1.8 }],
+    // 2026-11-25：ワニ将軍。通常攻撃に加えて「突進」：前方220の敵に攻撃力×1.8、前線を90押し下げ、自分は140前へ
+    skills: [{ id: 'charge', name: '突進', type: 'charge', every: 12, first: 3, windup: 0.9, recover: 0.6, reach: 220, trigger: 110, move: 140, mult: 1.8, push: 90 }], // trigger：敵が110まで来てから突進（前線をまとめて巻きこむ）
     anim: { idle: 2, walk: 4, attack: 4, skill: 6 }, // 準備するアニメーションのコマ数（ART_SPEC）
   },
   // ---- 構想（ready: false）。数値は仮。能力（skills）と絵ができたら ready: true にする ----

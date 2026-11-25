@@ -230,7 +230,7 @@ try {
   check('案内どおり「魔王軍を強化」を押すと強化画面で説明が続く', (await screen()) === 'scUpgrade' && (await page.locator('#stutorText').textContent()).includes('魔物'));
   await page.tap('#btnSTutorSkip'); await page.tap('#btnUpBack'); await page.waitForTimeout(100);
   check('説明は一度きり（とばした後は出ない）', !(await vis('#stutor')));
-  await playStage('1-3', '幹部・突進');
+  await playStage('1-3', 'ワニ将軍');
   const prof = await ev(() => window.__game.app.profile);
   check('第1章の全3ステージを制圧', ['1-1', '1-2', '1-3'].every((id) => prof.stages[id] && prof.stages[id].cleared) && prof.loot.length === 3);
   check('第1章クリア後のステージ選択は第2章（城下町）で、2-1 が開いている', (await page.locator('#selChapName').textContent()) === '城下町を制圧せよ' && !(await page.locator('.node[data-stage="2-1"]').isDisabled()) && await page.locator('.node[data-stage="2-2"]').isDisabled());
