@@ -27,7 +27,10 @@ export const CONFIG = {
   },
 };
 
-export const CHAPTER1 = { id: 1, name: 'はじまりの村を侵略せよ', stages: ['1-1', '1-2', '1-3', '1-4', '1-5'], unlockOnClear: 'charger' };
+/* 第1章はチュートリアル（2026-11-25）：1-1 ゲームの説明（負けない）／1-2 コツと対策のヒント／1-3 自分でやってみる。
+ * tutorial：'guide'＝手順つきの説明（js/data/tutorial.js）／'hints'＝敵の登場などでヒント／'self'＝ヒントなし
+ * 旧 1-4「村の門」・1-5「村の広場（勇者戦）」のデータは第2章（城下町）づくりの素材として下に残す（遊べない）。勇者たけ・サイは最後まで出さない */
+export const CHAPTER1 = { id: 1, name: 'はじまりの村を侵略せよ', stages: ['1-1', '1-2', '1-3'], unlockOnClear: 'charger' };
 
 const MANA = { start: 200, max: 1000, regen: 28 };
 
@@ -38,8 +41,8 @@ const L = (len) => Math.round(len * FIELD_SCALE);
 
 export const STAGES = {
   '1-1': {
-    id: '1-1', chapter: 1, name: '見張り小屋', theme: 'watch',
-    length: L(2200), shrineHp: 5000, baseHp: 5500, enemyScale: 1.0, mana: MANA,
+    id: '1-1', chapter: 1, name: '見張り小屋', theme: 'watch', tutorial: 'guide', noLose: true,
+    length: L(2200), shrineHp: 5000, baseHp: 4000, enemyScale: 1.0, mana: MANA,
     spawns: [
       { who: 'militia', start: 3, every: 6, max: 6 },
       { who: 'militia', start: 40, every: 4, max: 8 },
@@ -49,14 +52,14 @@ export const STAGES = {
       { trigger: { baseBelow: 0.6 }, wave: [{ who: 'swordsman', count: 2 }, { who: 'militia', count: 4 }], gap: 0.7 },
       { trigger: { baseBelow: 0.3 }, wave: [{ who: 'swordsman', count: 3 }, { who: 'militia', count: 5 }], gap: 0.6 },
     ],
-    reward: { stones: 120, unlock: 'ranged' },
+    reward: { stones: 120 },
     talk: [
       { who: 'ティウ', text: 'た、大変だー！ 見張り小屋のほうに魔物の群れが来てるぞー！' },
       { who: 'モッ', text: '落ち着け、ティウ。自警団はクワを持って小屋の前に集まれ！' },
     ],
   },
   '1-2': {
-    id: '1-2', chapter: 1, name: '麦畑の柵', theme: 'wheat',
+    id: '1-2', chapter: 1, name: '麦畑の柵', theme: 'wheat', tutorial: 'hints',
     length: L(2300), shrineHp: 5500, baseHp: 7500, enemyScale: 1.05, mana: MANA,
     spawns: [
       { who: 'militia', start: 3, every: 5, max: 7 },
@@ -65,17 +68,18 @@ export const STAGES = {
       { who: 'militia', start: 70, every: 3, max: 8 },
       { who: 'swordsman', start: 110, every: 8, max: 4 },
       { who: 'archer', start: 160, every: 9, max: 4 },
+      { who: 'priest', start: 75, every: 35, max: 1 }, // 2026-11-25：回復役（後衛狙撃の木槌小鬼の出番を教える）
       { trigger: { baseBelow: 0.6 }, wave: [{ who: 'archer', count: 2 }, { who: 'swordsman', count: 2 }, { who: 'militia', count: 4 }], gap: 0.6 },
       { trigger: { baseBelow: 0.3 }, wave: [{ who: 'swordsman', count: 4 }, { who: 'archer', count: 3 }], gap: 0.6 },
     ],
-    reward: { stones: 160, unlock: 'fast' },
+    reward: { stones: 160 },
     talk: [
       { who: 'ワーン', text: 'うちの麦畑だけは渡さないよ！ 弓の得意な人、柵の後ろへ！' },
       { who: 'ティウ', text: '魔物って、近くで見ると意外とかわいい……いや、こわい！' },
     ],
   },
   '1-3': {
-    id: '1-3', chapter: 1, name: '小川の橋', theme: 'river',
+    id: '1-3', chapter: 1, name: '小川の橋', theme: 'river', tutorial: 'self',
     length: L(2400), shrineHp: 6000, baseHp: 3500, enemyScale: 1.1, /* 2026-11-25：1.15 → 1.1 */ mana: MANA,
     spawns: [
       { who: 'militia', start: 3, every: 5, max: 6 },
@@ -89,14 +93,14 @@ export const STAGES = {
       { trigger: { baseBelow: 0.6 }, wave: [{ who: 'rider', count: 3 }, { who: 'swordsman', count: 3 }], gap: 0.6 },
       { trigger: { baseBelow: 0.3 }, wave: [{ who: 'shield', count: 1 }, { who: 'archer', count: 3 }, { who: 'rider', count: 3 }], gap: 0.6 },
     ],
-    reward: { stones: 200, unlock: 'healer' },
+    reward: { stones: 250, unlock: 'charger' }, // 第1章クリア：幹部・突進（第2章で使う）
     talk: [
       { who: 'コイ', text: '橋は鍛冶屋のおれが直したばかりなんだ。こわされてたまるか！' },
       { who: 'ティウ', text: '子馬の騎兵隊、出発！ ……はやっ！' },
     ],
   },
   '1-4': {
-    id: '1-4', chapter: 1, name: '村の門', theme: 'gate',
+    id: '1-4', chapter: 2, reserve: true, name: '村の門', theme: 'gate', // 保留（第2章の素材）
     length: L(2400), shrineHp: 6500, baseHp: 7000, enemyScale: 1.2, /* 2026-11-25：1.3 → 1.2 */ mana: MANA,
     spawns: [
       { who: 'militia', start: 3, every: 4.5, max: 6 },
@@ -111,14 +115,14 @@ export const STAGES = {
       { trigger: { baseBelow: 0.6 }, wave: [{ who: 'shield', count: 1 }, { who: 'swordsman', count: 3 }, { who: 'priest', count: 1 }], gap: 0.6 },
       { trigger: { baseBelow: 0.3 }, wave: [{ who: 'shield', count: 2 }, { who: 'archer', count: 3 }, { who: 'rider', count: 2 }], gap: 0.6 },
     ],
-    reward: { stones: 250, unlock: 'special' },
+    reward: { stones: 250 },
     talk: [
       { who: 'モッ', text: '門を閉めろ！ 盾兵は前へ、僧侶さんはそのうしろで手当てを！' },
       { who: 'コイ', text: '盾は分厚く打っておいた。そう簡単には抜かれないぞ。' },
     ],
   },
   '1-5': {
-    id: '1-5', chapter: 1, name: '村の広場', theme: 'plaza', boss: true,
+    id: '1-5', chapter: 2, reserve: true, /* 保留（第2章の素材・勇者戦） */ name: '村の広場', theme: 'plaza', boss: true,
     length: L(2500), shrineHp: 7000, baseHp: 6500, enemyScale: 1.25, /* 2026-11-25：1.4 → 1.25 */ mana: { ...MANA, start: 500 },
     spawns: [
       { who: 'militia', start: 2, every: 4, max: 7 },
@@ -133,7 +137,7 @@ export const STAGES = {
       { trigger: { baseBelow: 0.4 }, hero: 'sai', wave: [{ who: 'sai', count: 1 }, { who: 'priest', count: 1 }, { who: 'shield', count: 1 }], gap: 0.8 },
       { trigger: { baseBelow: 0.15 }, wave: [{ who: 'rider', count: 3 }, { who: 'swordsman', count: 3 }, { who: 'archer', count: 2 }], gap: 0.5 },
     ],
-    reward: { stones: 400, unlock: ['charger', 'mallet'] }, // 2026-11-24：木槌小鬼（仮称）も解放（解放のステージは仮）
+    reward: { stones: 400 },
     talk: [
       { who: 'ワーン', text: 'みんな、広場まで下がって！ 勇者さまたちが来てくれるまで、ふんばるよ！' },
       { who: 'ティウ', text: '勇者たけとサイが帰ってきたら、魔物なんてあっという間さ！ ……たぶん。' },

@@ -125,4 +125,5 @@ export const EVOLUTIONS = {
 };
 
 export const ALL_DEMONS = { ...UNITS, ...BOSSES, ...EVOLUTIONS };
-export const UNIT_ORDER = ['mass', 'vanguard', 'tank', 'ranged', 'fast', 'area', 'healer', 'special', 'mallet'];
+// 2026-11-25：通常モンスターは8体。プチデビル（special）は外した（データは残す）
+export const UNIT_ORDER = ['mass', 'vanguard', 'tank', 'ranged', 'fast', 'area', 'healer', 'mallet'];

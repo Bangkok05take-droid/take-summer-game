@@ -16,7 +16,7 @@ import { STAGES, CHAPTER1 } from './stages.js';
 
 export const SAVE_KEY = 'maougunInvasion.save';
 export const SAVE_VERSION = 2; // 2：編成（formation）と魔王の力の強化を追加
-export const START_UNITS = ['mass', 'vanguard', 'tank', 'area'];
+export const START_UNITS = ['mass', 'vanguard', 'tank', 'ranged', 'fast', 'area', 'healer', 'mallet']; // 2026-11-25：通常8体は最初から全員
 export const MAX_UNIT_LEVEL = 10;
 
 /* 大魔王の恒久的な成長（魔界石）。戦闘中の「魔力炉」（その戦闘だけ）とは別。
@@ -58,7 +58,7 @@ export const unitLevelCost = (lv) => 60 + (lv - 1) * 70; // Lv → Lv+1
 
 export function newProfile() {
   const units = {};
-  for (const k of [...UNIT_ORDER, 'charger']) units[k] = { unlocked: START_UNITS.includes(k), level: 1, form: 0 };
+  for (const k of [...UNIT_ORDER, 'special', 'charger']) units[k] = { unlocked: START_UNITS.includes(k), level: 1, form: 0 };
   for (const k of BOSS_ORDER) if (!units[k]) units[k] = { unlocked: false, level: 1, form: 0 };
   const p = { version: SAVE_VERSION, stones: 0, units, upgrades: { manaMax: 0, manaRegen: 0, cooldown: 0, spellPower: 0, spellCharge: 0 }, stages: {}, story: {}, loot: [], seen: Object.fromEntries(START_UNITS.map((k) => [k, true])), formation: { units: [], bosses: [] } };
   fillFormation(p);
@@ -87,6 +87,7 @@ export function migrate(p) {
   const out = { ...base, ...p, version: SAVE_VERSION };
   out.units = { ...base.units };
   for (const k in p.units || {}) out.units[k] = { ...base.units[k], ...p.units[k] };
+  for (const k of START_UNITS) out.units[k].unlocked = true; // 最初から使える魔物（古いセーブでも）
   out.upgrades = { ...base.upgrades, ...(p.upgrades || {}) };
   out.stages = { ...(p.stages || {}) };
   out.seen = { ...base.seen, ...(p.seen || {}) };
@@ -144,9 +145,10 @@ export function applyResult(p, stageId, result, time) {
     normalizeFormation(p);
     for (const u of out.unlockedAll) addToFormation(p, u); // 新しい仲間は空き枠があれば自動で編成に入れる
     const slots1 = slotsFor(p);
-    if (slots1.units > slots0.units || slots1.bosses > slots0.bosses) out.slotsUp = slots1;
+    if (slots1.units > slots0.units || slots1.bosses > slots0.bosses) { out.slotsUp = slots1; fillFormation(p); } // 増えた枠は控えから順に埋める
   } else {
     out.stones = Math.round(stage.reward.stones * 0.15); // 負けても少しもらえる
+    rec.losses = (rec.losses || 0) + 1;
   }
   p.stones += out.stones;
   p.stages[stageId] = rec;

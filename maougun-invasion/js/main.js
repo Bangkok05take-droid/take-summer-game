@@ -14,6 +14,9 @@ import { Renderer, VIEW_W, VIEW_H, MINIMAP } from './render/renderer.js';
 import { Hud, reasonText } from './ui/hud.js';
 import { TalkPlayer, renderSelect, renderLoot, renderUnlock, renderUpgrade, renderRecon, renderEnemyInfo, renderFormation } from './ui/screens.js';
 import { applyUiSkin } from './ui/uiskin.js';
+import { Tutor } from './ui/tutorial.js';
+import { SCREEN_TIPS, LOSE_TIPS, SELF_HINT } from './data/tutorial.js';
+import { CHAPTER1 } from './data/stages.js';
 
 const $ = (id) => document.getElementById(id);
 const params = new URLSearchParams(location.search);
@@ -22,6 +25,7 @@ const canvas = $('field');
 const renderer = new Renderer(canvas);
 const clock = createClock(STEP);
 const talk = new TalkPlayer();
+const tutor = new Tutor(clock);
 
 const app = {
   screen: 'title',
@@ -38,6 +42,7 @@ function show(id) {
   $('battleUi').hidden = id !== 'battle';
   $('ovPause').hidden = true;
   $('ovEnemy').hidden = true;
+  if (id !== 'battle') tutor.stop();
   app.screen = id;
 }
 const save = () => saveProfile(app.profile);
@@ -81,7 +86,7 @@ $('btnResetYes').addEventListener('click', () => {
 
 // ---------- ステージ選択 ----------
 function toSelect() {
-  const id = nextStage(app.profile) || '1-5';
+  const id = nextStage(app.profile) || CHAPTER1.stages[CHAPTER1.stages.length - 1];
   makeScene(id);
   renderer.centerOn(app.scene, app.scene.stage.length / 2);
   renderSelect(app.profile, pickStage);
@@ -97,9 +102,11 @@ function pickStage(id) {
     if (st.talk) lines.splice(1, 0, { who: 'narr', text: `――そのころ、${st.name}では……` }, ...st.talk.map((t) => ({ who: speakerKey(t.who), text: t.text })), { who: 'narr', text: '――封印の祠。' });
     makeScene(id); renderer.camX = 0;
     show(null);
-    talk.play(lines, 'field', () => { app.profile.story[key] = true; save(); toRecon(id); });
-  } else toRecon(id);
+    talk.play(lines, 'field', () => { app.profile.story[key] = true; save(); afterBriefing(id); });
+  } else afterBriefing(id);
 }
+// 1-1（説明のステージ）は偵察と編成をとばして、すぐ戦闘へ
+function afterBriefing(id) { if (STAGES[id].tutorial === 'guide') startStage(id); else toRecon(id); }
 
 // ---------- 偵察報告 → 編成 → 出撃 ----------
 // 偵察報告は毎回（初回は上の会話のあとに1行、2回目以降は1行だけ）。スキップで編成へ
@@ -107,6 +114,10 @@ function toRecon(id) {
   app.stageId = id;
   makeScene(id); renderer.camX = 0;
   renderRecon(id);
+  // 1-2：偵察の使い方を最初の1回だけ／1-3：2回以上負けたら助言を1つ
+  const st = STAGES[id]; const rec = app.profile.stages[id];
+  if (st.tutorial === 'hints' && !app.profile.story['tip:recon']) { $('reconText').textContent = SCREEN_TIPS.recon + '　' + $('reconText').textContent; app.profile.story['tip:recon'] = true; save(); }
+  if (st.tutorial === 'self' && rec && !rec.cleared && (rec.losses || 0) >= 2) $('reconText').textContent += '　' + SELF_HINT;
   show('scRecon');
 }
 $('btnReconSkip').addEventListener('click', () => toForm(app.stageId));
@@ -127,6 +138,7 @@ function toForm(id) {
     save(); redraw();
   });
   redraw();
+  if (STAGES[id].tutorial === 'hints' && !app.profile.story['tip:form']) { $('formHint').textContent = SCREEN_TIPS.form; app.profile.story['tip:form'] = true; save(); }
   show('scForm');
 }
 $('btnSortie').addEventListener('click', () => { if (normalizeFormation(app.profile).units.length) startStage(app.stageId); });
@@ -151,23 +163,23 @@ const hud = new Hud({
   summon(key) {
     const b = app.battle; if (!b || app.screen !== 'battle') return;
     const chk = b.canSummon(key);
-    if (chk.ok) b.queue({ type: 'summon', key });
+    if (chk.ok) { b.queue({ type: 'summon', key }); tutor.notify('summon', key); }
     else { hud.deny(key); hud.toast(reasonText(chk, b.config.demonCap)); }
   },
   furnace() {
     const b = app.battle; if (!b || app.screen !== 'battle') return;
     const chk = b.canUpgradeFurnace();
-    if (chk.ok) { b.queue({ type: 'furnace' }); hud.toast(`魔力炉 Lv${b.furnaceLv + 1}！ 魔力の上限と回復が上がった`, true); }
+    if (chk.ok) { b.queue({ type: 'furnace' }); hud.toast(`魔力炉 Lv${b.furnaceLv + 1}！ 魔力の上限と回復が上がった`, true); tutor.notify('furnace'); }
     else hud.toast(reasonText(chk));
   },
   spell() {
     const b = app.battle; if (!b || app.screen !== 'battle') return;
     const chk = b.canCastSpell();
-    if (chk.ok) b.queue({ type: 'spell' });
+    if (chk.ok) { b.queue({ type: 'spell' }); tutor.notify('spell'); }
     else hud.toast(reasonText(chk));
   },
   speed(v) { clock.speed = v; hud.setSpeed(v); },
-  pause() { if (app.screen === 'battle' && app.battle && !app.battle.result) setPaused(!clock.paused); },
+  pause() { if (app.screen === 'battle' && app.battle && !app.battle.result && !tutor.pausing) setPaused(!clock.paused); },
 });
 
 function startStage(id) {
@@ -184,6 +196,9 @@ function startStage(id) {
   hud.setSpeed(clock.speed);
   show('battle');
   setPaused(false);
+  // チュートリアル：1-1 は手順つき説明（クリア済みなら出さない）、1-2 はヒント
+  const rec = app.profile.stages[id];
+  tutor.start(app.battle, st.tutorial === 'guide' && !(rec && rec.cleared) ? 'guide' : st.tutorial === 'hints' ? 'hints' : null);
 }
 
 function setPaused(p) {
@@ -214,6 +229,11 @@ function showResult() {
   $('resTitle').textContent = win ? '侵略成功！' : '祠が破られた…';
   $('resTitle').className = win ? 'win' : 'lose';
   $('resText').textContent = win ? `${STAGES[app.stageId].name}を制圧した！` : '魔物の組み合わせや強化を見直して、もう一度挑もう。';
+  if (!win && STAGES[app.stageId].tutorial) { // 第1章：負けた理由の見当を一言
+    const priest = b.entities.some((e) => e.side === 'human' && e.state !== 'dead' && e.def.heal);
+    $('resText').textContent = SKIN.speakers.aide + '「' + (b.furnaceLv === 1 ? LOSE_TIPS.furnace : b.stats.summoned < 12 ? LOSE_TIPS.few : priest ? LOSE_TIPS.healer : LOSE_TIPS.default) + '」';
+  }
+  tutor.stop();
   $('resStats').innerHTML = [
     ['時間', `${Math.floor(t / 60)}分${String(t % 60).padStart(2, '0')}秒`],
     ['召喚した魔物', b.stats.summoned + ' 体'],
@@ -301,6 +321,7 @@ window.addEventListener('keydown', (ev) => {
     return;
   }
   if (app.screen !== 'battle' || !app.battle) return;
+  if (tutor.pausing && (ev.key === 'Enter' || ev.key === ' ')) { tutor.next(); ev.preventDefault(); return; } // 説明を Enter で送る
   if (ev.repeat && !['ArrowLeft', 'ArrowRight'].includes(ev.key)) return;
   keysDown.add(ev.key);
   const b = app.battle;
@@ -326,6 +347,7 @@ function frame(now) {
     }
     if (keysDown.has('ArrowLeft')) { renderer.camX -= 700 * dt; renderer.clampCam(b); }
     if (keysDown.has('ArrowRight')) { renderer.camX += 700 * dt; renderer.clampCam(b); }
+    if (app.screen === 'battle') tutor.tick(b, now);
     renderer.consume(b, onBattleEvent);
     renderer.render(b, clock.paused || b.result ? 1 : clock.alpha(), clock.paused ? 0 : dt * clock.speed);
     hud.update(b);
@@ -343,7 +365,7 @@ function frame(now) {
 window.__game = {
   app, clock, renderer, talk, SKIN,
   get battle() { return app.battle; },
-  startStage, toSelect, toTitle, toRecon, toForm,
+  startStage, toSelect, toTitle, toRecon, toForm, tutor,
 };
 
 document.addEventListener('visibilitychange', () => { if (document.hidden && app.screen === 'battle' && app.battle && !app.battle.result) setPaused(true); });

@@ -38,6 +38,12 @@
         </button>
       </div>
       <div id="toast" role="status" aria-live="polite"></div>
+      <!-- チュートリアル（第1章）：1-1 の手順つき説明／1-2 のヒント -->
+      <div id="tutor" hidden>
+        <div class="tutorBox"><canvas id="tutorFace" width="120" height="120"></canvas><div><span class="who" id="tutorWho"></span><p id="tutorText"></p><span class="tnext" id="tutorNext"></span></div>
+          <button type="button" class="tskip" id="btnTutorSkip">説明をとばす</button></div>
+      </div>
+      <div id="tutorHint" hidden role="status" aria-live="polite"><span class="who" id="tutorHintWho"></span><span id="tutorHintText"></span></div>
     </div>
 
     <!-- ===== タイトル ===== -->
@@ -61,7 +67,7 @@
         <div class="selInfo">
           <span class="pill stone">魔界石 <b id="selStones">0</b></span>
           <span class="pill">大魔王 Lv<b id="selLord">1</b></span>
-          <span class="pill">手がかり <b id="selLoot">0</b>/5</span>
+          <span class="pill">手がかり <b id="selLoot">0</b>/<span id="selLootMax">3</span></span>
         </div>
       </header>
       <div id="stageMap"></div>

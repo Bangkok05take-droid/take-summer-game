@@ -73,11 +73,14 @@ test('同時出撃上限（30体）では召喚できない', () => {
   assert.equal(b.canSummon('mass').reason, 'cap');
 });
 
-test('未解放のユニットは編成されない（初期は4種）', () => {
-  const deck = buildDeck(newProfile()).map((d) => d.key);
-  assert.deepEqual(deck, ['mass', 'vanguard', 'tank', 'area']);
-  const b = makeBattle({ stage: noEnemies(), profile: newProfile() });
-  assert.equal(b.canSummon('ranged').reason, 'locked');
+test('通常モンスター8体は最初から使える。編成は最初の5体（プチデビルはいない）', () => {
+  const p = newProfile();
+  assert.deepEqual(START_UNITS, ['mass', 'vanguard', 'tank', 'ranged', 'fast', 'area', 'healer', 'mallet']);
+  for (const k of START_UNITS) assert.ok(p.units[k].unlocked, k);
+  assert.deepEqual(buildDeck(p).map((d) => d.key), ['mass', 'vanguard', 'tank', 'ranged', 'fast']);
+  assert.equal(addToFormation(p, 'special').reason, 'locked');
+  const b = makeBattle({ stage: noEnemies(), profile: p });
+  assert.equal(b.canSummon('area').reason, 'locked', '編成していない魔物は呼べない');
 });
 
 // ---------- 戦闘 ----------
@@ -234,11 +237,12 @@ test('全5ステージ：ふつうに遊べば勝てる（ボットで確認）'
   }
 });
 
-test('全5ステージ：何もしなければ負ける', () => {
+test('何もしなければ負ける（1-1 は説明のステージなので負けない）', () => {
   for (const id of CHAPTER1.stages) {
     const b = makeBattle({ stageId: id, seed: 3 });
     run(b, 600);
-    assert.equal(b.result, 'lose', id);
+    if (STAGES[id].noLose) { assert.notEqual(b.result, 'lose', id); assert.ok(b.shrine.hp >= 1); }
+    else assert.equal(b.result, 'lose', id);
   }
 });
 
@@ -271,23 +275,39 @@ test('多数のユニット（30対30＋勇者）でも1手が十分速い', () 
 });
 
 // ---------- 進行・セーブ ----------
-test('勝利でつぎのステージとユニットが解放される（解放順）', () => {
+test('第1章は3ステージ。順に解放され、1-3 クリアで幹部・突進', () => {
   const p = newProfile();
+  assert.deepEqual(CHAPTER1.stages, ['1-1', '1-2', '1-3']);
   assert.ok(isStageOpen(p, '1-1')); assert.ok(!isStageOpen(p, '1-2'));
-  const order = { '1-1': 'ranged', '1-2': 'fast', '1-3': 'healer', '1-4': 'special', '1-5': 'charger' };
+  const order = { '1-1': null, '1-2': null, '1-3': 'charger' };
   for (const id of CHAPTER1.stages) {
     const r = applyResult(p, id, 'win', 200);
     assert.equal(r.unlocked, order[id], id);
     assert.ok(r.firstClear);
     const i = CHAPTER1.stages.indexOf(id);
-    if (i < 4) assert.ok(isStageOpen(p, CHAPTER1.stages[i + 1]));
+    if (i < CHAPTER1.stages.length - 1) assert.ok(isStageOpen(p, CHAPTER1.stages[i + 1]));
   }
   assert.equal(nextStage(p), null);
-  assert.equal(p.loot.length, 5);
-  assert.equal(lordLevel(p), 6);
-  assert.deepEqual(buildDeck(p).map((d) => d.key), ['mass', 'vanguard', 'tank', 'area', 'ranged', 'healer', 'charger'], '第1章クリア：通常6枠（Lv4で6枠目に森のお化けが自動で入る）＋幹部1枠に突進');
+  assert.equal(p.loot.length, 3);
+  assert.equal(lordLevel(p), 4);
+  assert.deepEqual(buildDeck(p).map((d) => d.key), ['mass', 'vanguard', 'tank', 'ranged', 'fast', 'area', 'charger'], '1-3 クリアで大魔王Lv4（増えた6枠目は控えから自動で埋まる）＋幹部・突進');
   const again = applyResult(p, '1-1', 'win', 150);
   assert.ok(!again.firstClear && again.stones < STAGES['1-1'].reward.stones && !again.unlocked);
+});
+test('チュートリアル：1-1 説明・1-2 ヒント・1-3 自分で。旧 1-4・1-5 は遊べない（第2章の素材）', () => {
+  assert.equal(STAGES['1-1'].tutorial, 'guide'); assert.ok(STAGES['1-1'].noLose);
+  assert.equal(STAGES['1-2'].tutorial, 'hints'); assert.equal(STAGES['1-3'].tutorial, 'self');
+  assert.ok(STAGES['1-4'].reserve && STAGES['1-5'].reserve);
+  assert.ok(!CHAPTER1.stages.includes('1-4') && !CHAPTER1.stages.includes('1-5'));
+  const b = makeBattle({ stageId: '1-2' });
+  b.spawnerOff = true; run(b, 30);
+  assert.equal(b.aliveHumans(), 0, 'spawnerOff の間は敵が出ない');
+  b.spawnerOff = false; run(b, 5);
+  assert.ok(b.aliveHumans() > 0, '止めた分だけ遅れて出始める');
+});
+test('負けると負けた回数が記録される（1-3 の助言用）', () => {
+  const p = newProfile(); applyResult(p, '1-3', 'lose', 50); applyResult(p, '1-3', 'lose', 50);
+  assert.equal(p.stages['1-3'].losses, 2); assert.ok(!p.stages['1-3'].cleared);
 });
 
 test('負けても少し魔界石が入り、解放はされない', () => {
@@ -307,7 +327,7 @@ test('簡易強化：魔界石でレベル・魔力が上がり、足りなけ�
   const hp0 = buildDeck(p).find((d) => d.key === 'mass').hp;
   assert.ok(levelUpUnit(p, 'mass').ok);
   assert.ok(buildDeck(p).find((d) => d.key === 'mass').hp > hp0);
-  assert.equal(levelUpUnit(p, 'ranged').reason, 'locked');
+  assert.equal(levelUpUnit(p, 'special').reason, 'locked');
   assert.ok(buyUpgrade(p, 'manaMax').ok);
   assert.equal(resolveMana(STAGES['1-1'].mana, p).max, 1100);
   p.stones = 0;
@@ -319,10 +339,10 @@ test('セーブ・ロード・リセット', () => {
   const p = newProfile(); applyResult(p, '1-1', 'win', 123); p.stones = 777; p.story.opening = true;
   saveProfile(p, st);
   const q = loadProfile(st);
-  assert.equal(q.stones, 777); assert.ok(q.stages['1-1'].cleared); assert.ok(q.units.ranged.unlocked); assert.ok(q.story.opening);
+  assert.equal(q.stones, 777); assert.ok(q.stages['1-1'].cleared); assert.ok(q.units.mallet.unlocked); assert.ok(q.story.opening);
   const r = resetProfile(st);
   assert.equal(st.getItem(SAVE_KEY), null);
-  assert.equal(r.stones, 0); assert.deepEqual(buildDeck(r).map((d) => d.key), START_UNITS);
+  assert.equal(r.stones, 0); assert.deepEqual(buildDeck(r).map((d) => d.key), START_UNITS.slice(0, 5));
 });
 
 test('壊れたセーブデータでも新しいプロフィールで始まる', () => {
@@ -345,13 +365,11 @@ test('編成枠：大魔王Lv1 は通常5＋幹部1、Lv4 で 6＋1、Lv9 で 6�
 
 test('編成：枠を超えて入れられない・外すと空く・未解放は入れられない', () => {
   const p = newProfile();
-  for (const k of ['ranged', 'fast']) p.units[k].unlocked = true;
-  assert.ok(addToFormation(p, 'ranged').ok);
-  assert.equal(addToFormation(p, 'fast').reason, 'full');
+  assert.equal(addToFormation(p, 'area').reason, 'full');
   assert.equal(addToFormation(p, 'special').reason, 'locked');
   removeFromFormation(p, 'mass');
-  assert.ok(addToFormation(p, 'fast').ok);
-  assert.deepEqual(buildDeck(p).map((d) => d.key), ['vanguard', 'tank', 'area', 'ranged', 'fast']);
+  assert.ok(addToFormation(p, 'mallet').ok);
+  assert.deepEqual(buildDeck(p).map((d) => d.key), ['vanguard', 'tank', 'ranged', 'fast', 'mallet']);
   assert.equal(addToFormation(p, 'trickster').reason, 'locked', '準備中の幹部は編成できない');
 });
 
@@ -468,13 +486,13 @@ test('後衛狙撃：高火力・高コスト・低HP・長い構え（ほかの
   assert.ok(m.atk > Math.max(...others.map((d) => d.atk)));
   assert.ok(m.cost >= 400 && m.hp <= 200 && m.windup >= Math.max(...others.map((d) => d.windup)));
 });
-test('木槌小鬼：1-5 クリアで突進と一緒に解放。編成枠は増えない（控えに入る）', () => {
+test('木槌小鬼は最初から使える。所持は8体でも編成枠は5（Lv4で6）', () => {
   const p = newProfile();
+  assert.ok(p.units.mallet.unlocked);
+  assert.deepEqual(slotsFor(p), { units: 5, bosses: 1 });
+  assert.ok(!p.formation.units.includes('mallet'), '最初は控え');
   for (const id of CHAPTER1.stages) applyResult(p, id, 'win', 100);
-  assert.ok(p.units.mallet.unlocked && p.units.charger.unlocked);
   assert.deepEqual(slotsFor(p), { units: 6, bosses: 1 });
-  assert.ok(!p.formation.units.includes('mallet'), '6枠が埋まっているので控え');
-  assert.equal(addToFormation(p, 'mallet').reason, 'full');
 });
 test('進化：3段階・最終形態は2方向に分岐（データの仕組み）', () => {
   const p = newProfile(); p.units.mallet.unlocked = true;

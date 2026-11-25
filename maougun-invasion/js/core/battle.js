@@ -51,6 +51,8 @@ export class Battle {
 
     this.spawnState = stage.spawns.map((s) => ({ nextAt: s.start ?? 0, fired: false }));
     this.pending = []; // { at, who }
+    this.spawnT = 0;          // 敵の出現の時計（spawnerOff の間は進まない）
+    this.spawnerOff = false;  // true：敵が出てこない（チュートリアル用）
   }
 
   // ---------- 向き・位置 ----------
@@ -116,7 +118,8 @@ export class Battle {
     for (const k in this.cooldowns) if (this.cooldowns[k] > 0) this.cooldowns[k] = Math.max(0, this.cooldowns[k] - dt);
     if (this.bossSwitch > 0) this.bossSwitch = Math.max(0, this.bossSwitch - dt);
 
-    this.runSpawner();
+    // 敵の出現：spawnerOff の間は止める（チュートリアルの説明中）。止めた分だけ出現の時計も止まる
+    if (!this.spawnerOff) { this.runSpawner(); this.spawnT += dt; }
 
     for (const e of this.entities) { e.px = e.x; this.updateEntity(e, dt); }
 
@@ -187,27 +190,27 @@ export class Battle {
       if (row.trigger) {
         if (!st.fired && this.base.hp / this.base.maxHp <= row.trigger.baseBelow) {
           st.fired = true;
-          let at = this.t;
+          let at = this.spawnT;
           for (const w of row.wave) for (let n = 0; n < w.count; n++) { this.pending.push({ at, who: w.who, force: !!this.humanDefs[w.who].hero }); at += row.gap || 0.6; }
           this.events.push({ type: row.hero ? 'heroAlarm' : 'alarm', who: row.hero || null, line: row.line || null });
         }
         return;
       }
-      if (row.until != null && this.t >= row.until) return;
-      if (this.t + 1e-9 < st.nextAt) return;
+      if (row.until != null && this.spawnT >= row.until) return;
+      if (this.spawnT + 1e-9 < st.nextAt) return;
       const mine = this.entities.filter((e) => e.row === i && e.state !== 'dead').length;
-      if (mine >= row.max || humansFull()) { st.nextAt = this.t + 1; return; } // いっぱいなら1秒後に見直す
+      if (mine >= row.max || humansFull()) { st.nextAt = this.spawnT + 1; return; } // いっぱいなら1秒後に見直す
       const e = this.spawnHuman(row.who);
       e.row = i;
       st.nextAt += row.every;
-      if (st.nextAt < this.t) st.nextAt = this.t + row.every;
+      if (st.nextAt < this.spawnT) st.nextAt = this.spawnT + row.every;
     });
     if (this.pending.length) {
-      const due = this.pending.filter((p) => p.at <= this.t + 1e-9);
+      const due = this.pending.filter((p) => p.at <= this.spawnT + 1e-9);
       if (due.length) {
-        this.pending = this.pending.filter((p) => p.at > this.t + 1e-9);
+        this.pending = this.pending.filter((p) => p.at > this.spawnT + 1e-9);
         for (const p of due) {
-          if (humansFull() && !p.force) { p.at = this.t + 1; this.pending.push(p); continue; } // 勇者は上限でも必ず出る
+          if (humansFull() && !p.force) { p.at = this.spawnT + 1; this.pending.push(p); continue; } // 勇者は上限でも必ず出る
           this.spawnHuman(p.who);
         }
       }
@@ -411,6 +414,7 @@ export class Battle {
   damageBase(b, dmg) {
     if (b.hp <= 0) return;
     b.hp = Math.max(0, b.hp - dmg);
+    if (b.side === 'demon' && this.stage.noLose) b.hp = Math.max(1, b.hp); // 負けないステージ（チュートリアル）：祠は壊れない
     this.events.push({ type: 'baseHit', side: b.side, dmg, x: b.x });
   }
 

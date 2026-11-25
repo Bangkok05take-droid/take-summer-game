@@ -371,3 +371,27 @@ body.portrait #rotate { display: flex; }
 .fcard .at-mid { background: #7c3aed; }
 .fcard .at-long { background: #2a7ab8; }
 .fcard .at-sniper { background: #d88a1a; }
+
+/* ---------- チュートリアル（第1章） ---------- */
+#tutor { position: absolute; inset: 0; pointer-events: none; z-index: 5; }
+#tutor.tap { pointer-events: auto; background: rgba(10, 4, 24, .28); }
+.tutorBox {
+  position: absolute; left: 50%; top: calc(var(--u) * 150); transform: translateX(-50%); width: calc(var(--u) * 700);
+  display: flex; gap: calc(var(--u) * 12); align-items: center; padding: calc(var(--u) * 10) calc(var(--u) * 16);
+  background: rgba(255, 252, 245, .97); color: #2a1a3a; border: calc(var(--u) * 3) solid var(--gold); border-radius: calc(var(--u) * 16);
+  box-shadow: 0 0 0 calc(var(--u) * 3) #3a1a5a, 0 calc(var(--u) * 6) calc(var(--u) * 18) rgba(0,0,0,.5); pointer-events: auto;
+}
+.tutorBox canvas { width: calc(var(--u) * 64); height: calc(var(--u) * 64); flex: none; }
+.tutorBox .who { display: inline-block; padding: calc(var(--u) * 1) calc(var(--u) * 10); background: linear-gradient(180deg, #6d28d9, #3b0f7a); color: #fff; border-radius: calc(var(--u) * 7); font-weight: 900; font-size: calc(var(--u) * 12); }
+.tutorBox p { margin: calc(var(--u) * 3) 0 0; font-size: calc(var(--u) * 16); line-height: 1.5; font-weight: 700; text-wrap: pretty; }
+.tutorBox .tnext { display: block; text-align: right; font-size: calc(var(--u) * 12); color: #8a5ad0; font-weight: 800; }
+.tutorBox .tskip { position: absolute; right: calc(var(--u) * 8); top: calc(var(--u) * -30); padding: calc(var(--u) * 4) calc(var(--u) * 10); border-radius: calc(var(--u) * 8); border: calc(var(--u) * 2) solid var(--gold); background: rgba(30, 10, 50, .9); color: var(--text); font-weight: 800; font-size: calc(var(--u) * 12); }
+.tutor-focus { animation: tutorGlow .9s ease-in-out infinite alternate; z-index: 6; }
+@keyframes tutorGlow { from { box-shadow: 0 0 0 calc(var(--u) * 3) #ffe39a, 0 0 calc(var(--u) * 12) #ffd24a; } to { box-shadow: 0 0 0 calc(var(--u) * 5) #fff3c0, 0 0 calc(var(--u) * 26) #ffd24a; } }
+#tutorHint {
+  position: absolute; left: 50%; top: calc(var(--u) * 150); transform: translateX(-50%); max-width: calc(var(--u) * 640); z-index: 5; pointer-events: none;
+  padding: calc(var(--u) * 7) calc(var(--u) * 14); background: rgba(30, 12, 54, .92); border: calc(var(--u) * 2) solid var(--gold); border-radius: calc(var(--u) * 12);
+  font-size: calc(var(--u) * 15); font-weight: 700; color: #fff; display: flex; gap: calc(var(--u) * 8); align-items: center;
+}
+#tutorHint .who { flex: none; padding: 0 calc(var(--u) * 8); background: #6d28d9; border-radius: calc(var(--u) * 6); font-size: calc(var(--u) * 12); }
+@media (prefers-reduced-motion: reduce) { .tutor-focus { animation: none; box-shadow: 0 0 0 calc(var(--u) * 4) #ffe39a; } }

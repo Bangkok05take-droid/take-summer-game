@@ -26,7 +26,10 @@ export const SKIN = {
     tiw: 'ティウ', mot: 'モッ', waan: 'ワーン', koi: 'コイ', take: '勇者たけ', sai: '勇者サイ', yanai: 'マスター・ヤナイ',
   },
   sprites: {
-    // 2026-11-24：こうもり（fast）・魔法使い（area）は既存作品に近いデザインのため画像を外し、仮のドット絵に戻した（新デザイン待ち）
+    // 2026-11-25：魔法使い（新デザイン・画像 11497.png。1312×1199・静止画1枚・透過）。絵は右向きなので facing: 'right'（ゲームで左向きに反転）
+    area: { src: 'assets/approved/units/area.png', frameW: 1312, frameH: 1199, frames: { walk: [0], windup: 0, attack: 0 }, footY: 1118, facing: 'right', scale: 0.06 },
+    // 2026-11-25：こうもり（新デザイン・画像 11496.png。1536×1024・静止画1枚・左向き・透過）。空を飛ぶので浮かせる
+    fast: { src: 'assets/approved/units/fast.png', frameW: 1536, frameH: 1024, frames: { walk: [0], windup: 0, attack: 0 }, footY: 914, facing: 'left', scale: 0.065, hover: 25 },
     // 2026-11-24：グミ（ユーザー承認のオリジナルデザイン・チャットで受け取った画像 11440.png に差し替え。1374×1145・静止画1枚。見た目は変えず、倍率と足元だけ指定。動きはゲーム側）
     mass: { src: 'assets/approved/units/mass.png', frameW: 1374, frameH: 1145, frames: { walk: [0], windup: 0, attack: 0 }, footY: 975, facing: 'left', scale: 0.05 },
     // 2026-11-24：闇の騎士（ユーザー承認のオリジナルデザイン・maougun_dark_knight_test.zip。256×256・静止画1枚・左向き。見た目は変えず、倍率と足元だけ指定。倍率は人間軍の兵士と同じ）
@@ -48,12 +51,10 @@ export const SKIN = {
   images: {
     // 戦闘の背景。ステージIDで個別に、無ければ chapter1（1-3 以降は大きな町の背景）。scale：論理画面（960×540）での倍率、offsetY：上下の位置
     stageBg: {
-      chapter1: { src: 'assets/approved/bg/ch1_village.webp', scale: 0.62, offsetY: -66 },
-      // 2026-11-25：横長パノラマ（2172×358・引きの構図）。高さを画面に合わせて ×1.36（上に黒帯を出さず、土の道が足元の列に重なる）。
+      // 2026-11-25：第1章（はじまりの村・3ステージ）はすべて横長パノラマの村（2172×358）。高さを画面に合わせて ×1.36。
       // カメラの移動量の35%だけ背景が動く（parallax）。focus：動く範囲の中心を画像のどこに置くか（0＝左端・0.5＝中央・1＝右端）
-      // 以前の16:9の背景（village_small.png・village_town.png）はファイルを残してある（戻すときはここを差し替える）
-      '1-1': { src: 'assets/approved/bg/pano_village_small.png', scale: 1.36, offsetY: 0, parallax: 0.35, focus: 0.5 },
-      '1-2': { src: 'assets/approved/bg/pano_village_town.png', scale: 1.36, offsetY: 0, parallax: 0.35, focus: 0.5 },
+      // 町のパノラマ（pano_village_town.png）は第2章（城下町）用に残す。16:9 の旧背景（village_small.png・village_town.png）もファイルは残す
+      chapter1: { src: 'assets/approved/bg/pano_village_small.png', scale: 1.36, offsetY: 0, parallax: 0.35, focus: 0.5 },
     },
     // 人間軍の拠点（tower：1-1〜1-3、gate：1-4、castle：1-5）と、魔王軍の祠。{ src, width, footY }
     base: {},

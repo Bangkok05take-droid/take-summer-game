@@ -18,12 +18,13 @@ const fmtTime = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padSt
 
 // ---------- ステージ選択 ----------
 // 地図の上の位置（%）：左下の見張り小屋から、右上の村の広場へ
-const NODE_POS = { '1-1': [12, 70], '1-2': [32, 38], '1-3': [52, 68], '1-4': [70, 36], '1-5': [88, 62] };
+const NODE_POS = { '1-1': [18, 66], '1-2': [50, 36], '1-3': [82, 62] }; // 第1章（チュートリアル・3ステージ）
 
 export function renderSelect(p, onPick) {
   $('selStones').textContent = p.stones;
   $('selLord').textContent = lordLevel(p);
-  $('selLoot').textContent = p.loot.length;
+  $('selLoot').textContent = p.loot.filter((id) => CHAPTER1.stages.includes(id)).length;
+  $('selLootMax').textContent = CHAPTER1.stages.length;
   const map = $('stageMap');
   map.innerHTML = '';
   const ns = 'http://www.w3.org/2000/svg';
