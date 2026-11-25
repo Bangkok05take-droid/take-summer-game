@@ -1008,3 +1008,33 @@ test('第1〜3章の追加キャラクター（承認済みデザイン）：人
     assert.ok(b.entities.some((e) => e.key === hero), id + '：' + hero);
   }
 });
+
+test('第4〜5章の追加キャラクター：海兵・兵器技師・移動式大砲・重装兵団長（暫定）の配置とボス', () => {
+  const used = (id) => STAGES[id].spawns.flatMap((x) => x.who ? [x.who] : x.wave.map((w) => w.who));
+  for (const id of ['4-1', '4-2', '4-3']) assert.ok(used(id).includes('naval_soldier'), id);
+  for (const id of ['5-1', '5-2', '5-3', '5-4']) assert.ok(used(id).includes('engineer'), id);
+  assert.equal(HUMANS.turret.name, '移動式大砲'); assert.ok(HUMANS.turret.speed > 0, 'ゆっくり前に出る');
+  assert.equal(HUMANS.engineer.line, 'back'); assert.ok(HUMANS.engineer.range >= 180, '遠距離');
+  for (const k of ['naval_soldier', 'harbor_captain', 'heavy', 'commander']) assert.ok(HUMANS[k].range <= 50, k + '：近接');
+  for (const [id, hero] of [['4-3', 'harbor_captain'], ['5-3', 'heavy_captain'], ['5-4', 'commander']]) {
+    const row = STAGES[id].spawns.find((x) => x.hero === hero); assert.ok(row, id);
+    const b = makeBattle({ stageId: id, seed: 1 });
+    b.damageBase(b.base, b.base.hp - b.base.maxHp * (row.trigger.baseBelow - 0.01)); run(b, 3);
+    assert.ok(b.entities.some((e) => e.key === hero), id + '：' + hero);
+  }
+});
+
+test('第6〜7章の追加キャラクター：古代兵士・古代神官・高位神官の配置、古代王・聖騎士団長のボス戦', () => {
+  const used = (id) => STAGES[id].spawns.flatMap((x) => x.who ? [x.who] : x.wave.map((w) => w.who));
+  for (const id of ['6-1', '6-2', '6-3']) { assert.ok(used(id).includes('ancient_soldier') && used(id).includes('ancient_priest') && used(id).includes('guardian'), id); assert.ok(!used(id).includes('priest'), id); }
+  for (const id of ['7-1', '7-2']) assert.ok(used(id).includes('paladin') && used(id).includes('high_priest'), id);
+  assert.equal(HUMANS.guardian.name, '古代の守護者');
+  assert.ok(HUMANS.high_priest.heal && HUMANS.high_priest.atk > 0, '高位神官：聖魔法と支援');
+  assert.ok(HUMANS.holy_captain.skills.some((k) => k.name === '聖なる大剣'));
+  for (const [id, hero] of [['6-3', 'ancient_king'], ['7-2', 'holy_captain']]) {
+    const row = STAGES[id].spawns.find((x) => x.hero === hero);
+    const b = makeBattle({ stageId: id, seed: 1 });
+    b.damageBase(b.base, b.base.hp - b.base.maxHp * (row.trigger.baseBelow - 0.01)); run(b, 3);
+    assert.ok(b.entities.some((e) => e.key === hero), id);
+  }
+});

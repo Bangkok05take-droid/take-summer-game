@@ -270,7 +270,8 @@ export const STAGES = {
     length: L(2400), shrineHp: 8500, baseHp: 7500, enemyScale: 1.4, mana: MANA,
     spawns: [
       { who: 'militia', start: 3, every: 4, max: 7 },
-      { who: 'swordsman', start: 8, every: 8, max: 4 },
+      { who: 'swordsman', start: 8, every: 9, max: 2 },
+      { who: 'naval_soldier', start: 6, every: 8, max: 3 }, // 2026-11-25：海兵
       { who: 'archer', start: 14, every: 10, max: 3 },
       { who: 'rider', start: 30, every: 12, max: 3 },
       { who: 'shield', start: 45, every: 22, max: 2 },
@@ -284,7 +285,8 @@ export const STAGES = {
     id: '4-2', chapter: 4, name: '港町の守備隊', theme: 'harbor',
     length: L(2400), shrineHp: 9000, baseHp: 8000, enemyScale: 1.45, mana: MANA,
     spawns: [
-      { who: 'swordsman', start: 3, every: 7, max: 4 },
+      { who: 'swordsman', start: 3, every: 8, max: 2 },
+      { who: 'naval_soldier', start: 5, every: 8, max: 3 }, // 2026-11-25：海兵
       { who: 'archer', start: 8, every: 8, max: 4 },
       { who: 'priest', start: 20, every: 20, max: 2 },
       { who: 'shield', start: 30, every: 20, max: 2 },
@@ -299,7 +301,8 @@ export const STAGES = {
     id: '4-3', chapter: 4, name: '港町の最終決戦', theme: 'harbor', boss: true,
     length: L(2500), shrineHp: 9500, baseHp: 7500, enemyScale: 1.3, mana: { ...MANA, start: 400 },
     spawns: [
-      { who: 'swordsman', start: 2, every: 7, max: 4 },
+      { who: 'swordsman', start: 2, every: 8, max: 2 },
+      { who: 'naval_soldier', start: 4, every: 12, max: 1 }, // 2026-11-25：海兵
       { who: 'archer', start: 10, every: 10, max: 3 },
       { who: 'knight', start: 15, every: 22, max: 2 },
       { who: 'priest', start: 35, every: 24, max: 2 },
@@ -317,7 +320,8 @@ export const STAGES = {
     spawns: [
       { who: 'turret', start: 1, every: 9999, max: 1 },
       { who: 'swordsman', start: 4, every: 7, max: 4 },
-      { who: 'archer', start: 10, every: 10, max: 3 },
+      { who: 'archer', start: 10, every: 10, max: 2 },
+      { who: 'engineer', start: 16, every: 16, max: 2 }, // 2026-11-25：兵器技師
       { who: 'shield', start: 20, every: 20, max: 2 },
       { who: 'heavy', start: 45, every: 28, max: 1 },
       { who: 'rider', start: 60, every: 14, max: 3 },
@@ -332,7 +336,8 @@ export const STAGES = {
     spawns: [
       { who: 'turret', start: 1, every: 9999, max: 1 },
       { who: 'swordsman', start: 4, every: 7, max: 4 },
-      { who: 'archer', start: 8, every: 9, max: 3 },
+      { who: 'archer', start: 8, every: 9, max: 2 },
+      { who: 'engineer', start: 14, every: 16, max: 2 }, // 2026-11-25：兵器技師
       { who: 'priest', start: 25, every: 24, max: 1 },
       { who: 'heavy', start: 35, every: 24, max: 2 },
       { who: 'rider', start: 70, every: 13, max: 3 },
@@ -345,12 +350,14 @@ export const STAGES = {
     id: '5-3', chapter: 5, name: '重装兵団', theme: 'fortress',
     length: L(2400), shrineHp: 10000, baseHp: 8500, enemyScale: 1.45, mana: MANA,
     spawns: [
-      { who: 'heavy', start: 4, every: 14, max: 3 },
+      { who: 'heavy', start: 4, every: 16, max: 2 },
       { who: 'swordsman', start: 6, every: 8, max: 3 },
-      { who: 'archer', start: 12, every: 10, max: 3 },
+      { who: 'archer', start: 12, every: 10, max: 2 },
+      { who: 'engineer', start: 18, every: 16, max: 2 }, // 2026-11-25：兵器技師
       { who: 'priest', start: 30, every: 22, max: 2 },
       { who: 'knight', start: 50, every: 24, max: 2 },
       { trigger: { baseBelow: 0.6 }, wave: [{ who: 'heavy', count: 2 }, { who: 'priest', count: 1 }], gap: 0.6 },
+      { trigger: { baseBelow: 0.45 }, hero: 'heavy_captain', wave: [{ who: 'heavy_captain', count: 1 }, { who: 'heavy', count: 1 }], gap: 0.8 }, // 2026-11-25：重装兵団長（重装兵の強化個体・暫定）
       { trigger: { baseBelow: 0.3 }, wave: [{ who: 'heavy', count: 2 }, { who: 'knight', count: 1 }, { who: 'archer', count: 2 }], gap: 0.6 },
     ],
     reward: { stones: 460 },
@@ -361,7 +368,8 @@ export const STAGES = {
     spawns: [
       { who: 'turret', start: 1, every: 9999, max: 1 },
       { who: 'swordsman', start: 3, every: 7, max: 4 },
-      { who: 'archer', start: 10, every: 10, max: 3 },
+      { who: 'archer', start: 10, every: 10, max: 2 },
+      { who: 'engineer', start: 16, every: 16, max: 2 }, // 2026-11-25：兵器技師
       { who: 'heavy', start: 20, every: 22, max: 2 },
       { who: 'priest', start: 35, every: 24, max: 2 },
       { who: 'rider', start: 50, every: 13, max: 3 },
@@ -375,13 +383,13 @@ export const STAGES = {
     id: '6-1', chapter: 6, name: '砂漠の古代遺跡', theme: 'desert',
     length: L(2400), shrineHp: 10500, baseHp: 8500, enemyScale: 1.4, mana: MANA,
     spawns: [
-      { who: 'swordsman', start: 3, every: 7, max: 4 },
+      { who: 'ancient_soldier', start: 3, every: 7, max: 4 } /* 2026-11-25：見習い剣士 → 古代兵士 */,
       { who: 'archer', start: 8, every: 9, max: 3 },
       { who: 'guardian', start: 15, every: 20, max: 2 },
       { who: 'rider', start: 30, every: 13, max: 3 },
-      { who: 'priest', start: 45, every: 24, max: 1 },
+      { who: 'ancient_priest', start: 45, every: 24, max: 1 } /* 2026-11-25：見習い僧侶 → 古代神官 */,
       { trigger: { baseBelow: 0.6 }, wave: [{ who: 'guardian', count: 2 }, { who: 'archer', count: 2 }], gap: 0.6 },
-      { trigger: { baseBelow: 0.3 }, wave: [{ who: 'guardian', count: 1 }, { who: 'rider', count: 3 }, { who: 'priest', count: 1 }], gap: 0.6 },
+      { trigger: { baseBelow: 0.3 }, wave: [{ who: 'guardian', count: 1 }, { who: 'rider', count: 3 }, { who: 'ancient_priest', count: 1 }], gap: 0.6 },
     ],
     reward: { stones: 480 },
   },
@@ -390,23 +398,23 @@ export const STAGES = {
     length: L(2400), shrineHp: 11000, baseHp: 9000, enemyScale: 1.45, mana: MANA,
     spawns: [
       { who: 'guardian', start: 3, every: 14, max: 3 },
-      { who: 'swordsman', start: 6, every: 8, max: 3 },
+      { who: 'ancient_soldier', start: 6, every: 8, max: 3 } /* 2026-11-25：見習い剣士 → 古代兵士 */,
       { who: 'archer', start: 10, every: 10, max: 3 },
-      { who: 'priest', start: 30, every: 22, max: 2 },
+      { who: 'ancient_priest', start: 30, every: 22, max: 2 } /* 2026-11-25：見習い僧侶 → 古代神官 */,
       { who: 'heavy', start: 50, every: 26, max: 1 },
-      { trigger: { baseBelow: 0.6 }, wave: [{ who: 'guardian', count: 2 }, { who: 'priest', count: 1 }], gap: 0.6 },
+      { trigger: { baseBelow: 0.6 }, wave: [{ who: 'guardian', count: 2 }, { who: 'ancient_priest', count: 1 }], gap: 0.6 },
       { trigger: { baseBelow: 0.3 }, wave: [{ who: 'guardian', count: 2 }, { who: 'archer', count: 3 }], gap: 0.6 },
     ],
     reward: { stones: 500 },
   },
   '6-3': {
     id: '6-3', chapter: 6, name: '古代王の復活', theme: 'desert', boss: true,
-    length: L(2500), shrineHp: 11500, baseHp: 8500, enemyScale: 1.35, mana: { ...MANA, start: 400 },
+    length: L(2500), shrineHp: 11500, baseHp: 9500, enemyScale: 1.5, mana: { ...MANA, start: 400 },
     spawns: [
       { who: 'guardian', start: 3, every: 16, max: 2 },
-      { who: 'swordsman', start: 5, every: 8, max: 3 },
+      { who: 'ancient_soldier', start: 5, every: 8, max: 3 } /* 2026-11-25：見習い剣士 → 古代兵士 */,
       { who: 'archer', start: 12, every: 11, max: 3 },
-      { who: 'priest', start: 35, every: 24, max: 1 },
+      { who: 'ancient_priest', start: 35, every: 24, max: 1 } /* 2026-11-25：見習い僧侶 → 古代神官 */,
       { who: 'rider', start: 50, every: 14, max: 3 },
       { trigger: { baseBelow: 0.6 }, hero: 'ancient_king', wave: [{ who: 'ancient_king', count: 1 }, { who: 'guardian', count: 1 }], gap: 0.8 },
       { trigger: { baseBelow: 0.25 }, wave: [{ who: 'guardian', count: 2 }, { who: 'rider', count: 3 }], gap: 0.5 },
@@ -421,9 +429,9 @@ export const STAGES = {
       { who: 'swordsman', start: 3, every: 7, max: 4 },
       { who: 'paladin', start: 8, every: 14, max: 3 },
       { who: 'archer', start: 12, every: 10, max: 3 },
-      { who: 'priest', start: 25, every: 20, max: 2 },
+      { who: 'high_priest', start: 25, every: 20, max: 2 } /* 2026-11-25：見習い僧侶 → 高位神官 */,
       { who: 'heavy', start: 50, every: 26, max: 1 },
-      { trigger: { baseBelow: 0.6 }, wave: [{ who: 'paladin', count: 2 }, { who: 'priest', count: 1 }], gap: 0.6 },
+      { trigger: { baseBelow: 0.6 }, wave: [{ who: 'paladin', count: 2 }, { who: 'high_priest', count: 1 }], gap: 0.6 },
       { trigger: { baseBelow: 0.3 }, wave: [{ who: 'paladin', count: 2 }, { who: 'archer', count: 3 }], gap: 0.6 },
     ],
     reward: { stones: 560 },
@@ -435,10 +443,10 @@ export const STAGES = {
       { who: 'paladin', start: 3, every: 13, max: 3 },
       { who: 'swordsman', start: 6, every: 8, max: 3 },
       { who: 'archer', start: 12, every: 10, max: 3 },
-      { who: 'priest', start: 30, every: 22, max: 2 },
+      { who: 'high_priest', start: 30, every: 22, max: 2 } /* 2026-11-25：見習い僧侶 → 高位神官 */,
       { who: 'rider', start: 45, every: 14, max: 2 },
       { trigger: { baseBelow: 0.6 }, hero: 'holy_captain', wave: [{ who: 'holy_captain', count: 1 }, { who: 'paladin', count: 2 }], gap: 0.8 },
-      { trigger: { baseBelow: 0.25 }, wave: [{ who: 'paladin', count: 2 }, { who: 'priest', count: 1 }, { who: 'archer', count: 2 }], gap: 0.5 },
+      { trigger: { baseBelow: 0.25 }, wave: [{ who: 'paladin', count: 2 }, { who: 'high_priest', count: 1 }, { who: 'archer', count: 2 }], gap: 0.5 },
     ],
     reward: { stones: 750 },
   },

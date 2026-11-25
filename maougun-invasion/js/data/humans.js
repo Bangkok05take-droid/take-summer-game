@@ -82,34 +82,52 @@ export const HUMANS = {
   // ---- 第4章のボス（2026-11-25・仮）。絵は届くまで警備隊長と同じ代用（見習い剣士の絵を大きく） ----
   harbor_captain: {
     name: '港の守備隊長', role: '強敵', hero: true, noKbFromSmall: true,
-    note: '錨の一撃で前方の魔物を吹き飛ばす', counter: '岩男で受け止め、ワニ将軍の突進と呪文で押し返す',
+    note: '大きな剣の一撃で前方の魔物を吹き飛ばす', counter: '岩男で受け止め、ワニ将軍の突進と呪文で押し返す',
     hp: 3000, atk: 40, range: 46, speed: 26, interval: 1.8, windup: 0.5, kb: 6, attack: 'single', mana: 450, size: 1.4,
-    skills: [{ id: 'wave', name: '錨の一撃', type: 'wave', every: 9, first: 4, windup: 0.9, recover: 0.4, reach: 260, mult: 1.8 }],
+    skills: [{ id: 'wave', name: '大剣の一撃', type: 'wave', every: 9, first: 4, windup: 0.9, recover: 0.4, reach: 260, mult: 1.8 }],
   },
   // ---- 第5章（2026-11-25・仮）。兵器・重装兵のデザインは未承認なので、絵は既存の兵士の絵で代用 ----
   turret: {
-    name: '防衛砲台', role: '防衛兵器・後衛', line: 'back',
-    note: '動かない。とても遠くから砲弾を撃ち、まとめて吹き飛ばす', counter: 'こうもりで一気に近づくか、木槌小鬼で後ろから壊す',
-    hp: 800, atk: 22, range: 260, speed: 0, interval: 4.0, windup: 0.9, kb: 2, attack: 'area', projectile: 'orb', noKbFromSmall: true, mana: 120, size: 1.1,
+    name: '移動式大砲', role: '兵器・後衛', line: 'back', // 2026-11-25：防衛砲台から名前を変更（キーはそのまま）
+    note: 'ゆっくり前に出ながら、とても遠くから砲弾を撃ち、まとめて吹き飛ばす', counter: 'こうもりで一気に近づくか、木槌小鬼で後ろから壊す',
+    hp: 800, atk: 22, range: 260, speed: 8, interval: 4.0, windup: 0.9, kb: 2, attack: 'area', projectile: 'orb', noKbFromSmall: true, mana: 120, size: 1.1,
   },
   heavy: {
     name: '重装兵', role: '重装前衛',
-    note: '魔物との戦いのために作られた鎧。受けるダメージを大きく減らす', counter: '魔法使いの範囲・木槌小鬼の重い一撃・ワニ将軍の突進で崩す',
+    note: '魔物との戦いのために作られた鎧とハンマー。受けるダメージを大きく減らす', counter: '魔法使いの範囲・木槌小鬼の重い一撃・ワニ将軍の突進で崩す',
     hp: 1100, atk: 30, range: 34, speed: 22, interval: 1.8, windup: 0.5, kb: 3, attack: 'single', guard: 0.35, noKbFromSmall: true, mana: 130, size: 1.15,
   },
   commander: {
     name: '要塞司令官', role: '強敵', hero: true, noKbFromSmall: true,
-    note: '号令で仲間を回復し、砲撃の合図で前方の魔物を吹き飛ばす', counter: '防衛砲台と僧侶を先に壊し、呪文と幹部で押し切る',
+    note: '号令で仲間を回復し、巨大な機械の拳で前方の魔物を吹き飛ばす', counter: '移動式大砲と僧侶を先に壊し、呪文と幹部で押し切る',
     hp: 2600, atk: 34, range: 44, speed: 22, interval: 1.8, windup: 0.5, kb: 6, attack: 'single', mana: 500, size: 1.4,
     skills: [
       { id: 'heal', name: '司令官の号令', type: 'heal', every: 20, first: 8, windup: 0.6, recover: 0.4, radius: 200, ratio: 0.06 },
-      { id: 'wave', name: '一斉砲撃', type: 'wave', every: 11, first: 5, windup: 1.0, recover: 0.4, reach: 260, mult: 1.5 },
+      { id: 'wave', name: '機械の鉄拳', type: 'wave', every: 11, first: 5, windup: 1.0, recover: 0.4, reach: 260, mult: 1.5 },
     ],
+  },
+  // ---- 第4〜5章の追加キャラクター（2026-11-25・承認済みデザイン。個別の透過PNGが届くまで絵は既存の兵士の代用） ----
+  naval_soldier: {
+    name: '海兵', role: '前衛',
+    note: '港を守る海の兵。湾曲した剣で斬りかかる', counter: '闇の騎士と岩男で受け止める',
+    hp: 300, atk: 20, range: 34, speed: 34, interval: 1.3, windup: 0.3, kb: 2, attack: 'single', mana: 70, size: 1.0,
+  },
+  engineer: {
+    name: '兵器技師', role: '遠距離', line: 'back',
+    note: '機械式のクロスボウで、後ろから太い矢を撃つ', counter: 'こうもりで近づくか、木槌小鬼で後ろから倒す',
+    hp: 260, atk: 30, range: 200, speed: 28, interval: 2.4, windup: 0.5, kb: 2, attack: 'single', projectile: 'arrow', mana: 80, size: 1.0,
+  },
+  // 重装兵団長（5-3）：専用デザインが無いので、重装兵の強化個体で暫定対応（絵は重装兵を大きく）
+  heavy_captain: {
+    name: '重装兵団長', role: '強敵', hero: true, noKbFromSmall: true,
+    note: '重装兵団を率いる。特別に固い鎧と大きなハンマーで前の魔物をまとめて押し返す', counter: '魔法使いの範囲・木槌小鬼の重い一撃・ワニ将軍の突進で崩す',
+    hp: 1800, atk: 34, range: 38, speed: 20, interval: 1.9, windup: 0.55, kb: 5, attack: 'single', guard: 0.3, mana: 450, size: 1.35,
+    skills: [{ id: 'wave', name: '重装の大槌', type: 'wave', every: 12, first: 6, windup: 1.0, recover: 0.4, reach: 200, mult: 1.4 }],
   },
   // ---- 第6章（2026-11-25・仮）。守護者・古代王のデザインは未承認なので、絵は既存の兵士の代用 ----
   guardian: {
-    name: '守護者', role: '古代の守り手',
-    note: '何百年も宝を守り続ける古代王国の兵。硬く、倒れるまで退かない', counter: '魔法使いの範囲と木槌小鬼の重い一撃、ワニ将軍の突進で崩す',
+    name: '古代の守護者', role: '古代の守り手', // 2026-11-25：守護者から名前を変更（キーはそのまま）
+    note: '何百年も宝を守り続ける古代王国の兵。大きな槍を持ち、硬く、倒れるまで退かない', counter: '魔法使いの範囲と木槌小鬼の重い一撃、ワニ将軍の突進で崩す',
     hp: 1000, atk: 32, range: 36, speed: 20, interval: 1.9, windup: 0.5, kb: 2, attack: 'single', guard: 0.25, noKbFromSmall: true, mana: 140, size: 1.15,
   },
   ancient_king: {
@@ -124,18 +142,35 @@ export const HUMANS = {
   // ---- 第7章（2026-11-25・仮）。聖騎士・聖騎士団長のデザインは未承認なので、絵は既存の兵士の代用 ----
   paladin: {
     name: '聖騎士', role: '聖なる前衛',
-    note: '聖なる加護で、自分とまわりの仲間を少しずつ癒やす。硬い', counter: '魔法使いの範囲と木槌小鬼の重い一撃で一気に削る',
+    note: '剣と盾で戦う聖なる騎士。聖なる加護で、自分とまわりの仲間を少しずつ癒やす。硬い', counter: '魔法使いの範囲と木槌小鬼の重い一撃で一気に削る',
     hp: 950, atk: 34, range: 36, speed: 26, interval: 1.7, windup: 0.45, kb: 3, attack: 'single', guard: 0.2, noKbFromSmall: true, mana: 140, size: 1.15,
     heal: { every: 7, ratio: 0.06, radius: 90 },
   },
   holy_captain: {
     name: '聖騎士団長', role: '強敵', hero: true, noKbFromSmall: true,
-    note: '聖なる光で仲間を回復し、まばゆい光で魔物を気絶させる', counter: '回復役を先に倒し、呪文と幹部で押し切る',
+    note: '聖なる光で仲間を回復し、聖なる大剣で前方の魔物をなぎ払う', counter: '回復役を先に倒し、呪文と幹部で押し切る',
     hp: 2800, atk: 40, range: 44, speed: 24, interval: 1.7, windup: 0.45, kb: 6, attack: 'single', guard: 0.1, mana: 650, size: 1.45,
     skills: [
       { id: 'heal', name: '聖なる光', type: 'heal', every: 16, first: 6, windup: 0.6, recover: 0.4, radius: 220, ratio: 0.08 },
-      { id: 'stun', name: '裁きの光', type: 'stun', every: 12, first: 8, windup: 0.9, recover: 0.4, reach: 220, duration: 2.0 },
+      { id: 'wave', name: '聖なる大剣', type: 'wave', every: 15, first: 8, windup: 1.1, recover: 0.4, reach: 220, mult: 1.3 },
     ],
+  },
+  // ---- 第6〜7章の追加キャラクター（2026-11-25・承認済みデザイン。個別の透過PNGが届くまで絵は既存の兵士の代用） ----
+  ancient_soldier: {
+    name: '古代兵士', role: '前衛',
+    note: '古代王国の兵士。湾曲した剣で斬りかかる', counter: '闇の騎士と岩男で受け止める',
+    hp: 360, atk: 28, range: 34, speed: 34, interval: 1.4, windup: 0.4, kb: 3, attack: 'single', mana: 65, size: 1.0,
+  },
+  ancient_priest: {
+    name: '古代神官', role: '後衛（魔法）', line: 'back',
+    note: '古代の魔法を操る神官。後ろから魔法弾を撃つ', counter: '木槌小鬼で後ろから倒すか、こうもりで一気に近づく',
+    hp: 280, atk: 24, range: 180, speed: 26, interval: 2.4, windup: 0.6, kb: 2, attack: 'single', projectile: 'orb', mana: 90, size: 1.0,
+  },
+  high_priest: {
+    name: '高位神官', role: '支援（聖魔法）', line: 'back',
+    note: '聖なる魔法で攻撃し、まわりの仲間を回復する', counter: '遠くから先に倒す（木槌小鬼・呪文）',
+    hp: 300, atk: 18, range: 170, speed: 28, interval: 2.4, windup: 0.5, kb: 2, attack: 'single', projectile: 'orb', mana: 110, size: 1.0,
+    heal: { every: 8, ratio: 0.06, radius: 140 },
   },
   // ---- 第8章（2026-11-25・仮）。魔導兵・魔導士団長・大魔導士のデザインは未承認なので、絵は既存の兵士（見習い僧侶）の代用 ----
   mage: {

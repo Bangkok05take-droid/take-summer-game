@@ -187,8 +187,16 @@ if (SKIN.sprites.shield && !SKIN.sprites.knight) SKIN.sprites.knight = { ...SKIN
 // 竜人オルド（仮）：ビジュアル制作室の絵が届くまで、闇の騎士の絵を1.6倍で代用
 if (SKIN.sprites.swordsman && !SKIN.sprites.harbor_captain) SKIN.sprites.harbor_captain = { ...SKIN.sprites.swordsman, scale: (SKIN.sprites.swordsman.scale || 0.25) * 1.5 };
 // 第5章（仮）：防衛砲台は弓兵の絵、重装兵は盾兵の絵、要塞司令官は見習い剣士の絵を大きくして代用（兵器・重装兵のデザインは未承認）
+// 第6〜7章の追加（2026-11-25）：個別の透過PNGが届くまでの代用
+if (SKIN.sprites.swordsman && !SKIN.sprites.ancient_soldier) SKIN.sprites.ancient_soldier = { ...SKIN.sprites.swordsman };
+if (SKIN.sprites.priest && !SKIN.sprites.ancient_priest) SKIN.sprites.ancient_priest = { ...SKIN.sprites.priest };
+if (SKIN.sprites.priest && !SKIN.sprites.high_priest) SKIN.sprites.high_priest = { ...SKIN.sprites.priest, scale: (SKIN.sprites.priest.scale || 0.25) * 1.1 };
+// 第4〜5章の追加（2026-11-25）：個別の透過PNGが届くまでの代用
+if (SKIN.sprites.swordsman && !SKIN.sprites.naval_soldier) SKIN.sprites.naval_soldier = { ...SKIN.sprites.swordsman };
+if (SKIN.sprites.archer && !SKIN.sprites.engineer) SKIN.sprites.engineer = { ...SKIN.sprites.archer, scale: (SKIN.sprites.archer.scale || 0.25) * 1.05 };
 if (SKIN.sprites.archer && !SKIN.sprites.turret) SKIN.sprites.turret = { ...SKIN.sprites.archer, scale: (SKIN.sprites.archer.scale || 0.25) * 1.2 };
 if (SKIN.sprites.shield && !SKIN.sprites.heavy) SKIN.sprites.heavy = { ...SKIN.sprites.shield, scale: (SKIN.sprites.shield.scale || 0.25) * 1.2 };
+if (SKIN.sprites.heavy && !SKIN.sprites.heavy_captain) SKIN.sprites.heavy_captain = { ...SKIN.sprites.heavy, scale: SKIN.sprites.heavy.scale * 1.3 }; // 重装兵団長：重装兵の強化個体（暫定）
 if (SKIN.sprites.swordsman && !SKIN.sprites.commander) SKIN.sprites.commander = { ...SKIN.sprites.swordsman, scale: (SKIN.sprites.swordsman.scale || 0.25) * 1.5 };
 // 第6章（仮）：守護者は盾兵の絵を1.2倍、古代王は盾兵の絵を1.5倍で代用（デザイン未承認）
 if (SKIN.sprites.shield && !SKIN.sprites.guardian) SKIN.sprites.guardian = { ...SKIN.sprites.shield, scale: (SKIN.sprites.shield.scale || 0.25) * 1.2 };
