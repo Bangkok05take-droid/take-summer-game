@@ -413,6 +413,38 @@ try {
     await c8.close();
   }
 
+  // ---- 第9章：9-4 の初回クリア → 勝利後の会話 → 最終章への進軍 → 最終章解放演出 → 戦利品／再読み込み／再クリアでは起きない ----
+  {
+    const c9 = await browser.newContext({ ...devices['iPhone 13 landscape'] });
+    const p9 = await c9.newPage(); const e9 = []; p9.on('pageerror', (e) => e9.push(String(e)));
+    await p9.goto(`http://localhost:${PORT}/?seed=9`); await p9.waitForFunction(() => window.__game);
+    await p9.evaluate(async () => { const m = await import('./js/data/progress.js'); const g = window.__game; const p = m.newProfile(); for (const id of ['1-1','1-2','1-3','2-1','2-2','2-3','3-1','3-2','3-3']) m.applyResult(p, id, 'win', 100); m.finishRuinEvent(p, 'recruit'); for (const id of ['4-1','4-2','4-3','5-1','5-2','5-3','5-4','6-1','6-2','6-3','7-1','7-2','8-1','8-2','8-3','8-4']) m.applyResult(p, id, 'win', 100); m.applyCrystal(p); m.applyUltimate(p); Object.assign(p.story, { opening: true, 'tip:recon': true, 'tip:form': true, 'tip:upgrade': true }); g.app.profile = p; m.saveProfile(p); g.toSelect(); });
+    await p9.waitForTimeout(200);
+    const read9 = async () => { const o = []; for (let i = 0; i < 40 && await p9.locator('#scTalk').isVisible(); i++) { o.push(await p9.locator('#talkText').textContent()); await p9.tap('#talkBox'); await p9.waitForTimeout(25); } return o; };
+    check('第8章のあと：第9章のタブと 9-1 が開いている', await p9.evaluate(() => !!document.querySelector('.chapTab[data-chapter="9"]') && !document.querySelector('.node[data-stage="9-1"]').disabled));
+    await p9.evaluate(() => document.querySelector('.node[data-stage="9-1"]').click()); await p9.waitForTimeout(150);
+    const bf9 = await read9();
+    check('9-1 戦闘前の会話（5行・台本どおり）', bf9.length === 5 && bf9[3] === 'これ以上、魔王軍の侵略を許すな！ 全軍、戦闘準備！', JSON.stringify(bf9));
+    await p9.evaluate(() => { const g = window.__game.app; g.profile.story['before:9-4'] = true; for (const id of ['9-1','9-2','9-3']) g.profile.stages[id] = { cleared: true, clears: 1, bestTime: 100 }; window.__game.startStage('9-4'); });
+    await p9.waitForTimeout(150);
+    const boss9 = await p9.evaluate(() => { const b = window.__game.battle; b.damageBase(b.base, b.base.hp - b.base.maxHp * 0.59); for (let i = 0; i < 90; i++) b.step(); return b.entities.some((e) => e.key === 'supreme_commander'); });
+    check('9-4：拠点HP60%で人間軍総司令官が出る', boss9);
+    const win9 = async () => { await p9.waitForTimeout(150); await p9.evaluate(() => { const b = window.__game.battle; b.damageBase(b.base, b.base.hp); }); await p9.waitForSelector('#scResult:not([hidden])', { timeout: 4000 }); await p9.tap('#btnReport'); await p9.waitForTimeout(100); };
+    await win9();
+    const a9 = await read9();
+    const fin = await p9.evaluate(() => ({ vis: !document.getElementById('ovFinal').hidden, t: ['finEyebrow', 'finChapter', 'finName', 'finText'].map((i) => document.getElementById(i).textContent) }));
+    await p9.waitForTimeout(1500); await p9.tap('#btnFinalNext'); await p9.waitForTimeout(100);
+    const st9 = await p9.evaluate(() => ({ ev: window.__game.app.profile.events.final, saved: JSON.parse(localStorage.getItem('maougunInvasion.save')).events.final, loot: !document.getElementById('scLoot').hidden }));
+    check('9-4 初回：勝利後の会話（10行）→ 最終章への進軍（9行）→ 最終章解放演出 → 戦利品', a9.length === 19 && a9[9] === '空の上まで逃げおったのかぁぁ！！' && a9[18] === '――第9章クリア。' && fin.vis && fin.t.join('/') === 'FINAL CHAPTER/第10章/天空・勇者の聖域/魔王軍、最後の戦いへ。' && st9.ev.done && st9.saved.done && st9.loot, JSON.stringify({ a: a9.length, fin, st9 }));
+    await p9.reload(); await p9.waitForFunction(() => window.__game); await p9.tap('#btnContinue'); await p9.waitForTimeout(150);
+    check('再読み込み後も第9章クリア・演出済みが残る', await p9.evaluate(() => { const p = window.__game.app.profile; return p.events.final.done && p.stages['9-4'].cleared; }));
+    await p9.evaluate(() => { window.__game.startStage('9-4'); });
+    await win9();
+    check('9-4 の再クリアでは進軍の会話と演出が起きない', !(await p9.locator('#scTalk').isVisible()) && !(await p9.locator('#ovFinal').isVisible()) && await p9.locator('#scLoot').isVisible());
+    check('第9章：エラーなし', e9.length === 0, e9.join(' / '));
+    await c9.close();
+  }
+
   // ---- 縦持ち ----
   const ctx2 = await browser.newContext({ ...devices['iPhone 13'] });
   const p2 = await ctx2.newPage();

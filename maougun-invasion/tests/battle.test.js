@@ -822,7 +822,7 @@ test('第8章（魔法都市）：4ステージ・台本どおり・背景は共
     const stones = p.stones; applyResult(p, '8-4', 'win', 100);
     assert.ok(!pr.ultimatePending(p)); assert.deepEqual(pr.resolveFurnace(CONFIG.furnace, p), f, '再クリアで強化が重ならない');
     assert.ok(p.stones - stones < STAGES['8-4'].reward.stones, '再クリアは初回報酬なし');
-    assert.equal(nextStage(p), null, '第9章は台本待ち（データが入ると自動で開く）');
+    assert.equal(nextStage(p), '9-1', '第8章をクリアすると第9章へ');
     const st = memStore(); saveProfile(p, st); const q = loadProfile(st);
     assert.ok(pr.ultimateDone(q) && pr.crystalDone(q) && pr.evolveTierCap(q) === 3, 'セーブから戻る');
     assert.deepEqual(pr.resolveFurnace(CONFIG.furnace, q), f);
@@ -854,4 +854,45 @@ test('最上位進化：究極進化のあとだけ（上位からのみ・デ�
   } finally { EVOLUTIONS.mallet_2.ready = false; EVOLUTIONS.mallet_3a.ready = false; }
   const q = newProfile(); q.stones = 99999; pr.applyCrystal(q); pr.applyUltimate(q); q.units.mallet.level = 9;
   assert.equal(pr.tryEvolve(q, 'mallet', 'mallet_2').reason, 'planned', '進化先のデザイン待ち');
+});
+
+test('第9章（人間界の王都）：4ステージ・台本どおり・背景は共通1枚。9-4 は人間軍総司令官。初回だけ最終章への進軍（セーブ）・第10章は台本待ち', async () => {
+  const pr = await import('../js/data/progress.js');
+  const { STORY, FINAL_MARCH } = await import('../js/data/story.js');
+  const { CHAPTER9 } = await import('../js/data/stages.js');
+  const { SKIN } = await import('../js/data/skin.js');
+  assert.deepEqual(CHAPTER9.stages, ['9-1', '9-2', '9-3', '9-4']); assert.equal(CHAPTER9.name, '人間界の王都');
+  for (const id of CHAPTER9.stages) { assert.ok(!SKIN.images.stageBg[id]); assert.equal(STAGES[id].theme, 'capital'); }
+  assert.ok(SKIN.images.stageBg.chapter9);
+  assert.equal(STORY.before['9-1'].map((l) => l.who).join(','), 'aide,lord,aide,人間軍指揮官,lord');
+  assert.equal(STORY.before['9-3'].map((l) => l.who).join(','), 'aide,王国軍指揮官,lord,aide,lord');
+  assert.equal(STORY.before['9-4'].map((l) => l.who).join(','), '人間軍総司令官,人間軍総司令官,lord,lord,lord');
+  assert.ok(!Object.values(STORY.before).flat().some((l) => /最終決戦開始/.test(l.text)));
+  assert.deepEqual(CHAPTER9.stages.map((id) => STORY.after[id].length), [4, 4, 4, 10]);
+  assert.equal(STORY.after['9-4'][9].text, '空の上まで逃げおったのかぁぁ！！');
+  assert.equal(FINAL_MARCH.LINES.length, 9); assert.equal(FINAL_MARCH.LINES[8].text, '――第9章クリア。');
+  assert.deepEqual(FINAL_MARCH.TITLE, { eyebrow: 'FINAL CHAPTER', chapter: '第10章', name: '天空・勇者の聖域', text: '魔王軍、最後の戦いへ。' });
+  // 人間軍の兵種を総動員（これまでの一般兵がほぼ全部出る）
+  const used = new Set(CHAPTER9.stages.flatMap((id) => STAGES[id].spawns.flatMap((x) => x.who ? [x.who] : x.wave.map((w) => w.who))));
+  for (const k of ['swordsman', 'shield', 'archer', 'priest', 'rider', 'knight', 'heavy', 'guardian', 'paladin', 'mage', 'elite_mage']) assert.ok(used.has(k), k);
+  for (const k of ['take', 'sai']) assert.ok(!used.has(k), 'たけ・サイは出ない');
+  for (const id of CHAPTER9.stages) for (const l of [...STORY.before[id], ...STORY.after[id]]) assert.ok(!/yanai|take|sai|聖竜/.test(l.who));
+  for (const choice of ['recruit', 'reject']) {
+    const p = clearTo33(); pr.finishRuinEvent(p, choice);
+    for (const id of ['4-1', '4-2', '4-3', '5-1', '5-2', '5-3', '5-4', '6-1', '6-2', '6-3', '7-1', '7-2', '8-1', '8-2', '8-3', '8-4']) applyResult(p, id, 'win', 100);
+    pr.applyCrystal(p); pr.applyUltimate(p);
+    for (const id of CHAPTER9.stages) { assert.ok(isStageOpen(p, id), id); assert.ok(!pr.finalPending(p)); applyResult(p, id, 'win', 100); }
+    assert.ok(pr.finalPending(p));
+    assert.equal(pr.markFinal(p), true); assert.equal(pr.markFinal(p), false, '2回目は起きない');
+    applyResult(p, '9-4', 'win', 100); assert.ok(!pr.finalPending(p));
+    assert.equal(nextStage(p), null, '第10章は台本待ち（データが入ると自動で開く）');
+    const st = memStore(); saveProfile(p, st); const q = loadProfile(st);
+    assert.ok(pr.finalDone(q) && pr.ultimateDone(q) && pr.evolveTierCap(q) === 3, 'セーブから戻る');
+  }
+  const b = makeBattle({ stageId: '9-4', seed: 1 });
+  b.damageBase(b.base, b.base.hp - b.base.maxHp * 0.59); run(b, 3);
+  assert.ok(b.entities.some((e) => e.key === 'supreme_commander'));
+  const c = makeBattle({ stageId: '9-3', seed: 1 });
+  c.damageBase(c.base, c.base.hp - c.base.maxHp * 0.49); run(c, 3);
+  assert.ok(c.entities.some((e) => e.key === 'royal_commander'));
 });

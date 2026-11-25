@@ -46,7 +46,10 @@ export const CHAPTER7 = { id: 7, name: '聖なる都を攻略せよ', stages: ['
 // 第8章（2026-11-25）：魔法都市（4ステージ・背景は全ステージ共通の1枚）。魔導兵（後ろから魔法弾）・精鋭魔導士・魔導士団長・大魔導士。
 // 8-4 の初回クリアで特殊イベント「魔王軍の究極進化」（魔力炉のさらなる強化・最上位進化の解放）。敵・ボス・報酬は仮
 export const CHAPTER8 = { id: 8, name: '魔法都市', stages: ['8-1', '8-2', '8-3', '8-4'] };
-export const CHAPTERS = [CHAPTER1, CHAPTER2, CHAPTER3, CHAPTER4, CHAPTER5, CHAPTER6, CHAPTER7, CHAPTER8];
+// 第9章（2026-11-25）：人間界の王都（4ステージ・背景は全ステージ共通の1枚）。これまでの人間軍の兵種を総動員。
+// 9-3 王国軍指揮官／9-4 ボス：人間軍総司令官。9-4 の初回クリアで「最終章への進軍」→ 最終章解放演出。敵・ボス・報酬は仮
+export const CHAPTER9 = { id: 9, name: '人間界の王都', stages: ['9-1', '9-2', '9-3', '9-4'] };
+export const CHAPTERS = [CHAPTER1, CHAPTER2, CHAPTER3, CHAPTER4, CHAPTER5, CHAPTER6, CHAPTER7, CHAPTER8, CHAPTER9];
 // 全ステージの順番（章をまたいで、前のステージをクリアすると次が開く）
 export const STAGE_ORDER = CHAPTERS.flatMap((c) => c.stages);
 // 特別（2026-11-25）：特殊イベント「壊滅した町」。ステージ選択の「特別」タブ（イベントのあとだけ出る）。通常の進行（STAGE_ORDER）には入れない
@@ -505,6 +508,68 @@ export const STAGES = {
       { trigger: { baseBelow: 0.25 }, wave: [{ who: 'paladin', count: 1 }, { who: 'mage', count: 2 }, { who: 'archer', count: 1 }], gap: 0.5 },
     ],
     reward: { stones: 850 },
+  },
+  // ---------------- 第9章 人間界の王都（敵編成・ボス・報酬は仮。背景は4ステージとも同じ。人間軍の兵種を総動員） ----------------
+  '9-1': {
+    id: '9-1', chapter: 9, name: '人間軍の連合部隊', theme: 'capital',
+    length: L(2500), shrineHp: 13500, baseHp: 10500, enemyScale: 1.45, mana: MANA,
+    spawns: [
+      { who: 'swordsman', start: 3, every: 7, max: 3 },
+      { who: 'shield', start: 6, every: 14, max: 1 },
+      { who: 'knight', start: 9, every: 15, max: 2 },
+      { who: 'archer', start: 14, every: 11, max: 2 },
+      { who: 'mage', start: 20, every: 14, max: 1 },
+      { who: 'priest', start: 32, every: 24, max: 1 },
+      { who: 'rider', start: 45, every: 15, max: 2 },
+      { trigger: { baseBelow: 0.6 }, wave: [{ who: 'guardian', count: 1 }, { who: 'knight', count: 1 }, { who: 'archer', count: 2 }], gap: 0.6 },
+      { trigger: { baseBelow: 0.3 }, wave: [{ who: 'heavy', count: 1 }, { who: 'mage', count: 2 }, { who: 'rider', count: 2 }], gap: 0.6 },
+    ],
+    reward: { stones: 800 },
+  },
+  '9-2': {
+    id: '9-2', chapter: 9, name: '人間軍の総攻撃', theme: 'capital',
+    length: L(2500), shrineHp: 14000, baseHp: 11000, enemyScale: 1.45, mana: MANA,
+    spawns: [
+      { who: 'swordsman', start: 3, every: 7, max: 3 },
+      { who: 'heavy', start: 8, every: 20, max: 1 },
+      { who: 'mage', start: 12, every: 13, max: 2 },
+      { who: 'paladin', start: 18, every: 18, max: 1 },
+      { who: 'archer', start: 22, every: 11, max: 2 },
+      { who: 'priest', start: 34, every: 24, max: 1 },
+      { trigger: { baseBelow: 0.65 }, wave: [{ who: 'heavy', count: 1 }, { who: 'elite_mage', count: 1 }, { who: 'paladin', count: 1 }], gap: 0.6 },
+      { trigger: { baseBelow: 0.35 }, wave: [{ who: 'knight', count: 2 }, { who: 'mage', count: 2 }, { who: 'rider', count: 2 }], gap: 0.5 },
+    ],
+    reward: { stones: 850 },
+  },
+  '9-3': {
+    id: '9-3', chapter: 9, name: '王国最強の軍団', theme: 'capital',
+    length: L(2500), shrineHp: 14000, baseHp: 10500, enemyScale: 1.45, mana: { ...MANA, start: 300 },
+    spawns: [
+      { who: 'knight', start: 3, every: 14, max: 1 },
+      { who: 'swordsman', start: 5, every: 8, max: 3 },
+      { who: 'elite_mage', start: 10, every: 18, max: 1 },
+      { who: 'guardian', start: 16, every: 20, max: 1 },
+      { who: 'archer', start: 20, every: 11, max: 2 },
+      { who: 'priest', start: 32, every: 24, max: 1 },
+      { trigger: { baseBelow: 0.5 }, hero: 'royal_commander', wave: [{ who: 'royal_commander', count: 1 }, { who: 'knight', count: 1 }], gap: 0.8 },
+      { trigger: { baseBelow: 0.25 }, wave: [{ who: 'paladin', count: 1 }, { who: 'heavy', count: 1 }, { who: 'mage', count: 2 }], gap: 0.5 },
+    ],
+    reward: { stones: 900 },
+  },
+  '9-4': {
+    id: '9-4', chapter: 9, name: '人間界の最終決戦', theme: 'capital', boss: true,
+    length: L(2600), shrineHp: 14500, baseHp: 10500, enemyScale: 1.4, mana: { ...MANA, start: 400 },
+    spawns: [
+      { who: 'swordsman', start: 3, every: 7, max: 3 },
+      { who: 'knight', start: 6, every: 14, max: 2 },
+      { who: 'mage', start: 10, every: 13, max: 2 },
+      { who: 'archer', start: 20, every: 11, max: 2 },
+      { who: 'shield', start: 30, every: 22, max: 1 },
+      { who: 'rider', start: 50, every: 15, max: 2 },
+      { trigger: { baseBelow: 0.6 }, hero: 'supreme_commander', wave: [{ who: 'supreme_commander', count: 1 }, { who: 'heavy', count: 1 }], gap: 0.8 },
+      { trigger: { baseBelow: 0.3 }, wave: [{ who: 'guardian', count: 1 }, { who: 'elite_mage', count: 1 }, { who: 'paladin', count: 1 }, { who: 'rider', count: 2 }], gap: 0.5 },
+    ],
+    reward: { stones: 1000 },
   },
   // ---------------- 特別：壊滅した町（竜人オルド）。能力・報酬は仮（別途調整） ----------------
   // forced：初戦は強制敗北（main.js が台本の秒数で終わらせる）。再戦は通常の勝敗で、勝つとオルドが加入（reward.unlock）

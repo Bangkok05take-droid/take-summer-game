@@ -143,6 +143,26 @@ export const HUMANS = {
       { id: 'stun', name: '束縛の魔法', type: 'stun', every: 14, first: 9, windup: 0.9, recover: 0.4, reach: 220, duration: 1.8 },
     ],
   },
+  // ---- 第9章（2026-11-25・仮）。王国軍指揮官・人間軍総司令官のデザインは未承認なので、絵は見習い剣士の代用 ----
+  royal_commander: {
+    name: '王国軍指揮官', role: '強敵', hero: true, noKbFromSmall: true,
+    note: '王都直属の精鋭部隊を率いる。号令で仲間を回復し、鋭い突きで前方の魔物を吹き飛ばす', counter: '岩男で受け止め、呪文と幹部で押し切る',
+    hp: 2800, atk: 44, range: 44, speed: 24, interval: 1.7, windup: 0.45, kb: 6, attack: 'single', guard: 0.15, mana: 700, size: 1.45,
+    skills: [
+      { id: 'heal', name: '精鋭の号令', type: 'heal', every: 22, first: 10, windup: 0.6, recover: 0.4, radius: 200, ratio: 0.05 },
+      { id: 'wave', name: '王国の槍', type: 'wave', every: 15, first: 6, windup: 1.1, recover: 0.4, reach: 240, mult: 1.4 },
+    ],
+  },
+  supreme_commander: {
+    name: '人間軍総司令官', role: '強敵', hero: true, noKbFromSmall: true,
+    note: '人間軍の全軍を率いる。号令で仲間を回復し、総攻撃の合図でなぎ払い、魔物を気絶させる', counter: '回復役を先に倒し、最上位の魔物・呪文・幹部で一気に押し切る',
+    hp: 3400, atk: 48, range: 46, speed: 22, interval: 1.8, windup: 0.5, kb: 6, attack: 'single', guard: 0.2, mana: 1000, size: 1.6,
+    skills: [
+      { id: 'heal', name: '総司令官の号令', type: 'heal', every: 24, first: 10, windup: 0.6, recover: 0.4, radius: 220, ratio: 0.05 },
+      { id: 'wave', name: '総攻撃', type: 'wave', every: 16, first: 6, windup: 1.2, recover: 0.4, reach: 250, mult: 1.4 },
+      { id: 'stun', name: '威圧', type: 'stun', every: 15, first: 9, windup: 0.9, recover: 0.4, reach: 200, duration: 1.6 },
+    ],
+  },
   // ---- 特殊イベント「壊滅した町」（2026-11-25・仮）。絵はビジュアル制作室の納品待ち（それまでは仮の絵） ----
   ord: {
     name: '竜人オルド', role: '竜の戦士', hero: true, noKbFromSmall: true,

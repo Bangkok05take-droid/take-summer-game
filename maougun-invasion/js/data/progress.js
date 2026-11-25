@@ -8,6 +8,7 @@
  *   events      { ruin: { done, choice: 'recruit'|'reject', recruited, rematches } }  特殊イベント「壊滅した町」
  *               { crystal: { done } }  特殊イベント「大魔王の魔力回復」（6-3 の初回クリア）。魔力の部分回復と上位進化の解放
  *               { ultimate: { done } } 特殊イベント「魔王軍の究極進化」（8-4 の初回クリア）。魔力炉のさらなる強化と最上位進化の解放
+ *               { final: { done } }    最終章への進軍と最終章解放演出（9-4 の初回クリア）。演出だけ（能力の変化なし）
  *   formation   { units: [key…], bosses: [key…] }  出撃する編成（次のステージにも引き継ぐ）。枠の数は大魔王Lvで決まる（SLOTS）
  *   stages[id]  { cleared, clears, bestTime }
  *   seen        { [key]: true }  解放画面を見たユニット
@@ -368,4 +369,14 @@ export function tryEvolve(p, key, toKey) {
   const r = evolveUnit(p, key, toKey);
   if (r.ok) p.stones -= cost;
   return { ...r, cost };
+}
+
+// ---------- 最終章への進軍（第9章・9-4 の初回クリア）：会話と最終章解放演出を1回だけ ----------
+export function finalDone(p) { return !!(p && p.events && p.events.final && p.events.final.done); }
+export function finalPending(p) { return !!(p.stages['9-4'] && p.stages['9-4'].cleared) && !finalDone(p); }
+export function markFinal(p) {
+  if (finalDone(p)) return false;
+  p.events = p.events || {};
+  p.events.final = { done: true };
+  return true;
 }

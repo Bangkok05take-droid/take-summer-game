@@ -4,12 +4,12 @@ import { createBattle, STEP } from './core/battle.js';
 import { createClock } from './core/clock.js';
 import { HUMANS } from './data/humans.js';
 import { STAGES, CONFIG } from './data/stages.js';
-import { STORY, CRYSTAL_EVENT, ULTIMATE_EVENT } from './data/story.js';
+import { STORY, CRYSTAL_EVENT, ULTIMATE_EVENT, FINAL_MARCH } from './data/story.js';
 import { SKIN } from './data/skin.js';
 import {
   loadProfile, saveProfile, resetProfile, buildDeck, resolveMana, applyResult, isStageOpen, nextStage,
   levelUpUnit, buyUpgrade, SAVE_KEY, resolveSpell, addToFormation, removeFromFormation, normalizeFormation,
-  ruinPending, finishRuinEvent, crystalPending, applyCrystal, ultimatePending, applyUltimate, resolveFurnace, tryEvolve,
+  ruinPending, finishRuinEvent, crystalPending, applyCrystal, ultimatePending, applyUltimate, resolveFurnace, finalPending, markFinal, tryEvolve,
 } from './data/progress.js';
 import { Renderer, VIEW_W, VIEW_H, MINIMAP } from './render/renderer.js';
 import { Hud, reasonText } from './ui/hud.js';
@@ -323,6 +323,8 @@ function afterWin() {
     if (app.stageId === '6-3' && crystalPending(app.profile)) { playCrystalEvent(toLoot); return; }
     // 8-4 の初回クリア：特殊イベント「魔王軍の究極進化」→ 新機能の解放画面 → 第9章への進軍（1回だけ）
     if (app.stageId === '8-4' && ultimatePending(app.profile)) { playFeatureEvent(ULTIMATE_EVENT, applyUltimate, toLoot); return; }
+    // 9-4 の初回クリア：最終章への進軍 → 最終章解放演出（1回だけ）
+    if (app.stageId === '9-4' && finalPending(app.profile)) { playFinalMarch(toLoot); return; }
     toLoot();
   });
 }
@@ -338,6 +340,17 @@ function playFeatureEvent(EV, apply, done) {
     app.afterFeature = () => talk.play(EV.AFTER, 'shrine', done);
   });
 }
+function playFinalMarch(done) {
+  talk.play(FINAL_MARCH.LINES, 'shrine', () => {
+    markFinal(app.profile); save();
+    const T = FINAL_MARCH.TITLE; const bg = SKIN.images.finalBg;
+    $('finEyebrow').textContent = T.eyebrow; $('finChapter').textContent = T.chapter; $('finName').textContent = T.name; $('finText').textContent = T.text;
+    $('ovFinal').style.backgroundImage = bg ? `url(${bg})` : '';
+    $('ovFinal').hidden = false;
+    app.afterFinal = done;
+  });
+}
+$('btnFinalNext').addEventListener('click', () => { $('ovFinal').hidden = true; const f = app.afterFinal; app.afterFinal = null; if (f) f(); });
 $('btnFeatNext').addEventListener('click', () => { $('ovFeature').hidden = true; const f = app.afterFeature; app.afterFeature = null; if (f) f(); });
 // 解放した仲間を1体ずつ見せる（複数のときは順に）
 function nextUnlock() {

@@ -423,3 +423,14 @@ body.portrait #rotate { display: flex; }
 #scTalk.fx-quake .talkBg::after { content: ""; position: absolute; inset: 0; background: radial-gradient(circle at 30% 45%, rgba(200, 120, 255, .7), rgba(80, 20, 160, 0) 70%); animation: absorbGlow 1.2s ease-out forwards; pointer-events: none; }
 @keyframes talkQuake { 0%, 100% { translate: 0 0; } 10% { translate: calc(var(--u) * -10) calc(var(--u) * 4); } 20% { translate: calc(var(--u) * 9) calc(var(--u) * -5); } 30% { translate: calc(var(--u) * -8) calc(var(--u) * 3); } 40% { translate: calc(var(--u) * 7) calc(var(--u) * -3); } 55% { translate: calc(var(--u) * -5) 0; } 70% { translate: calc(var(--u) * 3) calc(var(--u) * 2); } 85% { translate: calc(var(--u) * -2) 0; } }
 @media (prefers-reduced-motion: reduce) { #scTalk.fx-quake { animation: none; } }
+
+/* 最終章解放演出（9-4 の初回クリア）。背景画像は承認済み天空背景を JS で指定（未着のあいだは夜空のグラデーション） */
+.overlay.final { background: radial-gradient(ellipse at 50% 30%, #3b2a6b 0%, #120a26 60%, #05030c 100%) center / cover no-repeat; }
+.overlay.final[style*="url"] { background-size: cover; background-position: center; }
+.finalCard { text-align: center; color: #fff; padding: calc(var(--u) * 24); animation: finIn 1.6s ease-out both; text-shadow: 0 0 calc(var(--u) * 12) rgba(0,0,0,.8); }
+.finEyebrow { letter-spacing: .4em; font-size: calc(var(--u) * 18); color: var(--gold2); margin: 0; }
+.finChapter { font-size: calc(var(--u) * 30); margin: calc(var(--u) * 10) 0 0; }
+.finName { font-size: calc(var(--u) * 52); margin: calc(var(--u) * 6) 0; color: var(--gold2); text-shadow: 0 0 calc(var(--u) * 20) #c084fc, 0 0 calc(var(--u) * 6) #000; }
+.finText { font-size: calc(var(--u) * 22); margin: 0 0 calc(var(--u) * 22); }
+.finalCard .row { justify-content: center; opacity: 0; animation: finIn .6s 1.4s ease-out forwards; }
+@keyframes finIn { from { opacity: 0; transform: translateY(calc(var(--u) * 14)) scale(.97); } to { opacity: 1; transform: none; } }

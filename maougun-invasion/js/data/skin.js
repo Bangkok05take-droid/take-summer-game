@@ -56,6 +56,8 @@ export const SKIN = {
   /* 画面の各場所に入れる承認済み画像（場所と仕様の一覧：docs/ASSET_MAP.md）。
    * 未登録・読み込み失敗のときは、今の仮の表示に戻る。見た目は変えず、拡大縮小と位置だけ指定する。 */
   images: {
+    // 最終章解放演出の背景（承認済み天空背景）。届いたら 'assets/approved/bg/…' を入れる。null のあいだは夜空のグラデーション
+    finalBg: null,
     // 戦闘の背景。ステージIDで個別に、無ければ chapter1（1-3 以降は大きな町の背景）。scale：論理画面（960×540）での倍率、offsetY：上下の位置
     stageBg: {
       // 2026-11-25：第1章（はじまりの村・3ステージ）はすべて横長パノラマの村（2172×358）。高さを画面に合わせて ×1.36。
@@ -71,6 +73,7 @@ export const SKIN = {
       chapter5: { src: 'assets/approved/bg/pano_village_town.png', scale: 1.36, offsetY: 0, parallax: 0.35, focus: 0.5, tint: 'rgba(30,30,45,.35)' },
       chapter6: { src: 'assets/approved/bg/ch6_desert.png', scale: 0.85, offsetY: -75, parallax: 0.35, focus: 0.5 }, // 2026-11-25：砂漠の古代王国の本番背景（2172×724・道の上端 y≈532）。3ステージ共通
       // 第7章 聖なる都：承認済みの背景が届いたら src をその画像にする（今は城の背景を白く明るくして代用）
+      chapter9: { src: 'assets/approved/bg/ch3_castle_v2.png', scale: 1.22, offsetY: -358, parallax: 0.35, focus: 0.5, tint: 'rgba(60,40,90,.25)' }, // 仮：王都の背景（未着）。4ステージ共通
       chapter8: { src: 'assets/approved/bg/pano_village_town.png', scale: 1.36, offsetY: 0, parallax: 0.35, focus: 0.5, tint: 'rgba(90,50,160,.35)' }, // 仮：魔法都市の背景（未着）。4ステージ共通
       chapter7: { src: 'assets/approved/bg/ch3_castle_v2.png', scale: 1.22, offsetY: -358, parallax: 0.35, focus: 0.5, tint: 'rgba(255,250,220,.3)' },
       chapter3: { src: 'assets/approved/bg/ch3_castle_v2.png', scale: 1.22, offsetY: -358, parallax: 0.35, focus: 0.5 },
@@ -185,6 +188,9 @@ if (SKIN.sprites.shield && !SKIN.sprites.ancient_king) SKIN.sprites.ancient_king
 if (SKIN.sprites.swordsman && !SKIN.sprites.paladin) SKIN.sprites.paladin = { ...SKIN.sprites.swordsman, scale: (SKIN.sprites.swordsman.scale || 0.25) * 1.2 };
 for (const [k, mul] of [['mage', 1.0], ['elite_mage', 1.15], ['mage_captain', 1.4], ['archmage', 1.55]]) {
   if (SKIN.sprites.priest && !SKIN.sprites[k]) SKIN.sprites[k] = { ...SKIN.sprites.priest, scale: (SKIN.sprites.priest.scale || 0.25) * mul };
+}
+for (const [k, mul] of [['royal_commander', 1.45], ['supreme_commander', 1.6]]) {
+  if (SKIN.sprites.swordsman && !SKIN.sprites[k]) SKIN.sprites[k] = { ...SKIN.sprites.swordsman, scale: (SKIN.sprites.swordsman.scale || 0.25) * mul };
 }
 if (SKIN.sprites.priest && !SKIN.sprites.holy_captain) SKIN.sprites.holy_captain = { ...SKIN.sprites.priest, scale: (SKIN.sprites.priest.scale || 0.25) * 1.5 };
 if (SKIN.sprites.vanguard && !SKIN.sprites.ord) SKIN.sprites.ord = { ...SKIN.sprites.vanguard, scale: (SKIN.sprites.vanguard.scale || 0.25) * 1.6 };
