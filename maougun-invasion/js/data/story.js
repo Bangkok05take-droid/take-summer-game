@@ -48,6 +48,56 @@ export const STORY = {
       { who: 'aide', text: '大魔王様も、立派な冠をかぶっておられますが。' },
       { who: 'lord', text: 'わしは本当に偉いのじゃ！！', face: 'angry' },
     ],
+    // ---- 第10章「天空・勇者の聖域」（2026-11-25 承認済み台本。台詞・順番を変えないこと。「――聖竜とのボス戦開始。」「――最終決戦開始。」は画面に出さない）----
+    '10-1': [
+      { who: 'aide', text: '大魔王様、ついに天上へ到達しました。' },
+      { who: 'lord', text: 'おおお！ 雲の上にこんな世界があったとは！', face: 'happy' },
+      { who: 'aide', text: 'ここが、この世界最後の聖域です。' },
+      { who: '天空の守護兵', text: '魔王軍よ！ この先へ進むことは許さぬ！' },
+      { who: 'lord', text: '地上でも空の上でも、言うことは同じじゃな！' },
+      { who: 'lord', text: '全軍突撃じゃ！', face: 'angry' },
+    ],
+    '10-2': [
+      { who: 'aide', text: '大魔王様、強大な聖なる力を持つ軍勢が出撃してきました。' },
+      { who: 'lord', text: 'ほう……。さすがは最後の聖域じゃな。' },
+      { who: '天空の指揮官', text: 'この世界の希望を、貴様らに奪わせはしない！' },
+      { who: 'lord', text: '希望も絶望も、すべてわしが支配するのじゃ！', face: 'angry' },
+    ],
+    '10-3': [
+      { who: 'narr', text: '――天空に巨大な光が現れる。', fx: 'absorb' },
+      { who: 'narr', text: '――世界の守護者、聖竜が姿を現した。', fx: 'quake' },
+      { who: '聖竜', text: '大魔王よ……。再び世界を闇に包むつもりか。' },
+      { who: 'lord', text: 'ほう！ お前が聖竜か！', face: 'happy' },
+      { who: '聖竜', text: 'この世界は、お前一人のものではない。' },
+      { who: 'lord', text: '今からわしのものになるのじゃ！', face: 'angry' },
+      { who: '聖竜', text: 'ならば、その野望をここで打ち砕こう。' },
+      { who: 'lord', text: '面白い！ 伝説の聖竜とやらの力、見せてもらおうか！', face: 'happy' },
+    ],
+    '10-4': [
+      { who: 'aide', text: '大魔王様、残された守護者たちが集結しております。' },
+      { who: 'lord', text: 'まだ戦うつもりか！ 本当に諦めの悪い奴らじゃな！', face: 'angry' },
+      { who: '天空の守護者', text: '勇者たちがいる限り、我々は決して諦めない！' },
+      { who: 'lord', text: '勇者じゃと……？' },
+      { who: 'lord', text: 'よかろう！ その希望ごと打ち砕いてやるわ！', face: 'angry' },
+    ],
+    '10-5': [
+      { who: 'narr', text: '――魔王軍の前に、三人の勇者が立ちはだかった。' },
+      { who: 'マスター・ヤナイ', text: '久しぶりだな、大魔王。' },
+      { who: 'lord', text: 'ヤナイィィィ！！', face: 'angry' },
+      { who: 'lord', text: 'お前のせいで、わしがどれほど苦労したと思っておるのじゃ！', face: 'angry' },
+      { who: 'マスター・ヤナイ', text: 'ずいぶんと元気そうじゃないか。' },
+      { who: 'lord', text: '元気なわけあるかぁぁ！！ ずっと祠に閉じ込められておるんじゃぞ！！', face: 'angry' },
+      { who: 'たけ', text: 'この人が大魔王？' },
+      { who: 'サイ', text: 'なんだか、想像していたのと違うね。' },
+      { who: 'lord', text: 'うるさぁぁい！！', face: 'angry' },
+      { who: 'マスター・ヤナイ', text: 'たけ、サイ。油断するな。姿はどうあれ、相手は大魔王だ。' },
+      { who: 'たけ', text: 'わかってるよ！' },
+      { who: 'サイ', text: '絶対に、この世界を守る！' },
+      { who: 'lord', text: 'ふっふっふ……。ようやくここまで来たのじゃ。', face: 'happy' },
+      { who: 'lord', text: 'ヴェイル！ 全軍、出撃せよ！', face: 'angry' },
+      { who: 'aide', text: '承知いたしました。' },
+      { who: 'lord', text: 'これが魔王軍の総力じゃ！ いくぞぉぉ！！', face: 'angry' },
+    ],
     // ---- 第9章「人間界の王都」（2026-11-25 承認済み台本。台詞・順番を変えないこと。「――人間軍との最終決戦開始。」は画面に出さない）----
     '9-1': [
       { who: 'aide', text: '大魔王様、人間界の王都に到着しました。' },
@@ -283,6 +333,34 @@ export const STORY = {
       { who: 'narr', text: '魔王軍がまだ侵略していないにもかかわらず、ひとつの町が完全に壊滅していた。' },
       { who: 'narr', text: 'そこには、一人の竜の戦士が立っていた。' },
       { who: 'narr', text: '――竜人オルドとの遭遇へ続く。' },
+    ],
+    // ---- 第10章（承認済み台本）。10-5 のあとは エンディング「大魔王復活」（ENDING）----
+    '10-1': [
+      { who: 'aide', text: '天空の守護兵を撃破しました。' },
+      { who: 'lord', text: 'うむ！ ヤナイはもう逃げられんぞ！', face: 'happy' },
+    ],
+    '10-2': [
+      { who: 'aide', text: '敵の精鋭部隊を撃破しました。' },
+      { who: 'lord', text: 'ふっふっふ……。わしの魔王軍に敵はおらんな！', face: 'happy' },
+      { who: 'aide', text: '……大魔王様。何か巨大な魔力を感じます。' },
+      { who: 'lord', text: 'むむっ……。これは……！' },
+    ],
+    '10-3': [
+      { who: '聖竜', text: 'これほどまでに力を取り戻していたとは……。' },
+      { who: 'lord', text: 'ふはははは！ 伝説の聖竜も大したことはないのう！', face: 'happy' },
+      { who: '聖竜', text: 'だが……まだ世界の希望は消えてはいない。' },
+      { who: 'narr', text: '――聖竜は光に包まれ、姿を消した。', fx: 'absorb' },
+      { who: 'lord', text: '希望じゃと？ まだ誰かおるのか？' },
+    ],
+    '10-4': [
+      { who: 'aide', text: '最後の守護部隊を撃破しました。' },
+      { who: 'lord', text: 'これで終わりじゃな！', face: 'happy' },
+      { who: 'aide', text: '……いえ、大魔王様。' },
+      { who: 'aide', text: 'ついに発見しました。' },
+      { who: 'lord', text: '何をじゃ？' },
+      { who: 'aide', text: 'マスター・ヤナイです。' },
+      { who: 'lord', text: '……！！' },
+      { who: 'lord', text: 'ついに……ついに見つけたぞぉぉ！！', face: 'angry' },
     ],
     // ---- 第9章（承認済み台本）。9-4 のあとは「最終章への進軍」（FINAL_MARCH）→ 最終章解放演出 ----
     '9-1': [
@@ -555,4 +633,45 @@ export const FINAL_MARCH = {
   ],
   // 最終章解放演出（承認済みの文言）。背景は承認済み天空背景（SKIN.images.finalBg）。未着のあいだは暗い夜空の色だけ
   TITLE: { eyebrow: 'FINAL CHAPTER', chapter: '第10章', name: '天空・勇者の聖域', text: '魔王軍、最後の戦いへ。' },
+};
+
+/* エンディング（2026-11-25 承認済み台本）。10-5 を初めてクリアしたとき1回だけ。
+ * 順番：LINES（大魔王復活）→ 世界征服達成画面（TITLE）→ EPILOGUE（おまけ会話「大魔王の退屈な日々」）→ THE END（END）→ 戦利品
+ * ムービー：あとから組み込めるように、SKIN.movies.ending に { src, replaces } を入れると、replaces の段（'lines' など）の代わりに動画を流す（今は無し）*/
+export const ENDING = {
+  STEPS: ['lines', 'title', 'epilogue', 'end'],
+  LINES: [
+      { who: 'マスター・ヤナイ', text: 'まさか……ここまで力を取り戻すとは……。' },
+      { who: 'lord', text: 'ふっふっふ……。ようやく勝ったぞ、ヤナイ！', face: 'happy' },
+      { who: 'lord', text: 'さあ！ わしの肉体と魔力を返してもらおうか！', face: 'angry' },
+      { who: 'narr', text: '――大魔王を縛り続けていた封印が崩れ始める。', fx: 'quake' },
+      { who: 'narr', text: '――封印の祠から、巨大な闇の魔力があふれ出した。', fx: 'absorb' },
+      { who: 'aide', text: '大魔王様……ついに、この時が……！' },
+      { who: 'narr', text: '――大魔王が本来の姿を取り戻す。', fx: 'absorb' },
+      { who: 'lord', text: 'ふはははははははは！！', face: 'happy', fx: 'quake' },
+      { who: 'lord', text: 'これじゃ！ これが本来のわしの姿じゃ！！', face: 'happy' },
+      { who: 'narr', text: '――復活した大魔王が、ついに魔王軍の前に姿を現す。' },
+      { who: 'aide', text: '大魔王様。世界の制圧が完了いたしました。' },
+      { who: 'lord', text: 'うむ！ 長かったのう……。', face: 'happy' },
+      { who: 'lord', text: '今日からこの世界は、わしのものじゃぁぁ！！', face: 'happy' },
+      { who: 'narr', text: '――魔王軍の歓声が世界中に響き渡った。', fx: 'quake' },
+  ],
+  // 世界征服達成画面（承認済みの文言）
+  TITLE: { eyebrow: 'WORLD CONQUEST COMPLETE', chapter: '世界征服達成', name: '魔王軍の世界侵略', text: '全10章クリア', end: 'THE END' },
+  EPILOGUE: [
+      { who: 'narr', text: '――世界征服から数日後。' },
+      { who: 'lord', text: 'あぁぁ……暇じゃ……。', face: 'sad' },
+      { who: 'aide', text: '大魔王様、どうかなさいましたか？' },
+      { who: 'lord', text: '世界を征服したはいいが、もうやることがないではないか。', face: 'sad' },
+      { who: 'aide', text: 'そうですね。もはや我々に逆らう者はおりません。' },
+      { who: 'lord', text: 'そういえば、前もこんな感じじゃったなぁ……。', face: 'sad' },
+      { who: 'lord', text: '強すぎるというのも、それはそれで退屈なものじゃ……。', face: 'sad' },
+      { who: 'aide', text: 'つい先日まで、力を取り戻したいとおっしゃっていたのに……。' },
+      { who: 'lord', text: 'あぁ～あ。また新しい勇者でも現れんかのう……。', face: 'sad' },
+      { who: 'aide', text: '……本当に懲りませんね、大魔王様。' },
+      { who: 'lord', text: 'ふっふっふ……。', face: 'happy' },
+      { who: 'narr', text: '――こうして、魔王軍による世界征服は幕を閉じた。' },
+      { who: 'narr', text: '――そして、大魔王の退屈な日々が再び始まるのであった。' },
+  ],
+  END: { end: 'THE END' },
 };

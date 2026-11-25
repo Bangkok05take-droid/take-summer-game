@@ -203,8 +203,15 @@
         <p class="finChapter" id="finChapter"></p>
         <h2 class="finName" id="finName"></h2>
         <p class="finText" id="finText"></p>
+        <p class="finEnd" id="finEnd" hidden></p>
         <div class="row"><button class="big" id="btnFinalNext" type="button">つぎへ</button></div>
       </div>
+    </div>
+
+    <!-- エンディングのムービー（保留中。SKIN.movies.ending に動画を入れたときだけ使う） -->
+    <div id="ovMovie" class="overlay movie" hidden>
+      <video id="movieVideo" playsinline></video>
+      <button class="small" id="btnMovieSkip" type="button">スキップ ≫</button>
     </div>
 
     <div id="ovPause" class="overlay" hidden>

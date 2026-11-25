@@ -9,6 +9,7 @@
  *               { crystal: { done } }  特殊イベント「大魔王の魔力回復」（6-3 の初回クリア）。魔力の部分回復と上位進化の解放
  *               { ultimate: { done } } 特殊イベント「魔王軍の究極進化」（8-4 の初回クリア）。魔力炉のさらなる強化と最上位進化の解放
  *               { final: { done } }    最終章への進軍と最終章解放演出（9-4 の初回クリア）。演出だけ（能力の変化なし）
+ *               { conquest: { done } } エンディング・世界征服達成（10-5 の初回クリア）。大魔王の完全復活
  *   formation   { units: [key…], bosses: [key…] }  出撃する編成（次のステージにも引き継ぐ）。枠の数は大魔王Lvで決まる（SLOTS）
  *   stages[id]  { cleared, clears, bestTime }
  *   seen        { [key]: true }  解放画面を見たユニット
@@ -378,5 +379,15 @@ export function markFinal(p) {
   if (finalDone(p)) return false;
   p.events = p.events || {};
   p.events.final = { done: true };
+  return true;
+}
+
+// ---------- エンディング「大魔王復活」・世界征服達成（10-5 の初回クリア）：1回だけ ----------
+export function conquestDone(p) { return !!(p && p.events && p.events.conquest && p.events.conquest.done); }
+export function conquestPending(p) { return !!(p.stages['10-5'] && p.stages['10-5'].cleared) && !conquestDone(p); }
+export function markConquest(p) {
+  if (conquestDone(p)) return false;
+  p.events = p.events || {};
+  p.events.conquest = { done: true };
   return true;
 }

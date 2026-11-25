@@ -4,12 +4,12 @@ import { createBattle, STEP } from './core/battle.js';
 import { createClock } from './core/clock.js';
 import { HUMANS } from './data/humans.js';
 import { STAGES, CONFIG } from './data/stages.js';
-import { STORY, CRYSTAL_EVENT, ULTIMATE_EVENT, FINAL_MARCH } from './data/story.js';
+import { STORY, CRYSTAL_EVENT, ULTIMATE_EVENT, FINAL_MARCH, ENDING } from './data/story.js';
 import { SKIN } from './data/skin.js';
 import {
   loadProfile, saveProfile, resetProfile, buildDeck, resolveMana, applyResult, isStageOpen, nextStage,
   levelUpUnit, buyUpgrade, SAVE_KEY, resolveSpell, addToFormation, removeFromFormation, normalizeFormation,
-  ruinPending, finishRuinEvent, crystalPending, applyCrystal, ultimatePending, applyUltimate, resolveFurnace, finalPending, markFinal, tryEvolve,
+  ruinPending, finishRuinEvent, crystalPending, applyCrystal, ultimatePending, applyUltimate, resolveFurnace, finalPending, markFinal, conquestPending, markConquest, tryEvolve,
 } from './data/progress.js';
 import { Renderer, VIEW_W, VIEW_H, MINIMAP } from './render/renderer.js';
 import { Hud, reasonText } from './ui/hud.js';
@@ -269,7 +269,7 @@ $('btnQuit').addEventListener('click', () => { app.battle = null; toSelect(); })
 
 function onBattleEvent(ev) {
   if (ev.type === 'denied') hud.deny(ev.key);
-  if (ev.type === 'heroAlarm' && STORY.heroLines && STORY.heroLines[ev.who]) {
+  if (ev.type === 'heroAlarm' && app.stageId === '1-5' && STORY.heroLines && STORY.heroLines[ev.who]) { // 旧 1-5 用の一言（最終決戦では出さない）
     const l = STORY.heroLines[ev.who];
     ev.line = { who: SKIN.speakers[l.who], text: l.text };
   }
@@ -325,6 +325,8 @@ function afterWin() {
     if (app.stageId === '8-4' && ultimatePending(app.profile)) { playFeatureEvent(ULTIMATE_EVENT, applyUltimate, toLoot); return; }
     // 9-4 の初回クリア：最終章への進軍 → 最終章解放演出（1回だけ）
     if (app.stageId === '9-4' && finalPending(app.profile)) { playFinalMarch(toLoot); return; }
+    // 10-5 の初回クリア：エンディング（大魔王復活 → 世界征服達成画面 → おまけ会話 → THE END）。1回だけ
+    if (app.stageId === '10-5' && conquestPending(app.profile)) { playEnding(toLoot); return; }
     toLoot();
   });
 }
@@ -343,12 +345,41 @@ function playFeatureEvent(EV, apply, done) {
 function playFinalMarch(done) {
   talk.play(FINAL_MARCH.LINES, 'shrine', () => {
     markFinal(app.profile); save();
-    const T = FINAL_MARCH.TITLE; const bg = SKIN.images.finalBg;
-    $('finEyebrow').textContent = T.eyebrow; $('finChapter').textContent = T.chapter; $('finName').textContent = T.name; $('finText').textContent = T.text;
-    $('ovFinal').style.backgroundImage = bg ? `url(${bg})` : '';
-    $('ovFinal').hidden = false;
-    app.afterFinal = done;
+    showTitleCard(FINAL_MARCH.TITLE, SKIN.images.finalBg, done);
   });
+}
+// 文字だけの演出画面（最終章解放・世界征服達成・THE END）。T：{ eyebrow, chapter, name, text, end }（無い項目は出さない）
+function showTitleCard(T, bg, done) {
+  for (const [id, k] of [['finEyebrow', 'eyebrow'], ['finChapter', 'chapter'], ['finName', 'name'], ['finText', 'text'], ['finEnd', 'end']]) { $(id).textContent = T[k] || ''; $(id).hidden = !T[k]; }
+  document.querySelector('#ovFinal .finalCard').classList.toggle('endOnly', !T.name && !!T.end);
+  const card = document.querySelector('#ovFinal .finalCard'); card.style.animation = 'none'; void card.offsetWidth; card.style.animation = '';
+  $('ovFinal').style.backgroundImage = bg ? `url(${bg})` : '';
+  $('ovFinal').hidden = false;
+  app.afterFinal = done;
+}
+// エンディング：ENDING.STEPS の順に進める。SKIN.movies.ending（保留中）があれば、replaces の段の代わりに動画を流す
+function playEnding(done) {
+  const movie = SKIN.movies && SKIN.movies.ending;
+  const steps = ENDING.STEPS.slice();
+  let movieShown = false;
+  const next = () => {
+    const st = steps.shift();
+    if (!st) { done(); return; }
+    if (movie && movie.src && (movie.replaces || []).includes(st)) { if (movieShown) { next(); return; } movieShown = true; playMovie(movie.src, next); return; }
+    if (st === 'lines') talk.play(ENDING.LINES, 'shrine', next);
+    else if (st === 'title') { markConquest(app.profile); save(); showTitleCard(ENDING.TITLE, SKIN.images.endingBg, next); } // 世界征服達成をセーブ
+    else if (st === 'epilogue') talk.play(ENDING.EPILOGUE, 'shrine', next);
+    else if (st === 'end') showTitleCard(ENDING.END, SKIN.images.endingBg, next);
+    else next();
+  };
+  next();
+}
+function playMovie(src, done) {
+  const v = $('movieVideo'); const ov = $('ovMovie');
+  const end = () => { v.pause(); v.removeAttribute('src'); ov.hidden = true; v.onended = v.onerror = null; $('btnMovieSkip').onclick = null; done(); };
+  v.onended = end; v.onerror = end; $('btnMovieSkip').onclick = end;
+  v.src = src; ov.hidden = false;
+  const pr = v.play(); if (pr && pr.catch) pr.catch(() => {});
 }
 $('btnFinalNext').addEventListener('click', () => { $('ovFinal').hidden = true; const f = app.afterFinal; app.afterFinal = null; if (f) f(); });
 $('btnFeatNext').addEventListener('click', () => { $('ovFeature').hidden = true; const f = app.afterFeature; app.afterFeature = null; if (f) f(); });

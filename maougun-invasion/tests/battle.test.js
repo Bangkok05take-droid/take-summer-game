@@ -173,12 +173,12 @@ test('1-5：拠点HP70%で勇者たけ、40%で勇者サイが1回だけ登場�
   assert.equal(count('take') + count('sai'), 2, 'それぞれ1回だけ');
 });
 
-test('勇者たけ：2連撃・飛ぶ斬撃（吹き飛ばし）', () => {
+test('勇者たけ：2連撃・飛ぶ斬撃', () => {
   const b = makeBattle({ stage: noEnemies() });
   const t = b.spawnHuman('take'); t.x = 1000;
   const ms = [0, 100, 200].map((dx) => { const m = b.spawn('demon', b.deckDef('tank'), 1100); m.x = 1050 + dx; return m; });
   let strikes = 0; let wave = 0;
-  run(b, 6, (bb) => { for (const ev of bb.events) { if (ev.type === 'strike' && ev.id === t.id) strikes++; if (ev.type === 'skill' && ev.skill === 'wave') wave++; } bb.events.length = 0; });
+  run(b, 10, (bb) => { for (const ev of bb.events) { if (ev.type === 'strike' && ev.id === t.id) strikes++; if (ev.type === 'skill' && ev.skill === 'wave') wave++; } bb.events.length = 0; });
   assert.ok(strikes >= 2 && strikes % 2 === 0, `通常攻撃は2回ずつ当たる（${strikes}回）`);
   assert.ok(wave >= 1, '飛ぶ斬撃を使った');
   assert.ok(ms.every((m) => m.kbDone >= 0 && m.hp < m.maxHp), '前方の魔物全員にダメージ');
@@ -856,7 +856,7 @@ test('最上位進化：究極進化のあとだけ（上位からのみ・デ�
   assert.equal(pr.tryEvolve(q, 'mallet', 'mallet_2').reason, 'planned', '進化先のデザイン待ち');
 });
 
-test('第9章（人間界の王都）：4ステージ・台本どおり・背景は共通1枚。9-4 は人間軍総司令官。初回だけ最終章への進軍（セーブ）・第10章は台本待ち', async () => {
+test('第9章（人間界の王都）：4ステージ・台本どおり・背景は共通1枚。9-4 は人間軍総司令官。初回だけ最終章への進軍（セーブ）・第10章へ', async () => {
   const pr = await import('../js/data/progress.js');
   const { STORY, FINAL_MARCH } = await import('../js/data/story.js');
   const { CHAPTER9 } = await import('../js/data/stages.js');
@@ -885,7 +885,7 @@ test('第9章（人間界の王都）：4ステージ・台本どおり・背景
     assert.ok(pr.finalPending(p));
     assert.equal(pr.markFinal(p), true); assert.equal(pr.markFinal(p), false, '2回目は起きない');
     applyResult(p, '9-4', 'win', 100); assert.ok(!pr.finalPending(p));
-    assert.equal(nextStage(p), null, '第10章は台本待ち（データが入ると自動で開く）');
+    assert.equal(nextStage(p), '10-1', '第9章をクリアすると第10章へ');
     const st = memStore(); saveProfile(p, st); const q = loadProfile(st);
     assert.ok(pr.finalDone(q) && pr.ultimateDone(q) && pr.evolveTierCap(q) === 3, 'セーブから戻る');
   }
@@ -895,4 +895,56 @@ test('第9章（人間界の王都）：4ステージ・台本どおり・背景
   const c = makeBattle({ stageId: '9-3', seed: 1 });
   c.damageBase(c.base, c.base.hp - c.base.maxHp * 0.49); run(c, 3);
   assert.ok(c.entities.some((e) => e.key === 'royal_commander'));
+});
+
+test('第10章（天空・勇者の聖域）：5ステージ・台本どおり・背景は共通1枚。10-3 聖竜・10-5 たけ/サイ/ヤナイ。初回だけエンディング（世界征服達成・セーブ・重複なし）', async () => {
+  const pr = await import('../js/data/progress.js');
+  const { STORY, ENDING } = await import('../js/data/story.js');
+  const { CHAPTER10, CHAPTERS } = await import('../js/data/stages.js');
+  const { SKIN } = await import('../js/data/skin.js');
+  assert.deepEqual(CHAPTER10.stages, ['10-1', '10-2', '10-3', '10-4', '10-5']); assert.equal(CHAPTER10.name, '天空・勇者の聖域');
+  assert.equal(CHAPTERS.length, 10);
+  for (const id of CHAPTER10.stages) { assert.ok(!SKIN.images.stageBg[id]); assert.equal(STAGES[id].theme, 'sky'); }
+  assert.ok(SKIN.images.stageBg.chapter10);
+  assert.deepEqual(CHAPTER10.stages.map((id) => STORY.before[id].length), [6, 4, 8, 5, 16]);
+  assert.deepEqual(CHAPTER10.stages.slice(0, 4).map((id) => STORY.after[id].length), [2, 4, 5, 8]);
+  assert.ok(!STORY.after['10-5'], '10-5 の勝利後はエンディング（ENDING）');
+  assert.ok(!Object.values(STORY.before).flat().some((l) => /ボス戦開始|最終決戦開始/.test(l.text)));
+  assert.equal(STORY.before['10-5'].map((l) => l.who).join(','), 'narr,マスター・ヤナイ,lord,lord,マスター・ヤナイ,lord,たけ,サイ,lord,マスター・ヤナイ,たけ,サイ,lord,lord,aide,lord');
+  assert.equal(ENDING.LINES.length, 14); assert.equal(ENDING.LINES[13].text, '――魔王軍の歓声が世界中に響き渡った。');
+  assert.deepEqual(ENDING.TITLE, { eyebrow: 'WORLD CONQUEST COMPLETE', chapter: '世界征服達成', name: '魔王軍の世界侵略', text: '全10章クリア', end: 'THE END' });
+  assert.equal(ENDING.EPILOGUE.length, 13); assert.equal(ENDING.EPILOGUE[12].text, '――そして、大魔王の退屈な日々が再び始まるのであった。');
+  assert.equal(ENDING.END.end, 'THE END');
+  assert.deepEqual(ENDING.STEPS, ['lines', 'title', 'epilogue', 'end']);
+  assert.equal(SKIN.movies.ending, null, 'ムービーは保留（差し込み口だけ）');
+  // たけ・サイ・ヤナイは 10-5 より前に出ない（台詞・敵の両方）
+  const heroKeys = ['take', 'sai', 'yanai'];
+  for (const id of STAGE_ORDER_ALL.filter((x) => x !== '10-5')) {
+    assert.ok(!STAGES[id].spawns.some((x) => heroKeys.includes(x.who) || heroKeys.includes(x.hero) || (x.wave || []).some((w) => heroKeys.includes(w.who))), id);
+    for (const l of [...(STORY.before[id] || []), ...(STORY.after[id] || [])]) assert.ok(!['たけ', 'サイ', 'マスター・ヤナイ', 'take', 'sai', 'yanai'].includes(l.who), id + ' ' + l.who);
+  }
+  const used = (id) => STAGES[id].spawns.flatMap((x) => x.who ? [x.who] : x.wave.map((w) => w.who));
+  assert.ok(used('10-3').includes('holy_dragon'));
+  for (const k of heroKeys) assert.ok(used('10-5').includes(k), k);
+  for (const choice of ['recruit', 'reject']) {
+    const p = clearTo33(); pr.finishRuinEvent(p, choice);
+    for (const id of STAGE_ORDER_ALL.slice(STAGE_ORDER_ALL.indexOf('4-1'), STAGE_ORDER_ALL.indexOf('10-1'))) applyResult(p, id, 'win', 100);
+    pr.applyCrystal(p); pr.applyUltimate(p); pr.markFinal(p);
+    for (const id of CHAPTER10.stages) { assert.ok(isStageOpen(p, id), id); assert.ok(!pr.conquestPending(p)); applyResult(p, id, 'win', 100); }
+    assert.ok(pr.conquestPending(p) && !pr.conquestDone(p));
+    assert.equal(pr.markConquest(p), true); assert.equal(pr.markConquest(p), false, '2回目は起きない');
+    const stones = p.stones; const r = applyResult(p, '10-5', 'win', 100);
+    assert.ok(!r.firstClear && p.stones - stones < STAGES['10-5'].reward.stones, '再クリアで初回報酬は重ならない');
+    assert.ok(!pr.conquestPending(p));
+    assert.equal(nextStage(p), null, '全10章クリア');
+    const st = memStore(); saveProfile(p, st); const q = loadProfile(st);
+    assert.ok(pr.conquestDone(q) && q.stages['10-5'].cleared, 'セーブから戻る');
+  }
+  // 戦闘：10-3 は拠点HP60%で聖竜、10-5 は最初からたけ・サイ、拠点HP60%でヤナイ
+  const b = makeBattle({ stageId: '10-3', seed: 1 }); b.damageBase(b.base, b.base.hp - b.base.maxHp * 0.59); run(b, 3);
+  assert.ok(b.entities.some((e) => e.key === 'holy_dragon'));
+  const c = makeBattle({ stageId: '10-5', seed: 1 }); run(c, 4);
+  assert.ok(c.entities.some((e) => e.key === 'take') && c.entities.some((e) => e.key === 'sai') && !c.entities.some((e) => e.key === 'yanai'));
+  c.damageBase(c.base, c.base.hp - c.base.maxHp * 0.59); run(c, 3);
+  assert.ok(c.entities.some((e) => e.key === 'yanai'));
 });

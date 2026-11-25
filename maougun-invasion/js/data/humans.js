@@ -163,6 +163,49 @@ export const HUMANS = {
       { id: 'stun', name: '威圧', type: 'stun', every: 15, first: 9, windup: 0.9, recover: 0.4, reach: 200, duration: 1.6 },
     ],
   },
+  // ---- 第10章（2026-11-25・仮）。天空の兵・聖竜・マスター・ヤナイのデザインは未承認なので、絵は既存の兵士の代用 ----
+  sky_guard: {
+    name: '天空の守護兵', role: '聖なる前衛',
+    note: '天空の聖域を守る兵。硬く、聖なる槍で突く', counter: '岩男で受け止め、魔法使いと木槌小鬼で崩す',
+    hp: 720, atk: 32, range: 38, speed: 28, interval: 1.6, windup: 0.4, kb: 3, attack: 'single', guard: 0.1, noKbFromSmall: true, mana: 130, size: 1.15,
+  },
+  sky_commander: {
+    name: '天空の指揮官', role: '強敵', hero: true, noKbFromSmall: true,
+    note: '天空の精鋭部隊を率いる。聖なる号令で仲間を癒やし、光の槍でなぎ払う', counter: '岩男で受け止め、呪文と幹部で押し切る',
+    hp: 3000, atk: 46, range: 44, speed: 24, interval: 1.7, windup: 0.45, kb: 6, attack: 'single', guard: 0.15, mana: 900, size: 1.5,
+    skills: [
+      { id: 'heal', name: '聖なる号令', type: 'heal', every: 22, first: 10, windup: 0.6, recover: 0.4, radius: 200, ratio: 0.05 },
+      { id: 'wave', name: '光の槍', type: 'wave', every: 15, first: 6, windup: 1.1, recover: 0.4, reach: 240, mult: 1.4 },
+    ],
+  },
+  holy_dragon: {
+    name: '聖竜', role: '世界の守護者', hero: true, noKbFromSmall: true,
+    note: '世界を守護する伝説の竜。聖なる息吹で前方の魔物をまとめてなぎ払い、光で気絶させる', counter: '岩男と森のお化けで持ちこたえ、最上位の魔物・呪文・幹部で一気に削る',
+    hp: 4400, atk: 44, range: 70, speed: 18, interval: 2.2, windup: 0.6, kb: 7, attack: 'area', guard: 0.1, mana: 1500, size: 1.9,
+    skills: [
+      { id: 'wave', name: '聖なる息吹', type: 'wave', every: 14, first: 5, windup: 1.3, recover: 0.5, reach: 280, mult: 1.5 },
+      { id: 'stun', name: '天の光', type: 'stun', every: 16, first: 9, windup: 1.0, recover: 0.4, reach: 220, duration: 1.6 },
+    ],
+  },
+  sky_guardian: {
+    name: '天空の守護者', role: '強敵', hero: true, noKbFromSmall: true,
+    note: '勇者たちを信じて戦う最後の守り手。盾で守りを固め、仲間を癒やす', counter: '回復役を先に倒し、重い一撃と呪文で押し切る',
+    hp: 3400, atk: 42, range: 44, speed: 22, interval: 1.8, windup: 0.5, kb: 6, attack: 'single', guard: 0.25, mana: 1000, size: 1.5,
+    skills: [
+      { id: 'heal', name: '守護の祈り', type: 'heal', every: 22, first: 10, windup: 0.6, recover: 0.4, radius: 220, ratio: 0.05 },
+      { id: 'wave', name: '聖盾の一撃', type: 'wave', every: 16, first: 6, windup: 1.1, recover: 0.4, reach: 230, mult: 1.3 },
+    ],
+  },
+  yanai: {
+    name: 'マスター・ヤナイ', role: '勇者の師', hero: true, noKbFromSmall: true,
+    note: 'たけとサイの師匠。大魔王を封印した勇者。鋭い剣技でなぎ払い、魔物を気絶させる', counter: 'たけ・サイを先に退け、最上位の魔物・呪文・幹部で総攻撃',
+    hp: 4400, atk: 60, range: 46, speed: 26, interval: 1.6, windup: 0.4, kb: 7, attack: 'single', guard: 0.15, mana: 2000, size: 1.55,
+    hits: 2, hitGap: 0.2,
+    skills: [
+      { id: 'wave', name: '師匠の一閃', type: 'wave', every: 13, first: 5, windup: 1.0, recover: 0.4, reach: 280, mult: 1.6 },
+      { id: 'stun', name: '封印の剣気', type: 'stun', every: 17, first: 10, windup: 0.9, recover: 0.4, reach: 220, duration: 1.6 },
+    ],
+  },
   // ---- 特殊イベント「壊滅した町」（2026-11-25・仮）。絵はビジュアル制作室の納品待ち（それまでは仮の絵） ----
   ord: {
     name: '竜人オルド', role: '竜の戦士', hero: true, noKbFromSmall: true,
@@ -175,18 +218,17 @@ export const HUMANS = {
   take: {
     name: '勇者たけ', role: '勇者', hero: true, noKbFromSmall: true,
     note: '2連撃と飛ぶ斬撃。小さな魔物では押し返せない', counter: '回復役と高HPで持ちこたえ、呪文や幹部で押す',
-    hp: 3840, atk: 70, range: 40, speed: 34, interval: 1.5, windup: 0.35, kb: 6, attack: 'single', mana: 400, size: 1.35, // 2026-11-25：4800 → 3840（しぶといので弱く）
+    hp: 3400, atk: 56, range: 40, speed: 30, interval: 1.6, windup: 0.35, kb: 6, attack: 'single', mana: 1200, size: 1.35, // 2026-11-25：最終決戦（10-5）用に調整（旧 1-5 は保留）
     hits: 2, hitGap: 0.2,          // 近接の2連撃
-    blowAway: true,                // 通常攻撃でも当てた魔物を吹き飛ばす
-    skills: [{ id: 'wave', name: '飛ぶ斬撃', type: 'wave', every: 7, first: 3, windup: 0.8, recover: 0.4, reach: 340, mult: 2.2 }],
+    skills: [{ id: 'wave', name: '飛ぶ斬撃', type: 'wave', every: 11, first: 4, windup: 0.9, recover: 0.4, reach: 280, mult: 1.6 }],
   },
   sai: {
     name: '勇者サイ', role: '勇者', hero: true, noKbFromSmall: true, line: 'back',
     note: '仲間を回復し、光で魔物を気絶させる', counter: '遠距離で狙い、まとめて押し切る',
-    hp: 2560, atk: 42, range: 190, speed: 30, interval: 2.0, windup: 0.45, kb: 5, attack: 'single', projectile: 'orb', mana: 300, size: 1.3, // 2026-11-25：3200 → 2560（しぶといので弱く）
+    hp: 2400, atk: 36, range: 190, speed: 28, interval: 2.2, windup: 0.45, kb: 5, attack: 'single', projectile: 'orb', mana: 1000, size: 1.3, // 2026-11-25：最終決戦（10-5）用に調整
     skills: [
-      { id: 'heal', name: '回復の光', type: 'heal', every: 9, first: 3, windup: 0.6, recover: 0.4, radius: 260, ratio: 0.2 },
-      { id: 'stun', name: 'まばゆい光', type: 'stun', every: 9, first: 5, windup: 0.9, recover: 0.4, reach: 260, duration: 2.5 },
+      { id: 'heal', name: '回復の光', type: 'heal', every: 16, first: 6, windup: 0.6, recover: 0.4, radius: 240, ratio: 0.08 },
+      { id: 'stun', name: 'まばゆい光', type: 'stun', every: 14, first: 7, windup: 0.9, recover: 0.4, reach: 240, duration: 1.6 },
     ],
   },
 };

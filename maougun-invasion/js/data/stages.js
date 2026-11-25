@@ -49,7 +49,10 @@ export const CHAPTER8 = { id: 8, name: '魔法都市', stages: ['8-1', '8-2', '8
 // 第9章（2026-11-25）：人間界の王都（4ステージ・背景は全ステージ共通の1枚）。これまでの人間軍の兵種を総動員。
 // 9-3 王国軍指揮官／9-4 ボス：人間軍総司令官。9-4 の初回クリアで「最終章への進軍」→ 最終章解放演出。敵・ボス・報酬は仮
 export const CHAPTER9 = { id: 9, name: '人間界の王都', stages: ['9-1', '9-2', '9-3', '9-4'] };
-export const CHAPTERS = [CHAPTER1, CHAPTER2, CHAPTER3, CHAPTER4, CHAPTER5, CHAPTER6, CHAPTER7, CHAPTER8, CHAPTER9];
+// 第10章・最終章（2026-11-25）：天空・勇者の聖域（5ステージ・背景は全ステージ共通の1枚）。10-3 ボス：聖竜／10-5 最終決戦：たけ・サイ・マスター・ヤナイ。
+// 10-5 の初回クリアでエンディング（大魔王復活 → 世界征服達成 → おまけ会話）。敵・ボス・報酬は仮
+export const CHAPTER10 = { id: 10, name: '天空・勇者の聖域', stages: ['10-1', '10-2', '10-3', '10-4', '10-5'], final: true };
+export const CHAPTERS = [CHAPTER1, CHAPTER2, CHAPTER3, CHAPTER4, CHAPTER5, CHAPTER6, CHAPTER7, CHAPTER8, CHAPTER9, CHAPTER10];
 // 全ステージの順番（章をまたいで、前のステージをクリアすると次が開く）
 export const STAGE_ORDER = CHAPTERS.flatMap((c) => c.stages);
 // 特別（2026-11-25）：特殊イベント「壊滅した町」。ステージ選択の「特別」タブ（イベントのあとだけ出る）。通常の進行（STAGE_ORDER）には入れない
@@ -570,6 +573,76 @@ export const STAGES = {
       { trigger: { baseBelow: 0.3 }, wave: [{ who: 'guardian', count: 1 }, { who: 'elite_mage', count: 1 }, { who: 'paladin', count: 1 }, { who: 'rider', count: 2 }], gap: 0.5 },
     ],
     reward: { stones: 1000 },
+  },
+  // ---------------- 第10章 天空・勇者の聖域（敵編成・ボス・報酬は仮。背景は5ステージとも同じ） ----------------
+  '10-1': {
+    id: '10-1', chapter: 10, name: '天空の守護兵', theme: 'sky',
+    length: L(2500), shrineHp: 14500, baseHp: 12500, enemyScale: 1.45, mana: MANA,
+    spawns: [
+      { who: 'sky_guard', start: 3, every: 10, max: 2 },
+      { who: 'swordsman', start: 6, every: 8, max: 2 },
+      { who: 'archer', start: 12, every: 11, max: 2 },
+      { who: 'knight', start: 18, every: 16, max: 1 },
+      { who: 'priest', start: 34, every: 24, max: 1 },
+      { trigger: { baseBelow: 0.6 }, wave: [{ who: 'sky_guard', count: 2 }, { who: 'mage', count: 2 }], gap: 0.6 },
+      { trigger: { baseBelow: 0.3 }, wave: [{ who: 'sky_guard', count: 2 }, { who: 'rider', count: 2 }], gap: 0.6 },
+    ],
+    reward: { stones: 1000 },
+  },
+  '10-2': {
+    id: '10-2', chapter: 10, name: '天空の精鋭部隊', theme: 'sky',
+    length: L(2500), shrineHp: 15000, baseHp: 13000, enemyScale: 1.45, mana: MANA,
+    spawns: [
+      { who: 'sky_guard', start: 3, every: 10, max: 2 },
+      { who: 'elite_mage', start: 8, every: 18, max: 1 },
+      { who: 'archer', start: 18, every: 11, max: 2 },
+      { who: 'heavy', start: 30, every: 24, max: 1 },
+      { trigger: { baseBelow: 0.5 }, hero: 'sky_commander', wave: [{ who: 'sky_commander', count: 1 }, { who: 'sky_guard', count: 1 }], gap: 0.8 },
+      { trigger: { baseBelow: 0.25 }, wave: [{ who: 'sky_guard', count: 2 }, { who: 'mage', count: 2 }], gap: 0.5 },
+    ],
+    reward: { stones: 1050 },
+  },
+  '10-3': {
+    id: '10-3', chapter: 10, name: '聖竜降臨', theme: 'sky', boss: true,
+    length: L(2600), shrineHp: 15500, baseHp: 11000, enemyScale: 1.4, mana: { ...MANA, start: 400 },
+    spawns: [
+      { who: 'sky_guard', start: 3, every: 11, max: 2 },
+      { who: 'archer', start: 10, every: 12, max: 2 },
+      { who: 'mage', start: 16, every: 14, max: 1 },
+      { who: 'rider', start: 40, every: 16, max: 2 },
+      { trigger: { baseBelow: 0.6 }, hero: 'holy_dragon', wave: [{ who: 'holy_dragon', count: 1 }], gap: 0.8 },
+      { trigger: { baseBelow: 0.3 }, wave: [{ who: 'sky_guard', count: 2 }, { who: 'knight', count: 1 }, { who: 'mage', count: 1 }], gap: 0.5 },
+    ],
+    reward: { stones: 1200 },
+  },
+  '10-4': {
+    id: '10-4', chapter: 10, name: '最後の守護者たち', theme: 'sky',
+    length: L(2600), shrineHp: 15500, baseHp: 11500, enemyScale: 1.45, mana: { ...MANA, start: 300 },
+    spawns: [
+      { who: 'sky_guard', start: 3, every: 10, max: 2 },
+      { who: 'guardian', start: 8, every: 20, max: 1 },
+      { who: 'elite_mage', start: 12, every: 18, max: 1 },
+      { who: 'archer', start: 18, every: 11, max: 2 },
+      { who: 'knight', start: 26, every: 16, max: 1 },
+      { trigger: { baseBelow: 0.5 }, hero: 'sky_guardian', wave: [{ who: 'sky_guardian', count: 1 }, { who: 'sky_guard', count: 1 }], gap: 0.8 },
+      { trigger: { baseBelow: 0.25 }, wave: [{ who: 'paladin', count: 1 }, { who: 'heavy', count: 1 }, { who: 'mage', count: 2 }], gap: 0.5 },
+    ],
+    reward: { stones: 1200 },
+  },
+  // 最終決戦：たけ・サイは最初から、マスター・ヤナイは拠点HP60%で。勇者は倒されると「撤退」（死亡の描写なし）
+  '10-5': {
+    id: '10-5', chapter: 10, name: '勇者たちとの最終決戦', theme: 'sky', boss: true, final: true,
+    length: L(2700), shrineHp: 16000, baseHp: 13000, enemyScale: 1.45, mana: { ...MANA, start: 500 },
+    spawns: [
+      { trigger: { baseBelow: 1.0 }, hero: 'take', wave: [{ who: 'take', count: 1 }, { who: 'sai', count: 1 }], gap: 1.5 },
+      { who: 'sky_guard', start: 6, every: 11, max: 2 },
+      { who: 'archer', start: 12, every: 12, max: 2 },
+      { who: 'mage', start: 20, every: 15, max: 1 },
+      { who: 'rider', start: 45, every: 16, max: 2 },
+      { trigger: { baseBelow: 0.6 }, hero: 'yanai', wave: [{ who: 'yanai', count: 1 }, { who: 'sky_guard', count: 1 }], gap: 0.8 },
+      { trigger: { baseBelow: 0.3 }, wave: [{ who: 'sky_guard', count: 2 }, { who: 'knight', count: 1 }, { who: 'elite_mage', count: 1 }], gap: 0.5 },
+    ],
+    reward: { stones: 2000 },
   },
   // ---------------- 特別：壊滅した町（竜人オルド）。能力・報酬は仮（別途調整） ----------------
   // forced：初戦は強制敗北（main.js が台本の秒数で終わらせる）。再戦は通常の勝敗で、勝つとオルドが加入（reward.unlock）

@@ -26,6 +26,8 @@ export const SKIN = {
     lord: '大魔王', aide: 'ヴェイル', narr: '', ord: 'オルド', // aide：影の側近（2026-11-24 命名。既存作品の名前に近い「ミスト」を避けた）
     tiw: 'ティウ', mot: 'モッ', waan: 'ワーン', koi: 'コイ', take: '勇者たけ', sai: '勇者サイ', yanai: 'マスター・ヤナイ',
   },
+  // エンディングのムービー（保留中・2026-11-25）。{ src: 'assets/approved/movie/…mp4', replaces: ['lines'] } を入れると、その段の代わりに動画を流す
+  movies: { ending: null },
   sprites: {
     // 2026-11-25：竜人オルド（ビジュアル制作室の納品・画像 1000021131.png。1254×1254・左向き・透過）。敵（壊滅した町）・味方の両方で使う
     ord: { src: 'assets/approved/units/ord.png', frameW: 1254, frameH: 1254, frames: { walk: [0], windup: 0, attack: 0 }, footY: 1236, facing: 'left', scale: 0.092 },
@@ -58,6 +60,8 @@ export const SKIN = {
   images: {
     // 最終章解放演出の背景（承認済み天空背景）。届いたら 'assets/approved/bg/…' を入れる。null のあいだは夜空のグラデーション
     finalBg: null,
+    // エンディングの「世界征服達成」画面の背景（未定・null のあいだは夜空のグラデーション）
+    endingBg: null,
     // 戦闘の背景。ステージIDで個別に、無ければ chapter1（1-3 以降は大きな町の背景）。scale：論理画面（960×540）での倍率、offsetY：上下の位置
     stageBg: {
       // 2026-11-25：第1章（はじまりの村・3ステージ）はすべて横長パノラマの村（2172×358）。高さを画面に合わせて ×1.36。
@@ -73,6 +77,7 @@ export const SKIN = {
       chapter5: { src: 'assets/approved/bg/pano_village_town.png', scale: 1.36, offsetY: 0, parallax: 0.35, focus: 0.5, tint: 'rgba(30,30,45,.35)' },
       chapter6: { src: 'assets/approved/bg/ch6_desert.png', scale: 0.85, offsetY: -75, parallax: 0.35, focus: 0.5 }, // 2026-11-25：砂漠の古代王国の本番背景（2172×724・道の上端 y≈532）。3ステージ共通
       // 第7章 聖なる都：承認済みの背景が届いたら src をその画像にする（今は城の背景を白く明るくして代用）
+      chapter10: { src: 'assets/approved/bg/ch3_castle_v2.png', scale: 1.22, offsetY: -358, parallax: 0.35, focus: 0.5, tint: 'rgba(220,235,255,.4)' }, // 仮：天空背景（未着）。5ステージ共通
       chapter9: { src: 'assets/approved/bg/ch3_castle_v2.png', scale: 1.22, offsetY: -358, parallax: 0.35, focus: 0.5, tint: 'rgba(60,40,90,.25)' }, // 仮：王都の背景（未着）。4ステージ共通
       chapter8: { src: 'assets/approved/bg/pano_village_town.png', scale: 1.36, offsetY: 0, parallax: 0.35, focus: 0.5, tint: 'rgba(90,50,160,.35)' }, // 仮：魔法都市の背景（未着）。4ステージ共通
       chapter7: { src: 'assets/approved/bg/ch3_castle_v2.png', scale: 1.22, offsetY: -358, parallax: 0.35, focus: 0.5, tint: 'rgba(255,250,220,.3)' },
@@ -191,6 +196,10 @@ for (const [k, mul] of [['mage', 1.0], ['elite_mage', 1.15], ['mage_captain', 1.
 }
 for (const [k, mul] of [['royal_commander', 1.45], ['supreme_commander', 1.6]]) {
   if (SKIN.sprites.swordsman && !SKIN.sprites[k]) SKIN.sprites[k] = { ...SKIN.sprites.swordsman, scale: (SKIN.sprites.swordsman.scale || 0.25) * mul };
+}
+// 第10章（仮）：天空の兵・聖竜・勇者たちのデザインは未承認のため、既存の兵士の絵を大きくして代用
+for (const [k, base, mul] of [['sky_guard', 'shield', 1.1], ['sky_commander', 'shield', 1.5], ['sky_guardian', 'shield', 1.55], ['holy_dragon', 'shield', 2.0], ['take', 'swordsman', 1.35], ['sai', 'priest', 1.3], ['yanai', 'swordsman', 1.6]]) {
+  if (SKIN.sprites[base] && !SKIN.sprites[k]) SKIN.sprites[k] = { ...SKIN.sprites[base], scale: (SKIN.sprites[base].scale || 0.25) * mul };
 }
 if (SKIN.sprites.priest && !SKIN.sprites.holy_captain) SKIN.sprites.holy_captain = { ...SKIN.sprites.priest, scale: (SKIN.sprites.priest.scale || 0.25) * 1.5 };
 if (SKIN.sprites.vanguard && !SKIN.sprites.ord) SKIN.sprites.ord = { ...SKIN.sprites.vanguard, scale: (SKIN.sprites.vanguard.scale || 0.25) * 1.6 };

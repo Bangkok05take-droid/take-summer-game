@@ -445,6 +445,54 @@ try {
     await c9.close();
   }
 
+  // ---- 第10章：会話 → 10-5（たけ・サイ・ヤナイ）→ エンディング → 世界征服達成 → おまけ会話 → THE END → 戦利品／再読み込み／再クリア／ムービーの差し込み口 ----
+  {
+    const c10 = await browser.newContext({ ...devices['iPhone 13 landscape'] });
+    const q = await c10.newPage(); const e10 = []; q.on('pageerror', (e) => e10.push(String(e)));
+    await q.goto(`http://localhost:${PORT}/?seed=10`); await q.waitForFunction(() => window.__game);
+    await q.evaluate(async () => { const m = await import('./js/data/progress.js'); const st = await import('./js/data/stages.js'); const g = window.__game; const p = m.newProfile(); for (const id of ['1-1','1-2','1-3','2-1','2-2','2-3','3-1','3-2','3-3']) m.applyResult(p, id, 'win', 100); m.finishRuinEvent(p, 'reject'); for (const id of st.STAGE_ORDER.slice(st.STAGE_ORDER.indexOf('4-1'), st.STAGE_ORDER.indexOf('10-1'))) m.applyResult(p, id, 'win', 100); m.applyCrystal(p); m.applyUltimate(p); m.markFinal(p); Object.assign(p.story, { opening: true, 'tip:recon': true, 'tip:form': true, 'tip:upgrade': true }); g.app.profile = p; m.saveProfile(p); g.toSelect(); });
+    await q.waitForTimeout(200);
+    const readQ = async () => { const o = []; let fx = 0; for (let i = 0; i < 40 && await q.locator('#scTalk').isVisible(); i++) { o.push(await q.locator('#talkText').textContent()); if (await q.evaluate(() => /fx-/.test(document.getElementById('scTalk').className))) fx++; await q.tap('#talkBox'); await q.waitForTimeout(25); } return { o, fx }; };
+    check('第9章のあと：第10章のタブと 10-1 が開いている', await q.evaluate(() => !!document.querySelector('.chapTab[data-chapter="10"]') && !document.querySelector('.node[data-stage="10-1"]').disabled));
+    await q.evaluate(() => document.querySelector('.node[data-stage="10-1"]').click()); await q.waitForTimeout(150);
+    const b1 = await readQ();
+    check('10-1 戦闘前の会話（6行・台本どおり）', b1.o.length === 6 && b1.o[3] === '魔王軍よ！ この先へ進むことは許さぬ！', JSON.stringify(b1.o));
+    await q.evaluate(() => { const g = window.__game.app; for (const id of ['10-1','10-2','10-3','10-4']) g.profile.stages[id] = { cleared: true, clears: 1, bestTime: 100 }; g.profile.story['before:10-3'] = false; });
+    await q.evaluate(() => { window.__game.toSelect(); document.querySelector('.node[data-stage="10-3"]').click(); }); await q.waitForTimeout(150);
+    const b3 = await readQ();
+    check('10-3 聖竜降臨：戦闘前の会話（8行・光と振動の演出）', b3.o.length === 8 && b3.o[0] === '――天空に巨大な光が現れる。' && b3.fx >= 2, JSON.stringify(b3));
+    await q.evaluate(() => { window.__game.app.profile.story['before:10-5'] = false; window.__game.toSelect(); document.querySelector('.node[data-stage="10-5"]').click(); }); await q.waitForTimeout(150);
+    const b5 = await readQ();
+    check('10-5 戦闘前の会話（16行・台本どおり）', b5.o.length === 16 && b5.o[0] === '――魔王軍の前に、三人の勇者が立ちはだかった。' && b5.o[15] === 'これが魔王軍の総力じゃ！ いくぞぉぉ！！', JSON.stringify(b5.o.length));
+    await q.evaluate(() => window.__game.startStage('10-5')); await q.waitForTimeout(150);
+    const h5 = await q.evaluate(() => { const b = window.__game.battle; for (let i = 0; i < 30 * 4; i++) b.step(); const a = ['take', 'sai'].every((k) => b.entities.some((e) => e.key === k)); b.damageBase(b.base, b.base.hp - b.base.maxHp * 0.59); for (let i = 0; i < 90; i++) b.step(); return { a, y: b.entities.some((e) => e.key === 'yanai') }; });
+    check('10-5：たけ・サイが最初から、拠点HP60%でマスター・ヤナイ', h5.a && h5.y, JSON.stringify(h5));
+    const winQ = async () => { await q.waitForTimeout(150); await q.evaluate(() => { const b = window.__game.battle; b.damageBase(b.base, b.base.hp); }); await q.waitForSelector('#scResult:not([hidden])', { timeout: 4000 }); await q.tap('#btnReport'); await q.waitForTimeout(100); };
+    await winQ();
+    const en = await readQ();
+    const t1 = await q.evaluate(() => ({ vis: !document.getElementById('ovFinal').hidden, t: ['finEyebrow', 'finChapter', 'finName', 'finText', 'finEnd'].map((i) => document.getElementById(i).textContent), saved: JSON.parse(localStorage.getItem('maougunInvasion.save')).events.conquest }));
+    await q.waitForTimeout(1500); await q.tap('#btnFinalNext'); await q.waitForTimeout(100);
+    const ep = await readQ();
+    const t2 = await q.evaluate(() => ({ vis: !document.getElementById('ovFinal').hidden, t: document.getElementById('finEnd').textContent, name: document.getElementById('finName').hidden }));
+    await q.waitForTimeout(1500); await q.tap('#btnFinalNext'); await q.waitForTimeout(100);
+    const loot = await q.locator('#scLoot').isVisible();
+    check('10-5 初回：大魔王復活（14行・演出つき）→ 世界征服達成画面（セーブ）→ おまけ会話（13行）→ THE END → 戦利品', en.o.length === 14 && en.o[0] === 'まさか……ここまで力を取り戻すとは……。' && en.fx >= 3 && t1.vis && t1.t.join('/') === 'WORLD CONQUEST COMPLETE/世界征服達成/魔王軍の世界侵略/全10章クリア/THE END' && t1.saved && t1.saved.done && ep.o.length === 13 && ep.o[12] === '――そして、大魔王の退屈な日々が再び始まるのであった。' && t2.vis && t2.t === 'THE END' && t2.name && loot, JSON.stringify({ en: en.o.length, fx: en.fx, t1, ep: ep.o.length, t2, loot }));
+    await q.reload(); await q.waitForFunction(() => window.__game); await q.tap('#btnContinue'); await q.waitForTimeout(150);
+    check('再読み込み後も世界征服達成が残る', await q.evaluate(async () => { const m = await import('./js/data/progress.js'); return m.conquestDone(window.__game.app.profile) && m.nextStage(window.__game.app.profile) === null; }));
+    const st0 = await q.evaluate(() => window.__game.app.profile.stones);
+    await q.evaluate(() => window.__game.startStage('10-5')); await winQ();
+    const st1 = await q.evaluate(() => window.__game.app.profile.stones);
+    check('10-5 の再クリアではエンディングが起きず、初回報酬も重ならない', !(await q.locator('#scTalk').isVisible()) && !(await q.locator('#ovFinal').isVisible()) && await q.locator('#scLoot').isVisible() && st1 - st0 < 2000, JSON.stringify({ st0, st1 }));
+    // ムービーの差し込み口：動画が読めないときは、その段をとばして続きへ
+    await q.evaluate(() => { const g = window.__game; g.SKIN.movies.ending = { src: 'assets/none/ending.mp4', replaces: ['lines'] }; g.app.profile.events.conquest = null; g.startStage('10-5'); });
+    await winQ(); await q.waitForTimeout(400);
+    const mv = await q.evaluate(() => ({ title: !document.getElementById('ovFinal').hidden, talk: !document.getElementById('scTalk').hidden }));
+    check('ムービーの差し込み口：SKIN.movies.ending を入れると会話の段の代わりに動画（読めなければとばす）', mv.title && !mv.talk, JSON.stringify(mv));
+    await q.evaluate(() => { window.__game.SKIN.movies.ending = null; });
+    check('第10章：エラーなし', e10.length === 0, e10.join(' / '));
+    await c10.close();
+  }
+
   // ---- 縦持ち ----
   const ctx2 = await browser.newContext({ ...devices['iPhone 13'] });
   const p2 = await ctx2.newPage();
