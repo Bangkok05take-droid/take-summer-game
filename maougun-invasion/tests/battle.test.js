@@ -587,7 +587,7 @@ test('第3章（地方王国の城）：3ステージ。台本どおりの順番
   assert.ok(!isStageOpen(p, '4-1'), '壊滅した町のイベントが終わるまで第4章は開かない');
   const b = makeBattle({ stageId: '3-3', seed: 1 });
   b.damageBase(b.base, b.base.hp - b.base.maxHp * 0.59); run(b, 3);
-  assert.ok(b.entities.some((e) => e.key === 'king'), '王の間：拠点HP60%で国王');
+  assert.ok(b.entities.some((e) => e.key === 'knight_commander'), '3-3：拠点HP60%で王国騎士団長（2026-11-25 国王から変更）');
 });
 test('ワニ将軍の突進：前方の敵にダメージ、前線を押し下げる（強敵も下がる）', () => {
   const b = makeBattle({ stage: noEnemies({ mana: { start: 5000, max: 9999, regen: 0 } }), deck: ['charger'] });
@@ -987,4 +987,24 @@ test('共通背景対応の修正（第1〜7章）：ステージ名・台詞の
   assert.ok(!Object.values(STORY.before).flat().some((l) => /ボス戦開始|戦闘開始/.test(l.text)));
   // 背景の移動を前提にした言い方が、差し替えた台詞に残っていない
   for (const id of ['1-2', '2-2', '2-3', '3-3', '4-2', '5-2', '6-3', '7-1']) for (const k of ['before', 'after']) for (const l of STORY[k][id] || []) assert.ok(!/麦畑|市場通り|管理所|製造工場|最深部への道|大門を突破/.test(l.text), id + ' ' + l.text);
+});
+
+test('第1〜3章の追加キャラクター（承認済みデザイン）：人間軍11体・右向き・ボスは大きめ・配置', async () => {
+  const { SKIN } = await import('../js/data/skin.js');
+  const keys = ['militia', 'swordsman', 'archer', 'shield', 'priest', 'rider', 'militia_captain', 'captain', 'knight', 'court_mage', 'knight_commander'];
+  for (const k of keys) { const s = SKIN.sprites[k]; assert.ok(s && /assets\/approved\/humans\//.test(s.src), k); assert.equal(s.facing, 'right', k); }
+  const h = (k) => SKIN.sprites[k].footY * SKIN.sprites[k].scale; // 画面での背の高さ（足元まで）
+  for (const k of ['knight', 'court_mage']) assert.ok(h(k) >= h('swordsman') * 0.95 && h(k) <= h('swordsman') * 1.25, k + '：通常兵と同じくらい');
+  for (const k of ['militia_captain', 'captain', 'knight_commander']) assert.ok(h(k) > h('swordsman') * 1.3, k + '：ボスは存在感のある大きさ');
+  const used = (id) => STAGES[id].spawns.flatMap((x) => x.who ? [x.who] : x.wave.map((w) => w.who));
+  assert.ok(used('1-3').includes('militia_captain') && STAGES['1-3'].spawns.some((x) => x.hero === 'militia_captain'));
+  assert.ok(STAGES['2-3'].spawns.some((x) => x.hero === 'captain'));
+  for (const id of ['3-1', '3-2', '3-3']) assert.ok(used(id).includes('knight') && used(id).includes('court_mage'), id);
+  assert.ok(STAGES['3-3'].spawns.some((x) => x.hero === 'knight_commander'));
+  for (const [id, hero] of [['1-3', 'militia_captain'], ['2-3', 'captain'], ['3-3', 'knight_commander']]) {
+    const b = makeBattle({ stageId: id, seed: 1 });
+    const row = STAGES[id].spawns.find((x) => x.hero === hero);
+    b.damageBase(b.base, b.base.hp - b.base.maxHp * (row.trigger.baseBelow - 0.01)); run(b, 3);
+    assert.ok(b.entities.some((e) => e.key === hero), id + '：' + hero);
+  }
 });

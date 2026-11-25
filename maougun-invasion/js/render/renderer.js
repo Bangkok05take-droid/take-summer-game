@@ -78,7 +78,7 @@ export class Renderer {
           this.add({ kind: 'puff', x: ev.x, side: ev.side, y: y - 16, color: ev.side === 'human' ? '#ffe9a8' : '#b58cff', life: 0.6 });
           if (ev.side === 'demon') { this.add({ kind: 'ghost', x: ev.x, side: ev.side, y: y - 24, life: 1.0 }); this.add({ kind: 'motes', x: ev.x, side: ev.side, y: y - 20, color: '#c58cff', life: 0.8 }); }
           else { this.add({ kind: 'motes', x: ev.x, side: ev.side, y: y - 20, color: '#ffe9a8', life: 0.7 }); this.add({ kind: 'stars', x: ev.x, side: ev.side, y: y - 36, life: 0.7 }); }
-          if (ev.hero) this.add({ kind: 'banner', text: '勇者が撤退した！', color: '#5b2a99', life: 1.8 });
+          if (ev.hero) this.add({ kind: 'banner', text: `${(b.humanDefs[ev.key] || {}).name || '強敵'} 撤退！`, color: '#5b2a99', life: 1.8 }); // 死亡の描写はしない
           break;
         }
         case 'pierceHit': { const d = SKIN.ordThunder && SKIN.ordThunder.hit; if (d && getImage(d.src)) this.add({ kind: 'oHit', x: ev.x, y: ev.big ? GROUND_Y - 50 : laneY(ev.lane) - 28, big: ev.big, life: ev.big ? 0.35 : 0.22 }); if (ev.big) this.shake = Math.max(this.shake, 5); break; }

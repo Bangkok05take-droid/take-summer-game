@@ -35,6 +35,27 @@ export const HUMANS = {
     note: '足が速く、一気に祠へ迫る', counter: '前衛で足止め',
     hp: 270, atk: 26, range: 34, speed: 88, interval: 1.1, windup: 0.3, kb: 2, attack: 'single', mana: 60, size: 1.0, // 2026-11-25：320 → 270（しぶといので弱く）
   },
+  // ---- 第1〜3章の追加キャラクター（2026-11-25・ビジュアル制作室の承認済みデザイン 11528.png） ----
+  militia_captain: {
+    name: '自警団長', role: '強敵', hero: true, noKbFromSmall: true,
+    note: '村の自警団をまとめる力自慢。大きな斧で前の魔物をまとめて押し返す', counter: '岩男で受け止め、魔法使いと呪文で押し切る',
+    hp: 1300, atk: 26, range: 40, speed: 30, interval: 1.6, windup: 0.45, kb: 5, attack: 'single', mana: 200, size: 1.25,
+    skills: [{ id: 'wave', name: '大斧の一撃', type: 'wave', every: 12, first: 5, windup: 1.0, recover: 0.4, reach: 170, mult: 1.3 }],
+  },
+  court_mage: {
+    name: '宮廷魔導士', role: '後衛（魔法）', line: 'back',
+    note: '王国に仕える魔導士。後ろから魔法弾を撃つ。打たれ弱い', counter: '木槌小鬼で後ろから倒すか、こうもりで一気に近づく',
+    hp: 320, atk: 24, range: 180, speed: 26, interval: 2.4, windup: 0.6, kb: 2, attack: 'single', projectile: 'orb', mana: 90, size: 1.0,
+  },
+  knight_commander: {
+    name: '王国騎士団長', role: '強敵', hero: true, noKbFromSmall: true,
+    note: '王国騎士団を率いる歴戦の騎士。号令で仲間を回復し、大剣で前方の魔物を吹き飛ばす', counter: '宮廷魔導士と僧侶を木槌小鬼で先に倒し、呪文と幹部で押し切る',
+    hp: 2800, atk: 34, range: 44, speed: 24, interval: 1.8, windup: 0.5, kb: 6, attack: 'single', guard: 0.1, mana: 400, size: 1.4,
+    skills: [
+      { id: 'heal', name: '騎士団の号令', type: 'heal', every: 14, first: 6, windup: 0.6, recover: 0.4, radius: 220, ratio: 0.1 },
+      { id: 'wave', name: '騎士団長の大剣', type: 'wave', every: 9, first: 6, windup: 0.9, recover: 0.4, reach: 240, mult: 1.6 },
+    ],
+  },
   // ---- 第2章のボス（2026-11-25・仮）。拠点HP60%で1回だけ登場。絵は届くまで見習い剣士の絵を大きくして使う ----
   captain: {
     name: '警備隊長', role: '強敵', hero: true, noKbFromSmall: true,

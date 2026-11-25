@@ -29,6 +29,12 @@ export const SKIN = {
   // エンディングのムービー（保留中・2026-11-25）。{ src: 'assets/approved/movie/…mp4', replaces: ['lines'] } を入れると、その段の代わりに動画を流す
   movies: { ending: null },
   sprites: {
+    // 2026-11-25：第1〜3章の追加キャラクター（ビジュアル制作室・11528.png の5体を1体ずつに切り出し。絵は変更なし）。右向き。足元は不透明部分の下端
+    militia_captain: { src: 'assets/approved/humans/militia_captain.png', frameW: 468, frameH: 544, frames: { walk: [0], windup: 0, attack: 0 }, footY: 538, facing: 'right', scale: 0.152 },
+    captain: { src: 'assets/approved/humans/guard_captain.png', frameW: 483, frameH: 650, frames: { walk: [0], windup: 0, attack: 0 }, footY: 643, facing: 'right', scale: 0.14 },
+    knight: { src: 'assets/approved/humans/royal_knight.png', frameW: 379, frameH: 519, frames: { walk: [0], windup: 0, attack: 0 }, footY: 513, facing: 'right', scale: 0.122 },
+    court_mage: { src: 'assets/approved/humans/court_mage.png', frameW: 375, frameH: 555, frames: { walk: [0], windup: 0, attack: 0 }, footY: 549, facing: 'right', scale: 0.114 },
+    knight_commander: { src: 'assets/approved/humans/royal_knight_commander.png', frameW: 591, frameH: 594, frames: { walk: [0], windup: 0, attack: 0 }, footY: 587, facing: 'right', scale: 0.143 },
     // 2026-11-25：竜人オルド（ビジュアル制作室の納品・画像 1000021131.png。1254×1254・左向き・透過）。敵（壊滅した町）・味方の両方で使う
     ord: { src: 'assets/approved/units/ord.png', frameW: 1254, frameH: 1254, frames: { walk: [0], windup: 0, attack: 0 }, footY: 1236, facing: 'left', scale: 0.092 },
     // 2026-11-25：ワニ将軍（幹部1体目・画像 1000021128.png。1254×1254・左向き・透過）
@@ -77,7 +83,7 @@ export const SKIN = {
       chapter6: { src: 'assets/approved/bg/ch6_desert.png', scale: 0.85, offsetY: -75, parallax: 0.35, focus: 0.5 }, // 2026-11-25：砂漠の古代王国の本番背景（2172×724・道の上端 y≈532）。3ステージ共通
       chapter10: { src: 'assets/approved/bg/ch3_castle_v2.png', scale: 1.22, offsetY: -358, parallax: 0.35, focus: 0.5, tint: 'rgba(220,235,255,.4)' }, // 仮：天空背景（未着）。5ステージ共通
       chapter9: { src: 'assets/approved/bg/ch3_castle_v2.png', scale: 1.22, offsetY: -358, parallax: 0.35, focus: 0.5, tint: 'rgba(60,40,90,.25)' }, // 仮：王都の背景（未着）。4ステージ共通
-      chapter8: { src: 'assets/approved/bg/pano_village_town.png', scale: 1.36, offsetY: 0, parallax: 0.35, focus: 0.5, tint: 'rgba(90,50,160,.35)' }, // 仮：魔法都市の背景（未着）。4ステージ共通
+      chapter8: { src: 'assets/approved/bg/ch8_magic.png', scale: 0.85, offsetY: -75, parallax: 0.35, focus: 0.5 }, // 2026-11-25：魔法都市の本番背景（2172×724・道の上端 y≈533）。4ステージ共通
       chapter7: { src: 'assets/approved/bg/ch7_holy.png', scale: 0.95, offsetY: -147, parallax: 0.35, focus: 0.5 }, // 2026-11-25：聖なる都の本番背景（2172×724・道の上端 y≈553）。2ステージ共通
       chapter3: { src: 'assets/approved/bg/ch3_castle_v2.png', scale: 1.22, offsetY: -358, parallax: 0.35, focus: 0.5 },
     },

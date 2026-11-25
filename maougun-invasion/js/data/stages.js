@@ -102,7 +102,7 @@ export const STAGES = {
     reward: { stones: 160 },
   },
   '1-3': {
-    id: '1-3', chapter: 1, name: '村の最終防衛戦', theme: 'river', tutorial: 'self',
+    id: '1-3', chapter: 1, name: '村の最終防衛戦', theme: 'river', tutorial: 'self', boss: true,
     length: L(2400), shrineHp: 6000, baseHp: 3500, enemyScale: 1.1, /* 2026-11-25：1.15 → 1.1 */ mana: MANA,
     spawns: [
       { who: 'militia', start: 3, every: 5, max: 6 },
@@ -114,6 +114,7 @@ export const STAGES = {
       { who: 'rider', start: 130, every: 10, max: 3 },
       { who: 'swordsman', start: 150, every: 7, max: 4 },
       { trigger: { baseBelow: 0.6 }, wave: [{ who: 'rider', count: 3 }, { who: 'swordsman', count: 3 }], gap: 0.6 },
+      { trigger: { baseBelow: 0.5 }, hero: 'militia_captain', wave: [{ who: 'militia_captain', count: 1 }, { who: 'militia', count: 2 }], gap: 0.8 }, // 2026-11-25：ボス・自警団長
       { trigger: { baseBelow: 0.3 }, wave: [{ who: 'shield', count: 1 }, { who: 'archer', count: 3 }, { who: 'rider', count: 3 }], gap: 0.6 },
     ],
     reward: { stones: 250, unlock: 'charger' }, // 第1章クリア：幹部・突進（第2章で使う）
@@ -225,6 +226,7 @@ export const STAGES = {
       { who: 'archer', start: 20, every: 11, max: 3 },
       { who: 'knight', start: 50, every: 30, max: 1 },
       { who: 'priest', start: 60, every: 26, max: 1 },
+      { who: 'court_mage', start: 35, every: 24, max: 1 }, // 2026-11-25：宮廷魔導士
       { who: 'rider', start: 80, every: 15, max: 2 },
       { trigger: { baseBelow: 0.6 }, wave: [{ who: 'knight', count: 1 }, { who: 'swordsman', count: 3 }, { who: 'archer', count: 2 }], gap: 0.6 },
       { trigger: { baseBelow: 0.3 }, wave: [{ who: 'shield', count: 2 }, { who: 'rider', count: 3 }, { who: 'priest', count: 1 }], gap: 0.6 },
@@ -239,6 +241,7 @@ export const STAGES = {
       { who: 'knight', start: 10, every: 18, max: 2 },
       { who: 'archer', start: 15, every: 10, max: 3 },
       { who: 'priest', start: 30, every: 22, max: 2 },
+      { who: 'court_mage', start: 22, every: 20, max: 1 }, // 2026-11-25：宮廷魔導士
       { who: 'rider', start: 40, every: 14, max: 3 },
       { who: 'knight', start: 110, every: 14, max: 3 },
       { trigger: { baseBelow: 0.6 }, wave: [{ who: 'knight', count: 2 }, { who: 'priest', count: 1 }, { who: 'archer', count: 2 }], gap: 0.6 },
@@ -256,7 +259,7 @@ export const STAGES = {
       { who: 'shield', start: 25, every: 24, max: 2 },
       { who: 'priest', start: 40, every: 24, max: 2 },
       { who: 'rider', start: 55, every: 14, max: 3 },
-      { trigger: { baseBelow: 0.6 }, hero: 'king', wave: [{ who: 'king', count: 1 }, { who: 'knight', count: 2 }, { who: 'priest', count: 1 }], gap: 0.8 },
+      { trigger: { baseBelow: 0.6 }, hero: 'knight_commander', wave: [{ who: 'knight_commander', count: 1 }, { who: 'knight', count: 2 }, { who: 'court_mage', count: 1 }] /* 2026-11-25：ボスを国王から王国騎士団長へ */, gap: 0.8 },
       { trigger: { baseBelow: 0.25 }, wave: [{ who: 'knight', count: 2 }, { who: 'rider', count: 3 }, { who: 'archer', count: 2 }], gap: 0.5 },
     ],
     reward: { stones: 450 },
