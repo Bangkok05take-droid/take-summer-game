@@ -86,7 +86,7 @@ export const STAGES = {
     ],
   },
   '1-2': {
-    id: '1-2', chapter: 1, name: '麦畑の柵', theme: 'wheat', tutorial: 'hints',
+    id: '1-2', chapter: 1, name: '村の自警団', theme: 'wheat', tutorial: 'hints',
     length: L(2300), shrineHp: 5500, baseHp: 7500, enemyScale: 1.05, mana: MANA,
     spawns: [
       { who: 'militia', start: 3, every: 5, max: 7 },
@@ -100,13 +100,9 @@ export const STAGES = {
       { trigger: { baseBelow: 0.3 }, wave: [{ who: 'swordsman', count: 4 }, { who: 'archer', count: 3 }], gap: 0.6 },
     ],
     reward: { stones: 160 },
-    talk: [
-      { who: 'ワーン', text: 'うちの麦畑だけは渡さないよ！ 弓の得意な人、柵の後ろへ！' },
-      { who: 'ティウ', text: '魔物って、近くで見ると意外とかわいい……いや、こわい！' },
-    ],
   },
   '1-3': {
-    id: '1-3', chapter: 1, name: '小川の橋', theme: 'river', tutorial: 'self',
+    id: '1-3', chapter: 1, name: '村の最終防衛戦', theme: 'river', tutorial: 'self',
     length: L(2400), shrineHp: 6000, baseHp: 3500, enemyScale: 1.1, /* 2026-11-25：1.15 → 1.1 */ mana: MANA,
     spawns: [
       { who: 'militia', start: 3, every: 5, max: 6 },
@@ -121,10 +117,6 @@ export const STAGES = {
       { trigger: { baseBelow: 0.3 }, wave: [{ who: 'shield', count: 1 }, { who: 'archer', count: 3 }, { who: 'rider', count: 3 }], gap: 0.6 },
     ],
     reward: { stones: 250, unlock: 'charger' }, // 第1章クリア：幹部・突進（第2章で使う）
-    talk: [
-      { who: 'コイ', text: '橋は鍛冶屋のおれが直したばかりなんだ。こわされてたまるか！' },
-      { who: 'ティウ', text: '子馬の騎兵隊、出発！ ……はやっ！' },
-    ],
   },
   '1-4': {
     id: '1-4', chapter: 2, reserve: true, name: '村の門', theme: 'gate', // 保留（第2章の素材）
@@ -191,7 +183,7 @@ export const STAGES = {
     ],
   },
   '2-2': {
-    id: '2-2', chapter: 2, name: '市場通り', theme: 'market',
+    id: '2-2', chapter: 2, name: '城下町の守備隊', theme: 'market',
     length: L(2400), shrineHp: 7000, baseHp: 7000, enemyScale: 1.25, mana: MANA,
     spawns: [
       { who: 'militia', start: 3, every: 4, max: 6 },
@@ -205,12 +197,9 @@ export const STAGES = {
       { trigger: { baseBelow: 0.3 }, wave: [{ who: 'rider', count: 3 }, { who: 'archer', count: 3 }, { who: 'priest', count: 1 }], gap: 0.6 },
     ],
     reward: { stones: 300 },
-    talk: [
-      { who: '商人', text: '屋台の上から弓で狙え！ 僧侶さまは後ろで手当てを！' },
-    ],
   },
   '2-3': {
-    id: '2-3', chapter: 2, name: '城下町の広場', theme: 'plaza', boss: true,
+    id: '2-3', chapter: 2, name: '城下町の最終防衛戦', theme: 'plaza', boss: true,
     length: L(2500), shrineHp: 7500, baseHp: 6500, enemyScale: 1.25, mana: { ...MANA, start: 400 },
     spawns: [
       { who: 'militia', start: 2, every: 4, max: 6 },
@@ -224,9 +213,6 @@ export const STAGES = {
       { trigger: { baseBelow: 0.25 }, wave: [{ who: 'rider', count: 3 }, { who: 'swordsman', count: 3 }, { who: 'priest', count: 1 }], gap: 0.5 },
     ],
     reward: { stones: 400 },
-    talk: [
-      { who: '警備隊長', text: '城下町の守りは、この私が預かっている。魔物ども、ここで終わりだ！' },
-    ],
   },
   // ---------------- 第3章 地方王国の城（敵編成・ボス・報酬は仮） ----------------
   '3-1': {
@@ -261,7 +247,7 @@ export const STAGES = {
     reward: { stones: 340 },
   },
   '3-3': {
-    id: '3-3', chapter: 3, name: '王の間', theme: 'plaza', boss: true,
+    id: '3-3', chapter: 3, name: '王国の最終決戦', theme: 'plaza', boss: true,
     length: L(2500), shrineHp: 8500, baseHp: 7000, enemyScale: 1.3, mana: { ...MANA, start: 400 },
     spawns: [
       { who: 'swordsman', start: 2, every: 7, max: 4 },
@@ -277,7 +263,7 @@ export const STAGES = {
   },
   // ---------------- 第4章 港町（敵編成・ボス・報酬は仮） ----------------
   '4-1': {
-    id: '4-1', chapter: 4, name: '港町の入口', theme: 'harbor',
+    id: '4-1', chapter: 4, name: '港町の防衛線', theme: 'harbor',
     length: L(2400), shrineHp: 8500, baseHp: 7500, enemyScale: 1.4, mana: MANA,
     spawns: [
       { who: 'militia', start: 3, every: 4, max: 7 },
@@ -292,7 +278,7 @@ export const STAGES = {
     reward: { stones: 360 },
   },
   '4-2': {
-    id: '4-2', chapter: 4, name: '港の管理所', theme: 'harbor',
+    id: '4-2', chapter: 4, name: '港町の守備隊', theme: 'harbor',
     length: L(2400), shrineHp: 9000, baseHp: 8000, enemyScale: 1.45, mana: MANA,
     spawns: [
       { who: 'swordsman', start: 3, every: 7, max: 4 },
@@ -307,7 +293,7 @@ export const STAGES = {
     reward: { stones: 380 },
   },
   '4-3': {
-    id: '4-3', chapter: 4, name: '大船着き場', theme: 'harbor', boss: true,
+    id: '4-3', chapter: 4, name: '港町の最終決戦', theme: 'harbor', boss: true,
     length: L(2500), shrineHp: 9500, baseHp: 7500, enemyScale: 1.3, mana: { ...MANA, start: 400 },
     spawns: [
       { who: 'swordsman', start: 2, every: 7, max: 4 },
@@ -338,7 +324,7 @@ export const STAGES = {
     reward: { stones: 420 },
   },
   '5-2': {
-    id: '5-2', chapter: 5, name: '兵器製造工場', theme: 'fortress',
+    id: '5-2', chapter: 5, name: '新型兵器の反撃', theme: 'fortress',
     length: L(2400), shrineHp: 10000, baseHp: 8500, enemyScale: 1.45, mana: MANA,
     spawns: [
       { who: 'turret', start: 1, every: 9999, max: 1 },
@@ -353,7 +339,7 @@ export const STAGES = {
     reward: { stones: 440 },
   },
   '5-3': {
-    id: '5-3', chapter: 5, name: '重装兵団の駐屯地', theme: 'fortress',
+    id: '5-3', chapter: 5, name: '重装兵団', theme: 'fortress',
     length: L(2400), shrineHp: 10000, baseHp: 8500, enemyScale: 1.45, mana: MANA,
     spawns: [
       { who: 'heavy', start: 4, every: 14, max: 3 },
@@ -367,7 +353,7 @@ export const STAGES = {
     reward: { stones: 460 },
   },
   '5-4': {
-    id: '5-4', chapter: 5, name: '鉄鋼の大要塞', theme: 'fortress', boss: true,
+    id: '5-4', chapter: 5, name: '鉄鋼都市の最終決戦', theme: 'fortress', boss: true,
     length: L(2500), shrineHp: 10500, baseHp: 8000, enemyScale: 1.35, mana: { ...MANA, start: 400 },
     spawns: [
       { who: 'turret', start: 1, every: 9999, max: 1 },
@@ -397,7 +383,7 @@ export const STAGES = {
     reward: { stones: 480 },
   },
   '6-2': {
-    id: '6-2', chapter: 6, name: '巨大ピラミッド', theme: 'desert',
+    id: '6-2', chapter: 6, name: '古代王国の守護者', theme: 'desert',
     length: L(2400), shrineHp: 11000, baseHp: 9000, enemyScale: 1.45, mana: MANA,
     spawns: [
       { who: 'guardian', start: 3, every: 14, max: 3 },
@@ -411,7 +397,7 @@ export const STAGES = {
     reward: { stones: 500 },
   },
   '6-3': {
-    id: '6-3', chapter: 6, name: '古代王の眠る間', theme: 'desert', boss: true,
+    id: '6-3', chapter: 6, name: '古代王の復活', theme: 'desert', boss: true,
     length: L(2500), shrineHp: 11500, baseHp: 8500, enemyScale: 1.35, mana: { ...MANA, start: 400 },
     spawns: [
       { who: 'guardian', start: 3, every: 16, max: 2 },
@@ -426,7 +412,7 @@ export const STAGES = {
   },
   // ---------------- 第7章 聖なる都（敵編成・ボス・報酬は仮） ----------------
   '7-1': {
-    id: '7-1', chapter: 7, name: '聖都の大門', theme: 'holy',
+    id: '7-1', chapter: 7, name: '聖都の防衛線', theme: 'holy',
     length: L(2400), shrineHp: 12000, baseHp: 9000, enemyScale: 1.4, mana: MANA,
     spawns: [
       { who: 'swordsman', start: 3, every: 7, max: 4 },
@@ -440,7 +426,7 @@ export const STAGES = {
     reward: { stones: 560 },
   },
   '7-2': {
-    id: '7-2', chapter: 7, name: '聖なる大聖堂', theme: 'holy', boss: true,
+    id: '7-2', chapter: 7, name: '聖騎士団との決戦', theme: 'holy', boss: true,
     length: L(2500), shrineHp: 12500, baseHp: 9500, enemyScale: 1.4, mana: { ...MANA, start: 400 },
     spawns: [
       { who: 'paladin', start: 3, every: 13, max: 3 },

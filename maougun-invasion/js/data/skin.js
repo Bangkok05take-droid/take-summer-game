@@ -73,14 +73,12 @@ export const SKIN = {
       // 2026-11-25：壊滅した町の本番背景（ビジュアル制作室・2172×724）。道の上端（画像 y≈511）がユニットの足元に来るよう合わせた
       'ex-1': { src: 'assets/approved/bg/ex_ruin_town.png', scale: 0.77, offsetY: -16, parallax: 0.35, focus: 0.5 },
       chapter4: { src: 'assets/approved/bg/ch4_harbor.png', scale: 0.85, offsetY: -75, parallax: 0.35, focus: 0.5 }, // 2026-11-25：港町の本番背景（2172×724・道の上端 y≈532）
-      // 第5章 鉄鋼の要塞都市：承認済みの背景が届いたら src をその画像にする（今は町のパノラマを暗くして代用）
-      chapter5: { src: 'assets/approved/bg/pano_village_town.png', scale: 1.36, offsetY: 0, parallax: 0.35, focus: 0.5, tint: 'rgba(30,30,45,.35)' },
+      chapter5: { src: 'assets/approved/bg/ch5_fortress.png', scale: 0.95, offsetY: -147, parallax: 0.35, focus: 0.5 }, // 2026-11-25：鉄鋼の要塞都市の本番背景（2172×724・道の上端 y≈552）。4ステージ共通
       chapter6: { src: 'assets/approved/bg/ch6_desert.png', scale: 0.85, offsetY: -75, parallax: 0.35, focus: 0.5 }, // 2026-11-25：砂漠の古代王国の本番背景（2172×724・道の上端 y≈532）。3ステージ共通
-      // 第7章 聖なる都：承認済みの背景が届いたら src をその画像にする（今は城の背景を白く明るくして代用）
       chapter10: { src: 'assets/approved/bg/ch3_castle_v2.png', scale: 1.22, offsetY: -358, parallax: 0.35, focus: 0.5, tint: 'rgba(220,235,255,.4)' }, // 仮：天空背景（未着）。5ステージ共通
       chapter9: { src: 'assets/approved/bg/ch3_castle_v2.png', scale: 1.22, offsetY: -358, parallax: 0.35, focus: 0.5, tint: 'rgba(60,40,90,.25)' }, // 仮：王都の背景（未着）。4ステージ共通
       chapter8: { src: 'assets/approved/bg/pano_village_town.png', scale: 1.36, offsetY: 0, parallax: 0.35, focus: 0.5, tint: 'rgba(90,50,160,.35)' }, // 仮：魔法都市の背景（未着）。4ステージ共通
-      chapter7: { src: 'assets/approved/bg/ch3_castle_v2.png', scale: 1.22, offsetY: -358, parallax: 0.35, focus: 0.5, tint: 'rgba(255,250,220,.3)' },
+      chapter7: { src: 'assets/approved/bg/ch7_holy.png', scale: 0.95, offsetY: -147, parallax: 0.35, focus: 0.5 }, // 2026-11-25：聖なる都の本番背景（2172×724・道の上端 y≈553）。2ステージ共通
       chapter3: { src: 'assets/approved/bg/ch3_castle_v2.png', scale: 1.22, offsetY: -358, parallax: 0.35, focus: 0.5 },
     },
     // 人間軍の拠点（tower：1-1〜1-3、gate：1-4、castle：1-5）と、魔王軍の祠。{ src, width, footY }

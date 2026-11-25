@@ -574,7 +574,7 @@ test('第3章（地方王国の城）：3ステージ。台本どおりの順番
   const who = (id, k) => STORY[k][id].map((l) => l.who).join(',');
   assert.equal(who('3-1', 'before'), 'aide,lord,aide,lord,王国兵');
   assert.equal(who('3-2', 'before'), 'aide,王国騎士,lord,aide,lord');
-  assert.equal(who('3-3', 'before'), '国王,aide,lord');
+  assert.equal(who('3-3', 'before'), 'aide,lord,王国軍,lord'); // 2026-11-25 共通背景対応の修正
   assert.equal(STORY.before['3-2'][4].text, 'わしは本当に偉いのじゃ！！');
   assert.equal(STORY.after['3-3'].length, 15);
   assert.equal(STORY.after['3-3'][9].text, 'まったく……いつになったら、この祠から出られるんじゃ……。');
@@ -726,7 +726,7 @@ test('第6章（砂漠の古代王国）：3ステージ・台本どおり。6-3
   const { CHAPTER6 } = await import('../js/data/stages.js');
   assert.deepEqual(CHAPTER6.stages, ['6-1', '6-2', '6-3']);
   assert.equal(CHAPTER6.name, '砂漠の古代王国');
-  assert.equal(STORY.before['6-3'].map((l) => l.who).join(','), 'narr,古代王,aide,lord,古代王,lord');
+  assert.equal(STORY.before['6-3'].map((l) => l.who).join(','), 'narr,narr,古代王,aide,lord,古代王,lord'); // 2026-11-25 修正
   assert.equal(STORY.after['6-3'].length, 5);
   assert.equal(CRYSTAL_EVENT.LINES.length, 15); assert.equal(CRYSTAL_EVENT.LINES[10].text, 'なんでじゃぁぁぁ！！');
   assert.equal(CRYSTAL_EVENT.AFTER[3].text, '――第6章クリア。');
@@ -947,4 +947,44 @@ test('第10章（天空・勇者の聖域）：5ステージ・台本どおり�
   assert.ok(c.entities.some((e) => e.key === 'take') && c.entities.some((e) => e.key === 'sai') && !c.entities.some((e) => e.key === 'yanai'));
   c.damageBase(c.base, c.base.hp - c.base.maxHp * 0.59); run(c, 3);
   assert.ok(c.entities.some((e) => e.key === 'yanai'));
+});
+
+test('共通背景対応の修正（第1〜7章）：ステージ名・台詞の差し替え・全34ステージ・各章の背景は1枚', async () => {
+  const { STORY } = await import('../js/data/story.js');
+  const { CHAPTERS, STAGE_ORDER } = await import('../js/data/stages.js');
+  const { SKIN } = await import('../js/data/skin.js');
+  assert.deepEqual(CHAPTERS.map((c) => c.stages.length), [3, 3, 3, 3, 4, 3, 2, 4, 4, 5]);
+  assert.equal(STAGE_ORDER.length, 34, '通常34ステージ（壊滅した町は別枠）');
+  assert.ok(!STAGE_ORDER.includes('ex-1'));
+  const names = { '1-1': '見張り小屋', '1-2': '村の自警団', '1-3': '村の最終防衛戦', '2-1': '城下町の門', '2-2': '城下町の守備隊', '2-3': '城下町の最終防衛戦', '3-1': '王国の城門', '3-2': '王国騎士団', '3-3': '王国の最終決戦', '4-1': '港町の防衛線', '4-2': '港町の守備隊', '4-3': '港町の最終決戦', '5-1': '鉄鋼都市の外壁', '5-2': '新型兵器の反撃', '5-3': '重装兵団', '5-4': '鉄鋼都市の最終決戦', '6-1': '砂漠の古代遺跡', '6-2': '古代王国の守護者', '6-3': '古代王の復活', '7-1': '聖都の防衛線', '7-2': '聖騎士団との決戦' };
+  for (const [id, n] of Object.entries(names)) assert.equal(STAGES[id].name, n, id);
+  // 各章の背景は1枚（ステージ別の背景は使わない。壊滅した町だけ別枠）
+  for (const id of STAGE_ORDER) assert.ok(!SKIN.images.stageBg[id], id);
+  for (let c = 1; c <= 10; c++) assert.ok(SKIN.images.stageBg['chapter' + c], 'chapter' + c);
+  assert.ok(SKIN.images.stageBg['ex-1']);
+  const T = (id, k) => STORY[k][id].map((l) => l.text);
+  assert.deepEqual(T('1-2', 'before'), ['大魔王様、村の自警団が集まってきました。', 'ほう！ 少しは戦う気があるようじゃな！', 'みんなで力を合わせるんだ！ 村を守れ！', 'ふっふっふ！ 蹴散らすのじゃ！']);
+  assert.deepEqual(T('1-2', 'after'), ['自警団を撃破しました。', 'うむ！ 順調じゃな！']);
+  assert.equal(STORY.before['1-3'][2].who, '自警団長');
+  assert.equal(STORY.after['1-3'].length, 5, '1-3 のあとのヤナイの情報・幹部解放・第2章への接続はそのまま');
+  for (const id of ['1-2', '1-3', '2-2', '2-3']) assert.ok(!STAGES[id].talk, id + '：台本に入った村・町の声を二重に出さない');
+  assert.ok(STAGES['1-1'].talk && STAGES['2-1'].talk, '変更なしのステージはそのまま');
+  assert.deepEqual(STORY.before['2-2'].map((l) => l.who), ['aide', 'lord', '守備兵', 'lord']);
+  assert.equal(STORY.after['2-2'][2].text, '次は警備隊長が自ら出撃してくるようです。');
+  assert.deepEqual(STORY.before['2-3'].map((l) => l.who), ['警備隊長', 'lord', 'lord']);
+  assert.equal(STORY.after['3-3'][4].text, '港町から船に乗り、海を渡ったとの情報を得ました。');
+  assert.deepEqual(T('4-1', 'after'), ['港町の第一防衛部隊を撃破しました。', 'よし！ ヤナイの行方も調べておくのじゃ！']);
+  assert.equal(STORY.before['4-2'][0].text, '大魔王様、港の守備隊が出撃してきました。'); assert.equal(STORY.before['4-2'].length, 3);
+  assert.equal(STORY.before['4-3'][0].text, '大魔王様、港町の最後の守備部隊が出撃してきました。');
+  assert.equal(STORY.before['5-2'][0].text, '大魔王様、人間軍が新型兵器を投入してきました。');
+  assert.equal(STORY.before['5-2'][1].text, 'ほう！ 今度はどんなおもちゃを持ち出してきたのじゃ？');
+  assert.equal(STORY.after['5-2'][0].text, '新型兵器を破壊しました。しかし、魔王軍にもかなりの被害が出ております。');
+  assert.equal(STORY.before['5-4'][0].text, '大魔王様、鉄鋼都市が残された全戦力を投入してきました。');
+  assert.deepEqual(T('6-1', 'after'), ['古代王国の第一防衛部隊を撃破しました。', '急げ急げ！ 久しぶりに楽しみになってきたわい！']);
+  assert.equal(STORY.after['6-2'][2].text, '大魔王様、ピラミッドからさらに強大な魔力を感じます。');
+  assert.deepEqual(T('6-3', 'before').slice(0, 2), ['――巨大なピラミッドが怪しく輝き始めた。', '――強大な魔力とともに、古代王が姿を現した。']);
+  assert.equal(STORY.after['7-1'][2].text, '聖騎士団を率いる団長が、自ら出撃してきました。');
+  assert.ok(!Object.values(STORY.before).flat().some((l) => /ボス戦開始|戦闘開始/.test(l.text)));
+  // 背景の移動を前提にした言い方が、差し替えた台詞に残っていない
+  for (const id of ['1-2', '2-2', '2-3', '3-3', '4-2', '5-2', '6-3', '7-1']) for (const k of ['before', 'after']) for (const l of STORY[k][id] || []) assert.ok(!/麦畑|市場通り|管理所|製造工場|最深部への道|大門を突破/.test(l.text), id + ' ' + l.text);
 });
