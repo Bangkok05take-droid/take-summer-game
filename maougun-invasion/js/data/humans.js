@@ -65,6 +65,26 @@ export const HUMANS = {
     hp: 3000, atk: 40, range: 46, speed: 26, interval: 1.8, windup: 0.5, kb: 6, attack: 'single', mana: 450, size: 1.4,
     skills: [{ id: 'wave', name: '錨の一撃', type: 'wave', every: 9, first: 4, windup: 0.9, recover: 0.4, reach: 260, mult: 1.8 }],
   },
+  // ---- 第5章（2026-11-25・仮）。兵器・重装兵のデザインは未承認なので、絵は既存の兵士の絵で代用 ----
+  turret: {
+    name: '防衛砲台', role: '防衛兵器・後衛', line: 'back',
+    note: '動かない。とても遠くから砲弾を撃ち、まとめて吹き飛ばす', counter: 'こうもりで一気に近づくか、木槌小鬼で後ろから壊す',
+    hp: 800, atk: 22, range: 260, speed: 0, interval: 4.0, windup: 0.9, kb: 2, attack: 'area', projectile: 'orb', noKbFromSmall: true, mana: 120, size: 1.1,
+  },
+  heavy: {
+    name: '重装兵', role: '重装前衛',
+    note: '魔物との戦いのために作られた鎧。受けるダメージを大きく減らす', counter: '魔法使いの範囲・木槌小鬼の重い一撃・ワニ将軍の突進で崩す',
+    hp: 1100, atk: 30, range: 34, speed: 22, interval: 1.8, windup: 0.5, kb: 3, attack: 'single', guard: 0.35, noKbFromSmall: true, mana: 130, size: 1.15,
+  },
+  commander: {
+    name: '要塞司令官', role: '強敵', hero: true, noKbFromSmall: true,
+    note: '号令で仲間を回復し、砲撃の合図で前方の魔物を吹き飛ばす', counter: '防衛砲台と僧侶を先に壊し、呪文と幹部で押し切る',
+    hp: 2600, atk: 34, range: 44, speed: 22, interval: 1.8, windup: 0.5, kb: 6, attack: 'single', mana: 500, size: 1.4,
+    skills: [
+      { id: 'heal', name: '司令官の号令', type: 'heal', every: 20, first: 8, windup: 0.6, recover: 0.4, radius: 200, ratio: 0.06 },
+      { id: 'wave', name: '一斉砲撃', type: 'wave', every: 11, first: 5, windup: 1.0, recover: 0.4, reach: 260, mult: 1.5 },
+    ],
+  },
   // ---- 特殊イベント「壊滅した町」（2026-11-25・仮）。絵はビジュアル制作室の納品待ち（それまでは仮の絵） ----
   ord: {
     name: '竜人オルド', role: '竜の戦士', hero: true, noKbFromSmall: true,

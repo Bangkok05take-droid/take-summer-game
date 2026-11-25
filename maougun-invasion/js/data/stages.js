@@ -37,7 +37,9 @@ export const CHAPTER2 = { id: 2, name: '城下町を制圧せよ', stages: ['2-1
 export const CHAPTER3 = { id: 3, name: '地方王国の城を攻略せよ', stages: ['3-1', '3-2', '3-3'] };
 // 第4章（2026-11-25）：港町。台本は承認済み。壊滅した町のイベントが終わると開く（オルドの加入・未加入は問わない）。敵編成・ボス・報酬は仮
 export const CHAPTER4 = { id: 4, name: '港町を制圧せよ', stages: ['4-1', '4-2', '4-3'], needsEvent: 'ruin' };
-export const CHAPTERS = [CHAPTER1, CHAPTER2, CHAPTER3, CHAPTER4];
+// 第5章（2026-11-25）：鉄鋼の要塞都市（4ステージ）。台本は承認済み。防衛兵器・重装兵でこれまでより難しい。敵編成・ボス・報酬は仮
+export const CHAPTER5 = { id: 5, name: '鉄鋼の要塞都市を攻略せよ', stages: ['5-1', '5-2', '5-3', '5-4'] };
+export const CHAPTERS = [CHAPTER1, CHAPTER2, CHAPTER3, CHAPTER4, CHAPTER5];
 // 全ステージの順番（章をまたいで、前のステージをクリアすると次が開く）
 export const STAGE_ORDER = CHAPTERS.flatMap((c) => c.stages);
 // 特別（2026-11-25）：特殊イベント「壊滅した町」。ステージ選択の「特別」タブ（イベントのあとだけ出る）。通常の進行（STAGE_ORDER）には入れない
@@ -305,6 +307,66 @@ export const STAGES = {
       { trigger: { baseBelow: 0.25 }, wave: [{ who: 'rider', count: 3 }, { who: 'knight', count: 2 }, { who: 'priest', count: 1 }], gap: 0.5 },
     ],
     reward: { stones: 500 },
+  },
+  // ---------------- 第5章 鉄鋼の要塞都市（敵編成・ボス・報酬は仮）。防衛砲台（動かない・遠くから範囲）・重装兵（とても硬い） ----------------
+  '5-1': {
+    id: '5-1', chapter: 5, name: '鉄鋼都市の外壁', theme: 'fortress',
+    length: L(2400), shrineHp: 9500, baseHp: 8000, enemyScale: 1.4, mana: MANA,
+    spawns: [
+      { who: 'turret', start: 1, every: 9999, max: 1 },
+      { who: 'swordsman', start: 4, every: 7, max: 4 },
+      { who: 'archer', start: 10, every: 10, max: 3 },
+      { who: 'shield', start: 20, every: 20, max: 2 },
+      { who: 'heavy', start: 45, every: 28, max: 1 },
+      { who: 'rider', start: 60, every: 14, max: 3 },
+      { trigger: { baseBelow: 0.6 }, wave: [{ who: 'swordsman', count: 3 }, { who: 'heavy', count: 1 }], gap: 0.6 },
+      { trigger: { baseBelow: 0.3 }, wave: [{ who: 'heavy', count: 1 }, { who: 'archer', count: 3 }, { who: 'rider', count: 2 }], gap: 0.6 },
+    ],
+    reward: { stones: 420 },
+  },
+  '5-2': {
+    id: '5-2', chapter: 5, name: '兵器製造工場', theme: 'fortress',
+    length: L(2400), shrineHp: 10000, baseHp: 8500, enemyScale: 1.45, mana: MANA,
+    spawns: [
+      { who: 'turret', start: 1, every: 9999, max: 1 },
+      { who: 'swordsman', start: 4, every: 7, max: 4 },
+      { who: 'archer', start: 8, every: 9, max: 3 },
+      { who: 'priest', start: 25, every: 24, max: 1 },
+      { who: 'heavy', start: 35, every: 24, max: 2 },
+      { who: 'rider', start: 70, every: 13, max: 3 },
+      { trigger: { baseBelow: 0.6 }, wave: [{ who: 'heavy', count: 1 }, { who: 'archer', count: 2 }], gap: 0.6 },
+      { trigger: { baseBelow: 0.3 }, wave: [{ who: 'knight', count: 2 }, { who: 'rider', count: 3 }], gap: 0.6 },
+    ],
+    reward: { stones: 440 },
+  },
+  '5-3': {
+    id: '5-3', chapter: 5, name: '重装兵団の駐屯地', theme: 'fortress',
+    length: L(2400), shrineHp: 10000, baseHp: 8500, enemyScale: 1.45, mana: MANA,
+    spawns: [
+      { who: 'heavy', start: 4, every: 14, max: 3 },
+      { who: 'swordsman', start: 6, every: 8, max: 3 },
+      { who: 'archer', start: 12, every: 10, max: 3 },
+      { who: 'priest', start: 30, every: 22, max: 2 },
+      { who: 'knight', start: 50, every: 24, max: 2 },
+      { trigger: { baseBelow: 0.6 }, wave: [{ who: 'heavy', count: 2 }, { who: 'priest', count: 1 }], gap: 0.6 },
+      { trigger: { baseBelow: 0.3 }, wave: [{ who: 'heavy', count: 2 }, { who: 'knight', count: 1 }, { who: 'archer', count: 2 }], gap: 0.6 },
+    ],
+    reward: { stones: 460 },
+  },
+  '5-4': {
+    id: '5-4', chapter: 5, name: '鉄鋼の大要塞', theme: 'fortress', boss: true,
+    length: L(2500), shrineHp: 10500, baseHp: 8000, enemyScale: 1.35, mana: { ...MANA, start: 400 },
+    spawns: [
+      { who: 'turret', start: 1, every: 9999, max: 1 },
+      { who: 'swordsman', start: 3, every: 7, max: 4 },
+      { who: 'archer', start: 10, every: 10, max: 3 },
+      { who: 'heavy', start: 20, every: 22, max: 2 },
+      { who: 'priest', start: 35, every: 24, max: 2 },
+      { who: 'rider', start: 50, every: 13, max: 3 },
+      { trigger: { baseBelow: 0.6 }, hero: 'commander', wave: [{ who: 'commander', count: 1 }, { who: 'heavy', count: 1 }], gap: 0.8 },
+      { trigger: { baseBelow: 0.25 }, wave: [{ who: 'heavy', count: 2 }, { who: 'rider', count: 3 }, { who: 'archer', count: 2 }], gap: 0.5 },
+    ],
+    reward: { stones: 600 },
   },
   // ---------------- 特別：壊滅した町（竜人オルド）。能力・報酬は仮（別途調整） ----------------
   // forced：初戦は強制敗北（main.js が台本の秒数で終わらせる）。再戦は通常の勝敗で、勝つとオルドが加入（reward.unlock）

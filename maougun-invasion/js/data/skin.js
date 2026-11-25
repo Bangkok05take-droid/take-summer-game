@@ -64,6 +64,8 @@ export const SKIN = {
       'ex-1': { src: 'assets/approved/bg/pano_village_town.png', scale: 1.36, offsetY: 0, parallax: 0.35, focus: 0.5, tint: 'rgba(40,10,20,.55)' }, // 壊滅した町（仮）：専用背景の納品待ち。町のパノラマを暗く
       // 第4章 港町：承認済みの港町背景が届いたら src をその画像にする（今は町のパノラマで代用）
       chapter4: { src: 'assets/approved/bg/pano_village_town.png', scale: 1.36, offsetY: 0, parallax: 0.35, focus: 0.5 },
+      // 第5章 鉄鋼の要塞都市：承認済みの背景が届いたら src をその画像にする（今は町のパノラマを暗くして代用）
+      chapter5: { src: 'assets/approved/bg/pano_village_town.png', scale: 1.36, offsetY: 0, parallax: 0.35, focus: 0.5, tint: 'rgba(30,30,45,.35)' },
       chapter3: { src: 'assets/approved/bg/pano_village_town.png', scale: 1.36, offsetY: 0, parallax: 0.35, focus: 0.5 }, // 第3章（仮）：城の背景が届くまで町のパノラマ
     },
     // 人間軍の拠点（tower：1-1〜1-3、gate：1-4、castle：1-5）と、魔王軍の祠。{ src, width, footY }
@@ -157,6 +159,10 @@ if (SKIN.sprites.swordsman && !SKIN.sprites.captain) SKIN.sprites.captain = { ..
 if (SKIN.sprites.shield && !SKIN.sprites.knight) SKIN.sprites.knight = { ...SKIN.sprites.shield, scale: (SKIN.sprites.shield.scale || 0.25) * 1.15 };
 // 竜人オルド（仮）：ビジュアル制作室の絵が届くまで、闇の騎士の絵を1.6倍で代用
 if (SKIN.sprites.swordsman && !SKIN.sprites.harbor_captain) SKIN.sprites.harbor_captain = { ...SKIN.sprites.swordsman, scale: (SKIN.sprites.swordsman.scale || 0.25) * 1.5 };
+// 第5章（仮）：防衛砲台は弓兵の絵、重装兵は盾兵の絵、要塞司令官は見習い剣士の絵を大きくして代用（兵器・重装兵のデザインは未承認）
+if (SKIN.sprites.archer && !SKIN.sprites.turret) SKIN.sprites.turret = { ...SKIN.sprites.archer, scale: (SKIN.sprites.archer.scale || 0.25) * 1.2 };
+if (SKIN.sprites.shield && !SKIN.sprites.heavy) SKIN.sprites.heavy = { ...SKIN.sprites.shield, scale: (SKIN.sprites.shield.scale || 0.25) * 1.2 };
+if (SKIN.sprites.swordsman && !SKIN.sprites.commander) SKIN.sprites.commander = { ...SKIN.sprites.swordsman, scale: (SKIN.sprites.swordsman.scale || 0.25) * 1.5 };
 if (SKIN.sprites.vanguard && !SKIN.sprites.ord) SKIN.sprites.ord = { ...SKIN.sprites.vanguard, scale: (SKIN.sprites.vanguard.scale || 0.25) * 1.6 };
 if (SKIN.sprites.shield && !SKIN.sprites.king) SKIN.sprites.king = { ...SKIN.sprites.shield, scale: (SKIN.sprites.shield.scale || 0.25) * 1.45 };
 Object.assign(SKIN.portraits, APPROVED.portraits);

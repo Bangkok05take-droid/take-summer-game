@@ -603,12 +603,13 @@ test('ワニ将軍の突進：前方の敵にダメージ、前線を押し下�
 });
 
 // ---------- 特殊イベント「壊滅した町」 ----------
-const clearTo33 = () => { const p = newProfile(); for (const id of STAGE_ORDER_ALL) applyResult(p, id, 'win', 100); return p; };
+const UPTO33 = STAGE_ORDER_ALL.slice(0, STAGE_ORDER_ALL.indexOf('3-3') + 1);
+const clearTo33 = () => { const p = newProfile(); for (const id of UPTO33) applyResult(p, id, 'win', 100); return p; };
 test('壊滅した町：3-3 クリアで発生。イベント前は「特別」に出ない', async () => {
   const pr = await import('../js/data/progress.js');
   const p = newProfile();
   assert.ok(!pr.ruinPending(p));
-  for (const id of STAGE_ORDER_ALL) applyResult(p, id, 'win', 100);
+  for (const id of UPTO33) applyResult(p, id, 'win', 100);
   assert.ok(pr.ruinPending(p) && !pr.ruinVisible(p) && !isStageOpen(p, 'ex-1'));
 });
 test('壊滅した町：勧誘ルートはすぐ加入（重複しない）・再戦は開かない', async () => {
@@ -656,7 +657,7 @@ test('第4章（港町）：壊滅した町のあと開く（加入・未加入�
     const p = clearTo33(); pr.finishRuinEvent(p, choice);
     assert.ok(isStageOpen(p, '4-1'), choice);
     for (const id of CHAPTER4.stages) { assert.ok(isStageOpen(p, id)); applyResult(p, id, 'win', 100); }
-    assert.equal(nextStage(p), null, '第5章は未実装');
+    assert.equal(nextStage(p), '5-1', '第4章をクリアすると第5章へ');
     assert.equal(p.units.ord.unlocked, choice === 'recruit', 'オルドの状態はそのまま');
     if (choice === 'reject') assert.ok(isStageOpen(p, 'ex-1'), '再戦できる状態もそのまま');
   }
@@ -669,4 +670,29 @@ test('第4章（港町）：壊滅した町のあと開く（加入・未加入�
   const b = makeBattle({ stageId: '4-3', seed: 1 });
   b.damageBase(b.base, b.base.hp - b.base.maxHp * 0.59); run(b, 3);
   assert.ok(b.entities.some((e) => e.key === 'harbor_captain'), '4-3：港の守備隊長');
+});
+
+test('第5章（鉄鋼の要塞都市）：4ステージ。4-3 のあと開き、台本どおりの順番。オルドの有無を問わず', async () => {
+  const pr = await import('../js/data/progress.js');
+  const { STORY } = await import('../js/data/story.js');
+  const { CHAPTER5 } = await import('../js/data/stages.js');
+  assert.deepEqual(CHAPTER5.stages, ['5-1', '5-2', '5-3', '5-4']);
+  assert.equal(CHAPTER5.name, '鉄鋼の要塞都市を攻略せよ');
+  for (const choice of ['recruit', 'reject']) {
+    const p = clearTo33(); pr.finishRuinEvent(p, choice);
+    for (const id of ['4-1', '4-2', '4-3']) applyResult(p, id, 'win', 100);
+    for (const id of CHAPTER5.stages) { assert.ok(isStageOpen(p, id), id); applyResult(p, id, 'win', 100); }
+    assert.equal(nextStage(p), null, '第6章は台本待ち');
+  }
+  for (const id of CHAPTER5.stages) assert.ok(!STAGES[id].talk, id);
+  assert.equal(STORY.before['5-1'].map((l) => l.who).join(','), 'aide,lord,aide,lord,人間軍兵士');
+  assert.equal(STORY.before['5-2'].map((l) => l.who).join(','), 'aide,lord,人間軍技師,lord');
+  assert.equal(STORY.before['5-3'].map((l) => l.who).join(','), 'aide,重装兵団長,lord,aide,lord');
+  assert.equal(STORY.before['5-4'].map((l) => l.who).join(','), 'aide,要塞司令官,要塞司令官,lord,lord');
+  assert.equal(STORY.after['5-1'][0].who, 'lord', '5-1 の戦闘後は大魔王から');
+  const a = STORY.after['5-4'];
+  assert.equal(a.length, 18); assert.equal(a[13].text, 'それを早く言わんかぁぁ！！'); assert.equal(a[16].text, '――第5章クリア。'); assert.equal(a[17].text, '――魔王軍は新たな力を求め、砂漠の古代王国へと向かった。');
+  assert.ok(STAGES['5-1'].spawns.some((r) => r.who === 'turret') && STAGES['5-3'].spawns.some((r) => r.who === 'heavy'), '兵器・重装兵');
+  assert.ok(STAGES['5-4'].boss && STAGES['5-4'].spawns.some((r) => r.hero === 'commander'));
+  assert.ok(STAGES['5-1'].enemyScale >= STAGES['4-1'].enemyScale, 'これまでより手ごわい');
 });
