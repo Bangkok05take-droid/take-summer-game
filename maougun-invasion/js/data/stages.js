@@ -76,7 +76,7 @@ export const STAGES = {
   },
   '1-3': {
     id: '1-3', chapter: 1, name: '小川の橋', theme: 'river',
-    length: L(2400), shrineHp: 6000, baseHp: 3500, enemyScale: 1.15, mana: MANA,
+    length: L(2400), shrineHp: 6000, baseHp: 3500, enemyScale: 1.1, /* 2026-11-25：1.15 → 1.1 */ mana: MANA,
     spawns: [
       { who: 'militia', start: 3, every: 5, max: 6 },
       { who: 'swordsman', start: 10, every: 11, max: 3 },
@@ -97,7 +97,7 @@ export const STAGES = {
   },
   '1-4': {
     id: '1-4', chapter: 1, name: '村の門', theme: 'gate',
-    length: L(2400), shrineHp: 6500, baseHp: 7000, enemyScale: 1.3, mana: MANA,
+    length: L(2400), shrineHp: 6500, baseHp: 7000, enemyScale: 1.2, /* 2026-11-25：1.3 → 1.2 */ mana: MANA,
     spawns: [
       { who: 'militia', start: 3, every: 4.5, max: 6 },
       { who: 'shield', start: 8, every: 26, max: 2 },
@@ -119,7 +119,7 @@ export const STAGES = {
   },
   '1-5': {
     id: '1-5', chapter: 1, name: '村の広場', theme: 'plaza', boss: true,
-    length: L(2500), shrineHp: 7000, baseHp: 6500, enemyScale: 1.4, mana: { ...MANA, start: 500 },
+    length: L(2500), shrineHp: 7000, baseHp: 6500, enemyScale: 1.25, /* 2026-11-25：1.4 → 1.25 */ mana: { ...MANA, start: 500 },
     spawns: [
       { who: 'militia', start: 2, every: 4, max: 7 },
       { who: 'swordsman', start: 8, every: 9, max: 4 },
