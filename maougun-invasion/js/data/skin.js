@@ -64,14 +64,15 @@ export const SKIN = {
       // 2026-11-25：第1〜3章の本番背景（ビジュアル制作室・2172×724）。土の道の上端がユニットの足元（画面 y≈372）に来るよう倍率と上下の位置を合わせた
       chapter1: { src: 'assets/approved/bg/ch1_village_v2.png', scale: 0.76, offsetY: -1, parallax: 0.35, focus: 0.5 },
       chapter2: { src: 'assets/approved/bg/ch2_town_v2.png', scale: 0.98, offsetY: -165, parallax: 0.35, focus: 0.5 },
-      'ex-1': { src: 'assets/approved/bg/pano_village_town.png', scale: 1.36, offsetY: 0, parallax: 0.35, focus: 0.5, tint: 'rgba(40,10,20,.55)' }, // 壊滅した町（仮）：専用背景の納品待ち。町のパノラマを暗く
-      // 第4章 港町：承認済みの港町背景が届いたら src をその画像にする（今は町のパノラマで代用）
-      chapter4: { src: 'assets/approved/bg/pano_village_town.png', scale: 1.36, offsetY: 0, parallax: 0.35, focus: 0.5 },
+      // 2026-11-25：壊滅した町の本番背景（ビジュアル制作室・2172×724）。道の上端（画像 y≈511）がユニットの足元に来るよう合わせた
+      'ex-1': { src: 'assets/approved/bg/ex_ruin_town.png', scale: 0.77, offsetY: -16, parallax: 0.35, focus: 0.5 },
+      chapter4: { src: 'assets/approved/bg/ch4_harbor.png', scale: 0.85, offsetY: -75, parallax: 0.35, focus: 0.5 }, // 2026-11-25：港町の本番背景（2172×724・道の上端 y≈532）
       // 第5章 鉄鋼の要塞都市：承認済みの背景が届いたら src をその画像にする（今は町のパノラマを暗くして代用）
       chapter5: { src: 'assets/approved/bg/pano_village_town.png', scale: 1.36, offsetY: 0, parallax: 0.35, focus: 0.5, tint: 'rgba(30,30,45,.35)' },
       // 第6章 砂漠の古代王国：承認済みの砂漠・ピラミッド背景が届いたら src をその画像にする（今は町のパノラマを砂色に染めて代用）
       chapter6: { src: 'assets/approved/bg/pano_village_town.png', scale: 1.36, offsetY: 0, parallax: 0.35, focus: 0.5, tint: 'rgba(200,150,60,.35)' },
       // 第7章 聖なる都：承認済みの背景が届いたら src をその画像にする（今は城の背景を白く明るくして代用）
+      chapter8: { src: 'assets/approved/bg/pano_village_town.png', scale: 1.36, offsetY: 0, parallax: 0.35, focus: 0.5, tint: 'rgba(90,50,160,.35)' }, // 仮：魔法都市の背景（未着）。4ステージ共通
       chapter7: { src: 'assets/approved/bg/ch3_castle_v2.png', scale: 1.22, offsetY: -358, parallax: 0.35, focus: 0.5, tint: 'rgba(255,250,220,.3)' },
       chapter3: { src: 'assets/approved/bg/ch3_castle_v2.png', scale: 1.22, offsetY: -358, parallax: 0.35, focus: 0.5 },
     },
@@ -183,6 +184,9 @@ if (SKIN.sprites.shield && !SKIN.sprites.guardian) SKIN.sprites.guardian = { ...
 if (SKIN.sprites.shield && !SKIN.sprites.ancient_king) SKIN.sprites.ancient_king = { ...SKIN.sprites.shield, scale: (SKIN.sprites.shield.scale || 0.25) * 1.5 };
 // 第7章（仮）：聖騎士は見習い剣士の絵を1.2倍、聖騎士団長は見習い僧侶の絵を1.5倍で代用（デザイン未承認）
 if (SKIN.sprites.swordsman && !SKIN.sprites.paladin) SKIN.sprites.paladin = { ...SKIN.sprites.swordsman, scale: (SKIN.sprites.swordsman.scale || 0.25) * 1.2 };
+for (const [k, mul] of [['mage', 1.0], ['elite_mage', 1.15], ['mage_captain', 1.4], ['archmage', 1.55]]) {
+  if (SKIN.sprites.priest && !SKIN.sprites[k]) SKIN.sprites[k] = { ...SKIN.sprites.priest, scale: (SKIN.sprites.priest.scale || 0.25) * mul };
+}
 if (SKIN.sprites.priest && !SKIN.sprites.holy_captain) SKIN.sprites.holy_captain = { ...SKIN.sprites.priest, scale: (SKIN.sprites.priest.scale || 0.25) * 1.5 };
 if (SKIN.sprites.vanguard && !SKIN.sprites.ord) SKIN.sprites.ord = { ...SKIN.sprites.vanguard, scale: (SKIN.sprites.vanguard.scale || 0.25) * 1.6 };
 if (SKIN.sprites.shield && !SKIN.sprites.king) SKIN.sprites.king = { ...SKIN.sprites.shield, scale: (SKIN.sprites.shield.scale || 0.25) * 1.45 };

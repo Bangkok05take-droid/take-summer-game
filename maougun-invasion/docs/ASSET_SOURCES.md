@@ -48,3 +48,5 @@
 | 2026-11-25 | （チャットで受け取った画像 1000021131.png） | — | — | `assets/approved/units/ord.png` | — | 加工なし。竜人オルド。1254×1254・左向き・透過 |
 | 2026-11-25 | `b400a0bd-maougun_ordo_thunder_slash_fx.zip` | `fx/ordo_thunder_bolt/charge/slash/hit.png` | — | `assets/approved/fx/` | — | 加工なし。オルドの「カミナリスラッシュ」 |
 | 2026-11-25 | （チャットの画像 11525.png・11526.png・11527.png） | — | — | `assets/approved/bg/ch1_village_v2.png`・`ch2_town_v2.png`・`ch3_castle_v2.png` | — | 加工なし。第1〜3章の戦闘背景（2172×724） |
+| 2026-11-25 | （チャットの画像 1000021139.png） | — | — | `assets/approved/bg/ex_ruin_town.png` | — | 加工なし。特別「壊滅した町」の戦闘背景（2172×724・倍率0.77・上へ16） |
+| 2026-11-25 | （チャットの画像 1000021140.png） | — | — | `assets/approved/bg/ch4_harbor.png` | — | 加工なし。第4章「港町」の戦闘背景（2172×724・倍率0.85・上へ75。3ステージ共通） |

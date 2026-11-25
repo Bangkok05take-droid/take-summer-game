@@ -4,12 +4,12 @@ import { createBattle, STEP } from './core/battle.js';
 import { createClock } from './core/clock.js';
 import { HUMANS } from './data/humans.js';
 import { STAGES, CONFIG } from './data/stages.js';
-import { STORY, CRYSTAL_EVENT } from './data/story.js';
+import { STORY, CRYSTAL_EVENT, ULTIMATE_EVENT } from './data/story.js';
 import { SKIN } from './data/skin.js';
 import {
   loadProfile, saveProfile, resetProfile, buildDeck, resolveMana, applyResult, isStageOpen, nextStage,
   levelUpUnit, buyUpgrade, SAVE_KEY, resolveSpell, addToFormation, removeFromFormation, normalizeFormation,
-  ruinPending, finishRuinEvent, crystalPending, applyCrystal, tryEvolve,
+  ruinPending, finishRuinEvent, crystalPending, applyCrystal, ultimatePending, applyUltimate, resolveFurnace, tryEvolve,
 } from './data/progress.js';
 import { Renderer, VIEW_W, VIEW_H, MINIMAP } from './render/renderer.js';
 import { Hud, reasonText } from './ui/hud.js';
@@ -228,7 +228,7 @@ function startStage(id, opts = {}) {
   app.forced = !!opts.forced;
   const st = STAGES[id];
   const seed = Number(params.get('seed')) || ((Date.now() % 100000) + 1);
-  const config = { ...CONFIG, spell: resolveSpell(CONFIG.spell, app.profile) }; // 魔王の力（呪文の強化）を反映
+  const config = { ...CONFIG, spell: resolveSpell(CONFIG.spell, app.profile), furnace: resolveFurnace(CONFIG.furnace, app.profile) }; // 魔王の力（呪文の強化）を反映
   app.battle = createBattle({ stage: st, deck: buildDeck(app.profile), humanDefs: HUMANS, config, seed, mana: resolveMana(st.mana, app.profile) });
   app.resultShown = false;
   renderer.fx = [];
@@ -321,17 +321,21 @@ function afterWin() {
     const toLoot = () => { renderLoot(app.stageId, res, res.firstClear); show('scLoot'); };
     // 6-3 の初回クリア：特殊イベント「大魔王の魔力回復」→ 新機能の解放画面 → 続きの会話（1回だけ・再クリアでは起きない）
     if (app.stageId === '6-3' && crystalPending(app.profile)) { playCrystalEvent(toLoot); return; }
+    // 8-4 の初回クリア：特殊イベント「魔王軍の究極進化」→ 新機能の解放画面 → 第9章への進軍（1回だけ）
+    if (app.stageId === '8-4' && ultimatePending(app.profile)) { playFeatureEvent(ULTIMATE_EVENT, applyUltimate, toLoot); return; }
     toLoot();
   });
 }
-function playCrystalEvent(done) {
-  talk.play(CRYSTAL_EVENT.LINES, 'shrine', () => {
-    applyCrystal(app.profile); save(); // 回復と進化の解放を記録（重複しない）
-    const F = CRYSTAL_EVENT.FEATURE;
+function playCrystalEvent(done) { playFeatureEvent(CRYSTAL_EVENT, applyCrystal, done); }
+// 特殊イベント：会話 → 記録（apply は1回だけ効く）→ 新機能の解放画面 → 続きの会話
+function playFeatureEvent(EV, apply, done) {
+  talk.play(EV.LINES, 'shrine', () => {
+    apply(app.profile); save(); // 解放を記録（重複しない）
+    const F = EV.FEATURE;
     $('featTitle').textContent = F.title; $('featText').textContent = F.text;
     $('featItems').innerHTML = F.items.map((t) => `<li>・${t}</li>`).join('');
     $('ovFeature').hidden = false;
-    app.afterFeature = () => talk.play(CRYSTAL_EVENT.AFTER, 'shrine', done);
+    app.afterFeature = () => talk.play(EV.AFTER, 'shrine', done);
   });
 }
 $('btnFeatNext').addEventListener('click', () => { $('ovFeature').hidden = true; const f = app.afterFeature; app.afterFeature = null; if (f) f(); });

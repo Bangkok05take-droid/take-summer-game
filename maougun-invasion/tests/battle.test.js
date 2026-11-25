@@ -765,7 +765,7 @@ test('上位進化：魔力結晶の前はできない・Lv5と魔界石が必�
   } finally { EVOLUTIONS.mallet_2.ready = false; EVOLUTIONS.mallet_3a.ready = false; }
 });
 
-test('第7章（聖なる都）：2ステージ・台本どおり。6-3 のあと開き、7-2 は聖騎士団長', async () => {
+test('第7章（聖なる都）：2ステージ・台本どおり。6-3 のあと開き、7-2 は聖騎士団長・クリアで第8章へ', async () => {
   const pr = await import('../js/data/progress.js');
   const { STORY } = await import('../js/data/story.js');
   const { CHAPTER7 } = await import('../js/data/stages.js');
@@ -778,10 +778,80 @@ test('第7章（聖なる都）：2ステージ・台本どおり。6-3 のあ�
     for (const id of ['4-1', '4-2', '4-3', '5-1', '5-2', '5-3', '5-4', '6-1', '6-2', '6-3']) applyResult(p, id, 'win', 100);
     pr.applyCrystal(p);
     for (const id of CHAPTER7.stages) { assert.ok(isStageOpen(p, id), id); applyResult(p, id, 'win', 100); }
-    assert.equal(nextStage(p), null, '第8章は台本待ち');
+    assert.equal(nextStage(p), '8-1', '第7章をクリアすると第8章へ');
     assert.equal(pr.evolveTierCap(p), 2, '最上位はまだ');
   }
   const b = makeBattle({ stageId: '7-2', seed: 1 });
   b.damageBase(b.base, b.base.hp - b.base.maxHp * 0.59); run(b, 3);
   assert.ok(b.entities.some((e) => e.key === 'holy_captain'));
+});
+
+test('第8章（魔法都市）：4ステージ・台本どおり・背景は共通1枚。8-4 は大魔導士。初回だけ究極進化（魔力炉の強化・最上位進化・重複なし・セーブ）', async () => {
+  const pr = await import('../js/data/progress.js');
+  const { STORY, ULTIMATE_EVENT } = await import('../js/data/story.js');
+  const { CHAPTER8, CONFIG } = await import('../js/data/stages.js');
+  const { SKIN } = await import('../js/data/skin.js');
+  assert.deepEqual(CHAPTER8.stages, ['8-1', '8-2', '8-3', '8-4']); assert.equal(CHAPTER8.name, '魔法都市');
+  for (const id of CHAPTER8.stages) { assert.ok(!SKIN.images.stageBg[id], id + '：ステージ別の背景はない（章で共通）'); assert.equal(STAGES[id].theme, 'magic'); }
+  assert.ok(SKIN.images.stageBg.chapter8);
+  assert.equal(STORY.before['8-1'].map((l) => l.who).join(','), 'aide,lord,人間軍魔法使い,lord');
+  assert.equal(STORY.before['8-3'].map((l) => l.who).join(','), 'aide,魔導士団長,lord,lord');
+  assert.equal(STORY.before['8-4'].map((l) => l.who).join(','), '大魔導士,大魔導士,lord,大魔導士,lord');
+  assert.ok(!Object.values(STORY.before).flat().some((l) => l.text === '――ボス戦開始。'));
+  assert.deepEqual(['8-1', '8-2', '8-3', '8-4'].map((id) => STORY.after[id].length), [2, 4, 4, 4]);
+  assert.equal(ULTIMATE_EVENT.LINES.length, 10); assert.equal(ULTIMATE_EVENT.LINES[0].text, '――ヴェイルは魔導装置の技術を封印の祠の魔力炉に応用した。');
+  assert.equal(ULTIMATE_EVENT.FEATURE.title, '最上位モンスター進化');
+  assert.deepEqual(ULTIMATE_EVENT.FEATURE.items, ['魔力炉のさらなる強化', '最上位モンスター進化解放']);
+  assert.equal(ULTIMATE_EVENT.AFTER.length, 11); assert.equal(ULTIMATE_EVENT.AFTER[9].text, '――第8章クリア。'); assert.equal(ULTIMATE_EVENT.AFTER[10].text, '――魔王軍と人間軍の全面戦争が始まろうとしていた。');
+  const banned = /たけ|サイ|ヤナイ」|yanai|take|sai/;
+  for (const id of CHAPTER8.stages) for (const l of [...STORY.before[id], ...STORY.after[id]]) assert.ok(!banned.test(l.who), 'たけ・サイ・ヤナイ本人は出ない');
+  for (const id of CHAPTER8.stages) assert.ok(!STAGES[id].spawns.some((x) => ['take', 'sai'].includes(x.who) || ['take', 'sai'].includes(x.hero)));
+  for (const choice of ['recruit', 'reject']) {
+    const p = clearTo33(); pr.finishRuinEvent(p, choice);
+    for (const id of ['4-1', '4-2', '4-3', '5-1', '5-2', '5-3', '5-4', '6-1', '6-2', '6-3']) applyResult(p, id, 'win', 100);
+    pr.applyCrystal(p);
+    for (const id of ['7-1', '7-2']) applyResult(p, id, 'win', 100);
+    for (const id of CHAPTER8.stages) { assert.ok(isStageOpen(p, id), id); assert.ok(!pr.ultimatePending(p)); applyResult(p, id, 'win', 100); }
+    assert.ok(pr.ultimatePending(p) && pr.evolveTierCap(p) === 2, 'クリア直後（イベント前）');
+    assert.equal(pr.resolveFurnace(CONFIG.furnace, p), CONFIG.furnace, 'イベント前は魔力炉そのまま');
+    assert.equal(pr.applyUltimate(p), true);
+    assert.equal(pr.applyUltimate(p), false, '2回目は起きない');
+    assert.equal(pr.evolveTierCap(p), 3, '最上位進化の解放');
+    const f = pr.resolveFurnace(CONFIG.furnace, p);
+    assert.equal(f.costs.length, CONFIG.furnace.costs.length + 1); assert.ok(f.maxAdd > CONFIG.furnace.maxAdd && f.regenAdd > CONFIG.furnace.regenAdd);
+    const stones = p.stones; applyResult(p, '8-4', 'win', 100);
+    assert.ok(!pr.ultimatePending(p)); assert.deepEqual(pr.resolveFurnace(CONFIG.furnace, p), f, '再クリアで強化が重ならない');
+    assert.ok(p.stones - stones < STAGES['8-4'].reward.stones, '再クリアは初回報酬なし');
+    assert.equal(nextStage(p), null, '第9章は台本待ち（データが入ると自動で開く）');
+    const st = memStore(); saveProfile(p, st); const q = loadProfile(st);
+    assert.ok(pr.ultimateDone(q) && pr.crystalDone(q) && pr.evolveTierCap(q) === 3, 'セーブから戻る');
+    assert.deepEqual(pr.resolveFurnace(CONFIG.furnace, q), f);
+  }
+  // 古いセーブ（events.ultimate なし）でも読める
+  const old = newProfile(); delete old.events; const st2 = memStore(); saveProfile(old, st2);
+  assert.equal(pr.evolveTierCap(loadProfile(st2)), 1);
+  // 戦闘：8-4 は拠点HP60%で大魔導士。強化した魔力炉は1段多く上がる
+  const b = makeBattle({ stageId: '8-4', seed: 1 });
+  b.damageBase(b.base, b.base.hp - b.base.maxHp * 0.59); run(b, 3);
+  assert.ok(b.entities.some((e) => e.key === 'archmage'));
+  const p2 = newProfile(); pr.applyUltimate(p2);
+  const b2 = makeBattle({ stageId: '8-1', profile: p2, seed: 1 });
+  b2.mana = 99999; b2.manaMax = 99999;
+  for (let i = 0; i < 12; i++) { b2.queue({ type: 'furnace' }); b2.step(); b2.mana = 99999; }
+  assert.equal(b2.furnaceLv, CONFIG.furnace.costs.length + 2, '魔力炉の最大Lvが1つ上がる');
+});
+test('最上位進化：究極進化のあとだけ（上位からのみ・デザイン待ちは不可）', async () => {
+  const pr = await import('../js/data/progress.js');
+  const p = newProfile(); p.stones = 99999; pr.applyCrystal(p); p.units.mallet.level = 5;
+  EVOLUTIONS.mallet_2.ready = true; EVOLUTIONS.mallet_3a.ready = true;
+  try {
+    assert.ok(pr.tryEvolve(p, 'mallet', 'mallet_2').ok);
+    assert.equal(pr.tryEvolve(p, 'mallet', 'mallet_3a').reason, 'tier');
+    pr.applyUltimate(p);
+    const r = pr.tryEvolve(p, 'mallet', 'mallet_3a');
+    assert.ok(r.ok && resolveUnit('mallet', p).tier === 3 && r.cost === pr.EVOLVE_NEED.stones(3));
+    assert.equal(pr.tryEvolve(p, 'mallet', 'mallet_3b').reason, 'invalid', '分岐はどちらか1つ');
+  } finally { EVOLUTIONS.mallet_2.ready = false; EVOLUTIONS.mallet_3a.ready = false; }
+  const q = newProfile(); q.stones = 99999; pr.applyCrystal(q); pr.applyUltimate(q); q.units.mallet.level = 9;
+  assert.equal(pr.tryEvolve(q, 'mallet', 'mallet_2').reason, 'planned', '進化先のデザイン待ち');
 });

@@ -43,7 +43,10 @@ export const CHAPTER5 = { id: 5, name: '鉄鋼の要塞都市を攻略せよ', s
 export const CHAPTER6 = { id: 6, name: '砂漠の古代王国', stages: ['6-1', '6-2', '6-3'] };
 // 第7章（2026-11-25）：聖なる都（2ステージ）。聖騎士（聖なる加護で自分を癒やす）・聖騎士団長。敵・ボス・報酬は仮
 export const CHAPTER7 = { id: 7, name: '聖なる都を攻略せよ', stages: ['7-1', '7-2'] };
-export const CHAPTERS = [CHAPTER1, CHAPTER2, CHAPTER3, CHAPTER4, CHAPTER5, CHAPTER6, CHAPTER7];
+// 第8章（2026-11-25）：魔法都市（4ステージ・背景は全ステージ共通の1枚）。魔導兵（後ろから魔法弾）・精鋭魔導士・魔導士団長・大魔導士。
+// 8-4 の初回クリアで特殊イベント「魔王軍の究極進化」（魔力炉のさらなる強化・最上位進化の解放）。敵・ボス・報酬は仮
+export const CHAPTER8 = { id: 8, name: '魔法都市', stages: ['8-1', '8-2', '8-3', '8-4'] };
+export const CHAPTERS = [CHAPTER1, CHAPTER2, CHAPTER3, CHAPTER4, CHAPTER5, CHAPTER6, CHAPTER7, CHAPTER8];
 // 全ステージの順番（章をまたいで、前のステージをクリアすると次が開く）
 export const STAGE_ORDER = CHAPTERS.flatMap((c) => c.stages);
 // 特別（2026-11-25）：特殊イベント「壊滅した町」。ステージ選択の「特別」タブ（イベントのあとだけ出る）。通常の進行（STAGE_ORDER）には入れない
@@ -443,6 +446,65 @@ export const STAGES = {
       { trigger: { baseBelow: 0.25 }, wave: [{ who: 'paladin', count: 2 }, { who: 'priest', count: 1 }, { who: 'archer', count: 2 }], gap: 0.5 },
     ],
     reward: { stones: 750 },
+  },
+  // ---------------- 第8章 魔法都市（敵編成・ボス・報酬は仮。背景は4ステージとも同じ） ----------------
+  '8-1': {
+    id: '8-1', chapter: 8, name: '魔法都市の防衛線', theme: 'magic',
+    length: L(2400), shrineHp: 12500, baseHp: 10500, enemyScale: 1.4, mana: MANA,
+    spawns: [
+      { who: 'swordsman', start: 3, every: 7, max: 4 },
+      { who: 'knight', start: 8, every: 14, max: 2 },
+      { who: 'mage', start: 10, every: 12, max: 2 },
+      { who: 'archer', start: 16, every: 11, max: 2 },
+      { who: 'priest', start: 30, every: 22, max: 1 },
+      { trigger: { baseBelow: 0.6 }, wave: [{ who: 'mage', count: 2 }, { who: 'knight', count: 1 }], gap: 0.6 },
+      { trigger: { baseBelow: 0.3 }, wave: [{ who: 'paladin', count: 1 }, { who: 'mage', count: 2 }], gap: 0.6 },
+    ],
+    reward: { stones: 600 },
+  },
+  '8-2': {
+    id: '8-2', chapter: 8, name: '魔法都市の反撃', theme: 'magic',
+    length: L(2400), shrineHp: 12500, baseHp: 10500, enemyScale: 1.4, mana: MANA,
+    spawns: [
+      { who: 'swordsman', start: 3, every: 7, max: 3 },
+      { who: 'mage', start: 6, every: 10, max: 3 },
+      { who: 'paladin', start: 12, every: 15, max: 2 },
+      { who: 'archer', start: 18, every: 11, max: 2 },
+      { who: 'priest', start: 28, every: 22, max: 1 },
+      { who: 'rider', start: 45, every: 15, max: 2 },
+      { trigger: { baseBelow: 0.6 }, wave: [{ who: 'mage', count: 3 }, { who: 'heavy', count: 1 }], gap: 0.6 },
+      { trigger: { baseBelow: 0.3 }, wave: [{ who: 'elite_mage', count: 1 }, { who: 'mage', count: 2 }, { who: 'knight', count: 1 }], gap: 0.6 },
+    ],
+    reward: { stones: 650 },
+  },
+  '8-3': {
+    id: '8-3', chapter: 8, name: '精鋭魔導士団', theme: 'magic',
+    length: L(2500), shrineHp: 13000, baseHp: 9500, enemyScale: 1.4, mana: { ...MANA, start: 300 },
+    spawns: [
+      { who: 'elite_mage', start: 6, every: 18, max: 1 },
+      { who: 'swordsman', start: 3, every: 7, max: 3 },
+      { who: 'paladin', start: 10, every: 15, max: 2 },
+      { who: 'mage', start: 14, every: 12, max: 2 },
+      { who: 'priest', start: 30, every: 22, max: 1 },
+      { trigger: { baseBelow: 0.5 }, hero: 'mage_captain', wave: [{ who: 'mage_captain', count: 1 }, { who: 'elite_mage', count: 1 }], gap: 0.8 },
+      { trigger: { baseBelow: 0.25 }, wave: [{ who: 'paladin', count: 2 }, { who: 'mage', count: 2 }], gap: 0.5 },
+    ],
+    reward: { stones: 700 },
+  },
+  '8-4': {
+    id: '8-4', chapter: 8, name: '魔法都市の最終決戦', theme: 'magic', boss: true,
+    length: L(2500), shrineHp: 13500, baseHp: 10000, enemyScale: 1.4, mana: { ...MANA, start: 400 },
+    spawns: [
+      { who: 'paladin', start: 3, every: 16, max: 1 },
+      { who: 'swordsman', start: 5, every: 8, max: 3 },
+      { who: 'elite_mage', start: 10, every: 18, max: 1 },
+      { who: 'mage', start: 14, every: 12, max: 2 },
+      { who: 'priest', start: 32, every: 24, max: 1 },
+      { who: 'rider', start: 50, every: 15, max: 2 },
+      { trigger: { baseBelow: 0.6 }, hero: 'archmage', wave: [{ who: 'archmage', count: 1 }, { who: 'elite_mage', count: 1 }], gap: 0.8 },
+      { trigger: { baseBelow: 0.25 }, wave: [{ who: 'paladin', count: 1 }, { who: 'mage', count: 2 }, { who: 'archer', count: 1 }], gap: 0.5 },
+    ],
+    reward: { stones: 850 },
   },
   // ---------------- 特別：壊滅した町（竜人オルド）。能力・報酬は仮（別途調整） ----------------
   // forced：初戦は強制敗北（main.js が台本の秒数で終わらせる）。再戦は通常の勝敗で、勝つとオルドが加入（reward.unlock）

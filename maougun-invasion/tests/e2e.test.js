@@ -372,6 +372,47 @@ try {
     await c7.close();
   }
 
+  // ---- 第8章：章タブ・会話 → 8-4 の初回クリア → 究極進化 → 解放画面 → 第9章への進軍 → 戦利品／再読み込み／再クリアでは起きない ----
+  {
+    const c8 = await browser.newContext({ ...devices['iPhone 13 landscape'] });
+    const p8 = await c8.newPage(); const e8 = []; p8.on('pageerror', (e) => e8.push(String(e)));
+    await p8.goto(`http://localhost:${PORT}/?seed=8`); await p8.waitForFunction(() => window.__game);
+    await p8.evaluate(async () => { const m = await import('./js/data/progress.js'); const g = window.__game; const p = m.newProfile(); for (const id of ['1-1','1-2','1-3','2-1','2-2','2-3','3-1','3-2','3-3']) m.applyResult(p, id, 'win', 100); m.finishRuinEvent(p, 'reject'); for (const id of ['4-1','4-2','4-3','5-1','5-2','5-3','5-4','6-1','6-2','6-3']) m.applyResult(p, id, 'win', 100); m.applyCrystal(p); for (const id of ['7-1','7-2']) m.applyResult(p, id, 'win', 100); Object.assign(p.story, { opening: true, 'tip:recon': true, 'tip:form': true, 'tip:upgrade': true }); p.stones = 5000; g.app.profile = p; m.saveProfile(p); g.toSelect(); });
+    await p8.waitForTimeout(200);
+    const read8 = async () => { const o = []; let fx = 0; for (let i = 0; i < 40 && await p8.locator('#scTalk').isVisible(); i++) { o.push(await p8.locator('#talkText').textContent()); if (await p8.evaluate(() => /fx-/.test(document.getElementById('scTalk').className))) fx++; await p8.tap('#talkBox'); await p8.waitForTimeout(25); } return { o, fx }; };
+    const sel8 = await p8.evaluate(() => ({ tab: !!document.querySelector('.chapTab[data-chapter="8"]'), node: document.querySelector('.node[data-stage="8-1"]') && !document.querySelector('.node[data-stage="8-1"]').disabled }));
+    check('第7章のあと：第8章のタブと 8-1 が開いている', sel8.tab && sel8.node, JSON.stringify(sel8));
+    await p8.evaluate(() => { window.__game.toSelect(); }); await p8.waitForTimeout(100); await p8.evaluate(() => document.querySelector('.node[data-stage="8-1"]').click()); await p8.waitForTimeout(150);
+    const bf = await read8();
+    await p8.waitForTimeout(100);
+    const rc8 = await p8.locator('#scRecon').isVisible();
+    check('8-1 戦闘前の会話（4行・台本どおり）→ 偵察', bf.o.length === 4 && bf.o[2] === '魔王軍接近！ 防御結界を展開せよ！' && bf.o[3] === 'ふっふっふ……。魔法でわしに勝とうなど、百年早いわ！' && rc8, JSON.stringify({ o: bf.o, rc8 }));
+    await p8.evaluate(() => { const g = window.__game.app; g.profile.story['before:8-4'] = true; for (const id of ['8-1','8-2','8-3']) { g.profile.stages[id] = { cleared: true, best: 100 }; } });
+    await p8.evaluate(() => window.__game.startStage('8-4')); await p8.waitForTimeout(150);
+    for (let i = 0; i < 6 && !(await p8.evaluate(() => window.__game.app.screen === 'battle')); i++) { for (const b of ['#btnReconSkip', '#btnReconNext', '#btnSortie']) if (await p8.locator(b).isVisible()) await p8.tap(b); await p8.waitForTimeout(100); }
+    const bg8 = await p8.evaluate(() => { const b = window.__game.battle; b.damageBase(b.base, b.base.hp - b.base.maxHp * 0.59); for (let i = 0; i < 90; i++) b.step(); return { arch: b.entities.some((e) => e.key === 'archmage'), lv: b.config.furnace.costs.length }; });
+    check('8-4：拠点HP60%で大魔導士が出る（イベント前の魔力炉は従来どおり）', bg8.arch && bg8.lv === 7, JSON.stringify(bg8));
+    const win8 = async () => { await p8.waitForTimeout(150); await p8.evaluate(() => { const b = window.__game.battle; b.damageBase(b.base, b.base.hp); }); await p8.waitForSelector('#scResult:not([hidden])', { timeout: 4000 }); await p8.tap('#btnReport'); await p8.waitForTimeout(100); };
+    await win8();
+    const a8 = await read8();
+    const feat8 = await p8.locator('#ovFeature').isVisible() && (await p8.locator('#featTitle').textContent()) === '最上位モンスター進化' && (await p8.locator('#featItems').textContent()).includes('魔力炉のさらなる強化');
+    await p8.tap('#btnFeatNext'); await p8.waitForTimeout(80);
+    const b8 = await read8();
+    const st8 = await p8.evaluate(() => ({ ev: window.__game.app.profile.events.ultimate, saved: JSON.parse(localStorage.getItem('maougunInvasion.save')).events.ultimate, loot: !document.getElementById('scLoot').hidden }));
+    check('8-4 初回：勝利後の会話（4行）→ 究極進化（10行・発光と振動）→ 解放画面 → 第9章への進軍（11行）→ 戦利品', a8.o.length === 14 && a8.o[3] === 'よし！ 早速試すのじゃ！' && a8.o[4] === '――ヴェイルは魔導装置の技術を封印の祠の魔力炉に応用した。' && a8.o[13] === 'よし！ 最強の魔王軍を作り上げるのじゃ！' && a8.fx >= 2 && feat8 && b8.o.length === 11 && b8.o[9] === '――第8章クリア。' && b8.o[10] === '――魔王軍と人間軍の全面戦争が始まろうとしていた。' && st8.ev.done && st8.saved.done && st8.loot, JSON.stringify({ a: a8.o.length, fx: a8.fx, feat8, b: b8.o.length, st8 }));
+    await p8.reload(); await p8.waitForFunction(() => window.__game); await p8.tap('#btnContinue'); await p8.waitForTimeout(150);
+    const rl = await p8.evaluate(async () => { const m = await import('./js/data/progress.js'); const p = window.__game.app.profile; return { done: m.ultimateDone(p), cap: m.evolveTierCap(p) }; });
+    check('再読み込み後も究極進化（最上位進化・魔力炉の強化）が残る', rl.done && rl.cap === 3, JSON.stringify(rl));
+    await p8.evaluate(() => { window.__game.app.profile.story['before:8-4'] = true; window.__game.startStage('8-4'); }); await p8.waitForTimeout(150);
+    for (let i = 0; i < 6 && !(await p8.evaluate(() => window.__game.app.screen === 'battle')); i++) { for (const b of ['#btnReconSkip', '#btnReconNext', '#btnSortie']) if (await p8.locator(b).isVisible()) await p8.tap(b); await p8.waitForTimeout(100); }
+    const fz = await p8.evaluate(() => window.__game.battle.config.furnace.costs.length);
+    check('究極進化のあと：戦闘の魔力炉が1段多く上がる', fz === 8, String(fz));
+    await win8();
+    check('8-4 の再クリアでは究極進化が起きない（会話なしで戦利品へ）', !(await p8.locator('#scTalk').isVisible()) && await p8.locator('#scLoot').isVisible() && !(await p8.locator('#ovFeature').isVisible()));
+    check('第8章：エラーなし', e8.length === 0, e8.join(' / '));
+    await c8.close();
+  }
+
   // ---- 縦持ち ----
   const ctx2 = await browser.newContext({ ...devices['iPhone 13'] });
   const p2 = await ctx2.newPage();

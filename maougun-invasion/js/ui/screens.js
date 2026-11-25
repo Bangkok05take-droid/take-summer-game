@@ -20,7 +20,7 @@ const fmtTime = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padSt
 // ---------- ステージ選択 ----------
 // 地図の上の位置（%）：左下の見張り小屋から、右上の村の広場へ
 // 地図の上の位置（%）。章ごとに3つ
-const NODE_POS = { '1-1': [18, 66], '1-2': [50, 36], '1-3': [82, 62], '2-1': [18, 40], '2-2': [50, 66], '2-3': [82, 40], '3-1': [18, 66], '3-2': [50, 38], '3-3': [82, 62], 'ex-1': [50, 55], '4-1': [18, 40], '4-2': [50, 66], '4-3': [82, 40], '5-1': [14, 66], '5-2': [38, 36], '5-3': [62, 66], '5-4': [86, 36], '6-1': [18, 62], '6-2': [50, 38], '6-3': [82, 62], '7-1': [28, 55], '7-2': [72, 45] };
+const NODE_POS = { '1-1': [18, 66], '1-2': [50, 36], '1-3': [82, 62], '2-1': [18, 40], '2-2': [50, 66], '2-3': [82, 40], '3-1': [18, 66], '3-2': [50, 38], '3-3': [82, 62], 'ex-1': [50, 55], '4-1': [18, 40], '4-2': [50, 66], '4-3': [82, 40], '5-1': [14, 66], '5-2': [38, 36], '5-3': [62, 66], '5-4': [86, 36], '6-1': [18, 62], '6-2': [50, 38], '6-3': [82, 62], '7-1': [28, 55], '7-2': [72, 45], '8-1': [14, 66], '8-2': [38, 36], '8-3': [62, 66], '8-4': [86, 36] };
 
 // ch：表示する章（CHAPTERS の1つ）。onChapter(ch)：章のタブを押したとき
 export function renderSelect(p, onPick, ch = CHAPTER1, onChapter = null) {
@@ -80,7 +80,7 @@ export function renderSelect(p, onPick, ch = CHAPTER1, onChapter = null) {
 
 // ---------- 会話 ----------
 const SIDE = { ord: 'right', lord: 'left', aide: 'right', take: 'right', sai: 'right', tiw: 'left', mot: 'left', waan: 'left', koi: 'left', yanai: 'left' };
-const HUMAN_SPEAKERS = ['take', 'sai', 'tiw', 'mot', 'waan', 'koi', 'yanai', '門番', '商人', '警備隊長', '王国兵', '王国騎士', '国王', '港の警備兵', '港の守備隊長', '人間軍兵士', '人間軍技師', '重装兵団長', '要塞司令官', '古代王', '聖騎士', '聖騎士団長'];
+const HUMAN_SPEAKERS = ['take', 'sai', 'tiw', 'mot', 'waan', 'koi', 'yanai', '門番', '商人', '警備隊長', '王国兵', '王国騎士', '国王', '港の警備兵', '港の守備隊長', '人間軍兵士', '人間軍技師', '重装兵団長', '要塞司令官', '古代王', '聖騎士', '聖騎士団長', '人間軍魔法使い', '魔導士団長', '大魔導士'];
 
 export class TalkPlayer {
   constructor() {
@@ -212,7 +212,7 @@ export function renderUpgrade(p, onUnit, onGlobal, onEvolve = null) {
       if (crystalDone(p)) {
         const ev = document.createElement('div'); ev.className = 'evo';
         const ch = evolutionChoices(p, k).filter((t) => EVOLUTIONS[t].tier <= evolveTierCap(p));
-        if (!ch.length) ev.textContent = now.tier >= evolveTierCap(p) && now.tier > 1 ? '進化：上位まで進化ずみ' : '進化：進化先は準備中';
+        if (!ch.length) ev.textContent = now.tier >= evolveTierCap(p) && now.tier > 1 ? (now.tier >= 3 ? '進化：最上位まで進化ずみ' : '進化：上位まで進化ずみ') : '進化：進化先は準備中';
         for (const t of ch) {
           const b2 = document.createElement('button'); b2.type = 'button'; b2.dataset.evolve = t;
           const cost = EVOLVE_NEED.stones(EVOLUTIONS[t].tier);

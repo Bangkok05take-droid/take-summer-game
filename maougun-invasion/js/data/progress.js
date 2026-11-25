@@ -7,6 +7,7 @@
  *   upgrades    { manaMax, manaRegen, cooldown, spellPower, spellCharge } の段階
  *   events      { ruin: { done, choice: 'recruit'|'reject', recruited, rematches } }  特殊イベント「壊滅した町」
  *               { crystal: { done } }  特殊イベント「大魔王の魔力回復」（6-3 の初回クリア）。魔力の部分回復と上位進化の解放
+ *               { ultimate: { done } } 特殊イベント「魔王軍の究極進化」（8-4 の初回クリア）。魔力炉のさらなる強化と最上位進化の解放
  *   formation   { units: [key…], bosses: [key…] }  出撃する編成（次のステージにも引き継ぐ）。枠の数は大魔王Lvで決まる（SLOTS）
  *   stages[id]  { cleared, clears, bestTime }
  *   seen        { [key]: true }  解放画面を見たユニット
@@ -329,9 +330,29 @@ export function applyCrystal(p) {
   return true;
 }
 
-// ---------- 進化（上位まで。最上位はまだ解放しない） ----------
-// 進化できる段階の上限：魔力結晶の前は進化なし（1）、あとは上位（2）まで
-export function evolveTierCap(p) { return crystalDone(p) ? 2 : 1; }
+// ---------- 特殊イベント「魔王軍の究極進化」（第8章・魔法都市の魔力増幅技術） ----------
+// 8-4 の初回クリアで1回だけ。魔力炉のさらなる強化（戦闘中の魔力炉：1段ごとの上がり幅が増え、Lv が1つ上まで上がる）と最上位進化の解放。
+// 数値は仮（バトル設計で調整）。大魔王の肉体は戻らない（祠にとどまる）
+export const ULTIMATE_FURNACE = { maxAdd: 100, regenAdd: 3, extraCosts: [850] };
+export function ultimateDone(p) { return !!(p && p.events && p.events.ultimate && p.events.ultimate.done); }
+export function ultimatePending(p) { return !!(p.stages['8-4'] && p.stages['8-4'].cleared) && !ultimateDone(p); }
+// 1回だけ。戻り値：今回はじめて解放したら true（再クリアでは false＝重複しない）
+export function applyUltimate(p) {
+  if (ultimateDone(p)) return false;
+  p.events = p.events || {};
+  p.events.ultimate = { done: true };
+  return true;
+}
+// 戦闘で使う魔力炉の設定（究極進化のあとは強化される）
+export function resolveFurnace(furnace, p) {
+  if (!ultimateDone(p)) return furnace;
+  const u = ULTIMATE_FURNACE;
+  return { ...furnace, costs: [...furnace.costs, ...u.extraCosts], maxAdd: furnace.maxAdd + u.maxAdd, regenAdd: furnace.regenAdd + u.regenAdd };
+}
+
+// ---------- 進化 ----------
+// 進化できる段階の上限：魔力結晶の前は進化なし（1）、魔力結晶のあとは上位（2）、究極進化のあとは最上位（3）まで
+export function evolveTierCap(p) { return ultimateDone(p) ? 3 : crystalDone(p) ? 2 : 1; }
 export const EVOLVE_NEED = { level: 5, stones: (tier) => 300 + tier * 200 }; // 仮：Lv5 以上と魔界石（上位 700）
 // 進化する。{ ok, reason }：'feature'＝まだ進化できない（魔力結晶の前）／'tier'＝最上位はまだ／'level'／'stones'／'planned'（進化先のデザイン待ち）など
 export function tryEvolve(p, key, toKey) {

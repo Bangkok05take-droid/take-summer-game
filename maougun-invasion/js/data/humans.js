@@ -116,6 +116,33 @@ export const HUMANS = {
       { id: 'stun', name: '裁きの光', type: 'stun', every: 12, first: 8, windup: 0.9, recover: 0.4, reach: 220, duration: 2.0 },
     ],
   },
+  // ---- 第8章（2026-11-25・仮）。魔導兵・魔導士団長・大魔導士のデザインは未承認なので、絵は既存の兵士（見習い僧侶）の代用 ----
+  mage: {
+    name: '魔導兵', role: '後衛（魔法）', line: 'back',
+    note: '後ろから魔法弾を撃つ。打たれ弱い', counter: '木槌小鬼で後ろから倒すか、こうもりで一気に近づく',
+    hp: 420, atk: 30, range: 200, speed: 26, interval: 2.4, windup: 0.6, kb: 2, attack: 'single', projectile: 'orb', mana: 110, size: 1.0,
+  },
+  elite_mage: {
+    name: '精鋭魔導士', role: '後衛（魔法）', line: 'back', noKbFromSmall: true,
+    note: '魔力を増幅した強い魔法弾を2連続で撃つ。結界で受けるダメージを減らす', counter: '木槌小鬼と呪文で先に倒す',
+    hp: 700, atk: 32, range: 220, speed: 24, interval: 2.8, windup: 0.7, kb: 3, attack: 'single', hits: 2, hitGap: 0.25, projectile: 'orb', guard: 0.15, mana: 170, size: 1.1,
+  },
+  mage_captain: {
+    name: '魔導士団長', role: '強敵', hero: true, noKbFromSmall: true, line: 'back',
+    note: '精鋭魔導士団を率いる。後ろから強い魔法弾を撃ち、魔導砲で前方の魔物をなぎ払う', counter: '前衛で持ちこたえ、木槌小鬼・こうもり・呪文で後ろから崩す',
+    hp: 2400, atk: 40, range: 180, speed: 22, interval: 2.4, windup: 0.6, kb: 5, attack: 'single', projectile: 'orb', guard: 0.1, mana: 600, size: 1.35,
+    skills: [{ id: 'wave', name: '魔導砲', type: 'wave', every: 15, first: 6, windup: 1.2, recover: 0.4, reach: 240, mult: 1.3 }],
+  },
+  archmage: {
+    name: '大魔導士', role: '強敵', hero: true, noKbFromSmall: true,
+    note: '魔法都市の最高位の魔導士。仲間を癒やし、大魔法でなぎ払い、魔物を気絶させる', counter: '回復役を先に倒し、呪文と幹部で一気に押し切る',
+    hp: 3000, atk: 46, range: 50, speed: 20, interval: 2.0, windup: 0.6, kb: 6, attack: 'single', projectile: 'orb', guard: 0.1, mana: 800, size: 1.5,
+    skills: [
+      { id: 'heal', name: '魔力の再生', type: 'heal', every: 22, first: 10, windup: 0.6, recover: 0.4, radius: 220, ratio: 0.05 },
+      { id: 'wave', name: '大魔法', type: 'wave', every: 18, first: 6, windup: 1.3, recover: 0.4, reach: 240, mult: 1.3 },
+      { id: 'stun', name: '束縛の魔法', type: 'stun', every: 14, first: 9, windup: 0.9, recover: 0.4, reach: 220, duration: 1.8 },
+    ],
+  },
   // ---- 特殊イベント「壊滅した町」（2026-11-25・仮）。絵はビジュアル制作室の納品待ち（それまでは仮の絵） ----
   ord: {
     name: '竜人オルド', role: '竜の戦士', hero: true, noKbFromSmall: true,
