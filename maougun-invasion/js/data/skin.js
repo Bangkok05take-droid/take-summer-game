@@ -69,8 +69,7 @@ export const SKIN = {
       chapter4: { src: 'assets/approved/bg/ch4_harbor.png', scale: 0.85, offsetY: -75, parallax: 0.35, focus: 0.5 }, // 2026-11-25：港町の本番背景（2172×724・道の上端 y≈532）
       // 第5章 鉄鋼の要塞都市：承認済みの背景が届いたら src をその画像にする（今は町のパノラマを暗くして代用）
       chapter5: { src: 'assets/approved/bg/pano_village_town.png', scale: 1.36, offsetY: 0, parallax: 0.35, focus: 0.5, tint: 'rgba(30,30,45,.35)' },
-      // 第6章 砂漠の古代王国：承認済みの砂漠・ピラミッド背景が届いたら src をその画像にする（今は町のパノラマを砂色に染めて代用）
-      chapter6: { src: 'assets/approved/bg/pano_village_town.png', scale: 1.36, offsetY: 0, parallax: 0.35, focus: 0.5, tint: 'rgba(200,150,60,.35)' },
+      chapter6: { src: 'assets/approved/bg/ch6_desert.png', scale: 0.85, offsetY: -75, parallax: 0.35, focus: 0.5 }, // 2026-11-25：砂漠の古代王国の本番背景（2172×724・道の上端 y≈532）。3ステージ共通
       // 第7章 聖なる都：承認済みの背景が届いたら src をその画像にする（今は城の背景を白く明るくして代用）
       chapter8: { src: 'assets/approved/bg/pano_village_town.png', scale: 1.36, offsetY: 0, parallax: 0.35, focus: 0.5, tint: 'rgba(90,50,160,.35)' }, // 仮：魔法都市の背景（未着）。4ステージ共通
       chapter7: { src: 'assets/approved/bg/ch3_castle_v2.png', scale: 1.22, offsetY: -358, parallax: 0.35, focus: 0.5, tint: 'rgba(255,250,220,.3)' },
