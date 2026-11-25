@@ -20,9 +20,10 @@ export const SKIN = {
     mallet_2: '木槌小鬼（第2形態）', mallet_3a: '木槌小鬼（一撃）', mallet_3b: '木槌小鬼（連投）', // 進化形（仮称）
     charger: 'ワニ将軍', // 2026-11-25：幹部1体目（ユーザーのデザイン）。内部キーは charger のまま elemental: '幹部・炎氷', trickster: '幹部・罠', thunder: '幹部・落雷', mist: '幹部・霧',
     lord: '大魔王', lordAwakened: '大魔王（真の姿）',
+    ord: '竜人オルド', // 2026-11-25（依頼文での呼び方：バラン）
   },
   speakers: {
-    lord: '大魔王', aide: 'ヴェイル', narr: '', // aide：影の側近（2026-11-24 命名。既存作品の名前に近い「ミスト」を避けた）
+    lord: '大魔王', aide: 'ヴェイル', narr: '', ord: 'オルド', // aide：影の側近（2026-11-24 命名。既存作品の名前に近い「ミスト」を避けた）
     tiw: 'ティウ', mot: 'モッ', waan: 'ワーン', koi: 'コイ', take: '勇者たけ', sai: '勇者サイ', yanai: 'マスター・ヤナイ',
   },
   sprites: {
@@ -60,6 +61,7 @@ export const SKIN = {
       // 町のパノラマ（pano_village_town.png）は第2章（城下町）用に残す。16:9 の旧背景（village_small.png・village_town.png）もファイルは残す
       chapter1: { src: 'assets/approved/bg/pano_village_small.png', scale: 1.36, offsetY: 0, parallax: 0.35, focus: 0.5 },
       chapter2: { src: 'assets/approved/bg/pano_village_town.png', scale: 1.36, offsetY: 0, parallax: 0.35, focus: 0.5 }, // 第2章 城下町（町のパノラマ）
+      'ex-1': { src: 'assets/approved/bg/pano_village_town.png', scale: 1.36, offsetY: 0, parallax: 0.35, focus: 0.5, tint: 'rgba(40,10,20,.55)' }, // 壊滅した町（仮）：専用背景の納品待ち。町のパノラマを暗く
       chapter3: { src: 'assets/approved/bg/pano_village_town.png', scale: 1.36, offsetY: 0, parallax: 0.35, focus: 0.5 }, // 第3章（仮）：城の背景が届くまで町のパノラマ
     },
     // 人間軍の拠点（tower：1-1〜1-3、gate：1-4、castle：1-5）と、魔王軍の祠。{ src, width, footY }
@@ -143,6 +145,8 @@ Object.assign(SKIN.sprites, APPROVED.sprites);
 if (SKIN.sprites.swordsman && !SKIN.sprites.captain) SKIN.sprites.captain = { ...SKIN.sprites.swordsman, scale: (SKIN.sprites.swordsman.scale || 0.25) * 1.4 };
 // 第3章（仮）：王国騎士は盾兵の絵を1.15倍、国王は盾兵の絵を1.45倍（専用の絵が届くまで）
 if (SKIN.sprites.shield && !SKIN.sprites.knight) SKIN.sprites.knight = { ...SKIN.sprites.shield, scale: (SKIN.sprites.shield.scale || 0.25) * 1.15 };
+// 竜人オルド（仮）：ビジュアル制作室の絵が届くまで、闇の騎士の絵を1.6倍で代用
+if (SKIN.sprites.vanguard && !SKIN.sprites.ord) SKIN.sprites.ord = { ...SKIN.sprites.vanguard, scale: (SKIN.sprites.vanguard.scale || 0.25) * 1.6 };
 if (SKIN.sprites.shield && !SKIN.sprites.king) SKIN.sprites.king = { ...SKIN.sprites.shield, scale: (SKIN.sprites.shield.scale || 0.25) * 1.45 };
 Object.assign(SKIN.portraits, APPROVED.portraits);
 Object.assign(SKIN.images.stageBg, APPROVED.images.stageBg);

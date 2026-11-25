@@ -38,7 +38,9 @@ export const CHAPTER3 = { id: 3, name: '地方王国の城を攻略せよ', stag
 export const CHAPTERS = [CHAPTER1, CHAPTER2, CHAPTER3];
 // 全ステージの順番（章をまたいで、前のステージをクリアすると次が開く）
 export const STAGE_ORDER = CHAPTERS.flatMap((c) => c.stages);
-export const chapterOf = (id) => CHAPTERS.find((c) => c.stages.includes(id)) || CHAPTER1;
+// 特別（2026-11-25）：特殊イベント「壊滅した町」。ステージ選択の「特別」タブ（イベントのあとだけ出る）。通常の進行（STAGE_ORDER）には入れない
+export const CHAPTER_EX = { id: 'ex', name: '壊滅した町', stages: ['ex-1'], special: true };
+export const chapterOf = (id) => (id === 'ex-1' ? CHAPTER_EX : CHAPTERS.find((c) => c.stages.includes(id)) || CHAPTER1);
 
 const MANA = { start: 200, max: 1000, regen: 28 };
 
@@ -255,5 +257,15 @@ export const STAGES = {
       { trigger: { baseBelow: 0.25 }, wave: [{ who: 'knight', count: 2 }, { who: 'rider', count: 3 }, { who: 'archer', count: 2 }], gap: 0.5 },
     ],
     reward: { stones: 450 },
+  },
+  // ---------------- 特別：壊滅した町（竜人オルド）。能力・報酬は仮（別途調整） ----------------
+  // forced：初戦は強制敗北（main.js が台本の秒数で終わらせる）。再戦は通常の勝敗で、勝つとオルドが加入（reward.unlock）
+  'ex-1': {
+    id: 'ex-1', chapter: 'ex', name: '壊滅した町', theme: 'ruin', boss: true,
+    length: L(2300), shrineHp: 8000, baseHp: 6000, enemyScale: 1.0, mana: { ...MANA, start: 500 },
+    spawns: [
+      { trigger: { baseBelow: 1.0 }, hero: 'ord', wave: [{ who: 'ord', count: 1 }], gap: 0.6 }, // 始まってすぐ登場（帯：竜人オルド 参上！）
+    ],
+    reward: { stones: 500, unlock: 'ord' },
   },
 };

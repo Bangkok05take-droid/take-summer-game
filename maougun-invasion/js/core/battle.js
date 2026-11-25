@@ -534,6 +534,7 @@ export class Battle {
     for (const o of this.entities) {
       if (o.side !== 'human' || o.state === 'dead') continue;
       if (Math.abs(o.x - s.cx) > s.radius) continue;
+      if (o.spellImmune) { this.events.push({ type: 'immune', id: o.id, x: o.x, lane: o.lane }); continue; } // 呪文が効かない（壊滅した町の初戦のオルド）
       this.damageUnit(o, s.damage, null, true);
     }
   }

@@ -79,6 +79,7 @@ export class Renderer {
           if (ev.hero) this.add({ kind: 'banner', text: '勇者が撤退した！', color: '#5b2a99', life: 1.8 });
           break;
         }
+        case 'immune': this.add({ kind: 'num', x: ev.x, y: laneY(ev.lane) - 70, text: '効かない！', color: '#ff9aa8', life: 1.0, big: true }); break;
         case 'manaGain': this.add({ kind: 'num', x: ev.x, y: GROUND_Y - 84, text: '+' + ev.amount, color: '#e2c6ff', life: 0.9, small: true }); break;
         case 'heal': if (ev.amount > 0 && ev.srcKey && ufx(ev.srcKey, 'heal')) { const d = ufx(ev.srcKey, 'heal'); this.add({ kind: 'ufx', d, x: ev.x, y: laneY(ev.lane) + 2, flip: 1, life: d.life }); }
           if (ev.amount > 0) this.add({ kind: 'num', x: ev.x, y: laneY(ev.lane) - 56, text: '+' + ev.amount, color: '#7ef0b0', life: 0.8, small: true }); break;
@@ -229,6 +230,7 @@ export class Renderer {
     } else x = range ? -extra * (this.camX / range) : -extra / 2;
     ctx.imageSmoothingEnabled = true;
     ctx.drawImage(img, x, def.offsetY || 0, w, h);
+    if (def.tint) { ctx.fillStyle = def.tint; ctx.fillRect(0, 0, VIEW_W, VIEW_H); } // 暗くする（壊滅した町の仮の背景など）
     ctx.imageSmoothingEnabled = false;
     if (h + (def.offsetY || 0) < VIEW_H) { ctx.fillStyle = '#1a0d29'; ctx.fillRect(0, h + (def.offsetY || 0), VIEW_W, VIEW_H); }
   }

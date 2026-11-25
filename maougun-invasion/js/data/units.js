@@ -98,6 +98,14 @@ export const BOSSES = {
     skills: [{ id: 'charge', name: '突進', type: 'charge', every: 12, first: 3, windup: 0.9, recover: 0.6, reach: 220, trigger: 110, move: 140, mult: 1.8, push: 90 }], // trigger：敵が110まで来てから突進（前線をまとめて巻きこむ）
     anim: { idle: 2, walk: 4, attack: 4, skill: 6 }, // 準備するアニメーションのコマ数（ART_SPEC）
   },
+  // 竜人オルド（2026-11-25・特殊イベントで加入）。召喚魔力がとても高い：魔力炉を最大（Lv8）にしても、今の大魔王の力では届かない
+  //   届く目安：魔力の器 Lv10（+1000）と大魔王 Lv22 前後（封印のほころび +1260）＋魔力炉 Lv8（+1750）＝約5000。能力は仮（別途調整）
+  ord: {
+    role: '幹部・竜の戦士', attackType: 'melee', target: 'front', unique: true, ready: true, special: true, growth: GROWTH,
+    cost: 5000, needFurnace: 8, cooldown: 90, hp: 16000, atk: 240, range: 60, speed: 28,
+    interval: 2.4, windup: 0.6, kb: 8, attack: 'area', size: 1.7, blowAway: true,
+    skills: [{ id: 'wave', name: '竜の一閃', type: 'wave', every: 9, first: 3, windup: 0.9, recover: 0.4, reach: 320, mult: 2.2 }],
+  },
   // ---- 構想（ready: false）。数値は仮。能力（skills）と絵ができたら ready: true にする ----
   trickster: { attackType: 'mid', target: 'front', role: '幹部・罠と身代わり', unique: true, ready: false, cost: 1300, needFurnace: 3, cooldown: 60, hp: 4500, atk: 120, range: 120, speed: 34, interval: 2.6, windup: 0.6, kb: 6, attack: 'single', size: 1.5, growth: GROWTH },
   mist: { attackType: 'mid', target: 'front', role: '幹部・霧', unique: true, ready: false, cost: 1600, needFurnace: 4, cooldown: 60, hp: 7000, atk: 90, range: 100, speed: 28, interval: 2.8, windup: 0.7, kb: 6, attack: 'area', size: 1.6, growth: GROWTH },

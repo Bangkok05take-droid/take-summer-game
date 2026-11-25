@@ -317,6 +317,33 @@ try {
   check('第3章でエラーが無い', e5.length === 0, e5.join(' / '));
   await ctx5.close();
 
+  // ---- 特殊イベント「壊滅した町」：両ルート ----
+  for (const choice of ['recruit', 'reject']) {
+    const c6 = await browser.newContext({ ...devices['iPhone 13 landscape'] });
+    const p6 = await c6.newPage(); const e6 = []; p6.on('pageerror', (e) => e6.push(String(e)));
+    await p6.goto(`http://localhost:${PORT}/?seed=6`); await p6.waitForFunction(() => window.__game);
+    await p6.evaluate(async () => { const m = await import('./js/data/progress.js'); const g = window.__game; const p = m.newProfile(); for (const id of ['1-1','1-2','1-3','2-1','2-2','2-3','3-1','3-2','3-3']) m.applyResult(p, id, 'win', 100); Object.assign(p.story, { opening: true, 'tip:recon': true, 'tip:form': true, 'tip:upgrade': true }); g.app.profile = p; m.saveProfile(p); g.toSelect(); });
+    await p6.waitForTimeout(200);
+    const read6 = async () => { const o = []; for (let i = 0; i < 40 && await p6.locator('#scTalk').isVisible(); i++) { o.push(await p6.locator('#talkText').textContent()); await p6.tap('#talkBox'); await p6.waitForTimeout(25); } return o; };
+    const d = await read6();
+    const battle = await p6.evaluate(() => window.__game.app.screen === 'battle' && window.__game.app.stageId === 'ex-1');
+    await p6.evaluate(() => { const b = window.__game.battle; for (let i = 0; i < 30 * 21; i++) { window.__game.__tick && 0; b.step(); if (b.t > 0) break; } });
+    await p6.waitForSelector('#scTalk:not([hidden])', { timeout: 30000 });
+    const a = await read6();
+    await p6.waitForSelector('#ovChoice:not([hidden])', { timeout: 3000 });
+    await p6.tap(choice === 'recruit' ? '#btnChoiceA' : '#btnChoiceB'); await p6.waitForTimeout(80);
+    const r = await read6();
+    const st6 = await p6.evaluate(() => { const g = window.__game; const p = g.app.profile; return { screen: g.app.screen, ruin: p.events.ruin, ord: !!(p.units.ord && p.units.ord.unlocked), special: !!document.querySelector('.chapTab[data-chapter="ex"]') }; });
+    check(`壊滅した町（${choice}）：①②16行 → 特殊戦闘 → 敗北のあと④8行 → 選択 → ⑤・⑥ → ステージ選択`, d.length === 16 && d[15] === '……承知いたしました。' && battle && a[0] === '――魔王軍、敗北。' && a.length === 8 && r[r.length - 1] === '――第4章「港町」へ。' && r.length === (choice === 'recruit' ? 19 : 10) && st6.screen === 'scSelect', JSON.stringify({ d: d.length, a: a.length, r: r.length, st6 }));
+    check(`壊滅した町（${choice}）：結果の記録・「特別」タブ`, st6.ruin.done && st6.ruin.choice === choice && st6.ord === (choice === 'recruit') && st6.special);
+    if (choice === 'reject') {
+      await p6.reload(); await p6.waitForFunction(() => window.__game); await p6.tap('#btnContinue'); await p6.waitForTimeout(150);
+      check('敵対ルート：再読み込み後も再戦できる（特別タブの壊滅した町が押せる）', !(await p6.evaluate(() => { window.__game.toSelect({ ...window.__game.app, stages: ['ex-1'], special: true, id: 'ex', name: '壊滅した町' }); return document.querySelector('.node[data-stage="ex-1"]').disabled; })) && !(await p6.evaluate(() => window.__game.app.profile.units.ord.unlocked)));
+    }
+    check(`壊滅した町（${choice}）：エラーなし`, e6.length === 0, e6.join(' / '));
+    await c6.close();
+  }
+
   // ---- 縦持ち ----
   const ctx2 = await browser.newContext({ ...devices['iPhone 13'] });
   const p2 = await ctx2.newPage();

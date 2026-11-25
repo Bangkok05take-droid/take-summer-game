@@ -406,3 +406,8 @@ body.portrait #rotate { display: flex; }
 #stutor.at-top { top: calc(var(--u) * 70); }
 #stutor .tutorBox { position: relative; top: auto; left: auto; transform: none; margin: 0 auto; }
 #stutor.tap .tutorBox { cursor: pointer; }
+/* 特殊イベント：壊滅した町の会話の背景（仮・暗い赤）／選択肢 */
+.talkBg.ruin { background: linear-gradient(180deg, rgba(40, 8, 16, .55), rgba(20, 4, 10, .8)); }
+.choiceRow { gap: calc(var(--u) * 16); }
+.chapTab.special { border-color: #b4532a; }
+.chapTab.special.on { background: rgba(120, 30, 20, .85); }

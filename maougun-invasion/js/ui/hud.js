@@ -19,8 +19,9 @@ export class Hud {
   }
 
   build(battle, stage) {
-    $('tagChap').textContent = `第${chapterOf(stage.id).id}章 ${chapterOf(stage.id).name}`;
-    $('tagStage').textContent = `${stage.id}　${stage.name}`;
+    const ch = chapterOf(stage.id);
+    $('tagChap').textContent = ch.special ? '特別' : `第${ch.id}章 ${ch.name}`;
+    $('tagStage').textContent = ch.special ? stage.name : `${stage.id}　${stage.name}`;
     const wrap = $('slots');
     wrap.innerHTML = '';
     this.slots = battle.deck.map((d, i) => {

@@ -11,6 +11,7 @@ import {
   levelUpUnit, buyUpgrade, START_UNITS, SAVE_KEY,
 } from '../js/data/progress.js';
 
+import { STAGE_ORDER as STAGE_ORDER_ALL } from '../js/data/stages.js';
 const stage = (over, id = '1-1') => ({ ...STAGES[id], ...over });
 const noEnemies = (over = {}) => stage({ spawns: [], ...over });
 const ALL = ['mass', 'vanguard', 'tank', 'ranged', 'fast', 'area', 'healer', 'special'];
@@ -418,6 +419,7 @@ test('幹部：別の幹部が出撃中は召喚できず、撃破後は別の�
 
 test('幹部の召喚費用は 1200〜2200、必要な魔力炉Lvは 2〜8', () => {
   for (const [k, d] of Object.entries(BOSSES)) {
+    if (d.special) continue; // 竜人オルドは別枠（とても高い）
     assert.ok(d.cost >= 1200 && d.cost <= 2200, k);
     assert.ok(d.needFurnace >= 2 && d.needFurnace <= 8, k);
     assert.equal(d.cooldown, 60, k);
@@ -596,4 +598,48 @@ test('ワニ将軍の突進：前方の敵にダメージ、前線を押し下�
   assert.ok(a.hp < 99999 && k.hp < 99999, 'ダメージ');
   assert.ok(1200 - a.x >= s.push - 1 && 1150 - k.x >= s.push - 1, `押し下げ ${(1200 - a.x).toFixed(0)}・${(1150 - k.x).toFixed(0)}`);
   assert.ok(1300 - g.x > 100, '将軍は前へ出る');
+});
+
+// ---------- 特殊イベント「壊滅した町」 ----------
+const clearTo33 = () => { const p = newProfile(); for (const id of STAGE_ORDER_ALL) applyResult(p, id, 'win', 100); return p; };
+test('壊滅した町：3-3 クリアで発生。イベント前は「特別」に出ない', async () => {
+  const pr = await import('../js/data/progress.js');
+  const p = newProfile();
+  assert.ok(!pr.ruinPending(p));
+  for (const id of STAGE_ORDER_ALL) applyResult(p, id, 'win', 100);
+  assert.ok(pr.ruinPending(p) && !pr.ruinVisible(p) && !isStageOpen(p, 'ex-1'));
+});
+test('壊滅した町：勧誘ルートはすぐ加入（重複しない）・再戦は開かない', async () => {
+  const pr = await import('../js/data/progress.js');
+  const p = clearTo33();
+  pr.finishRuinEvent(p, 'recruit');
+  assert.ok(p.units.ord.unlocked && p.events.ruin.recruited && p.events.ruin.done);
+  assert.ok(pr.ruinVisible(p) && !isStageOpen(p, 'ex-1'), '加入済みなら再戦できない');
+  assert.equal(pr.recruitOrd(p), false, '二度目の加入は起きない');
+  const st = memStore(); saveProfile(p, st); const q = loadProfile(st);
+  assert.ok(q.units.ord.unlocked && q.events.ruin.choice === 'recruit', 'セーブから戻る');
+});
+test('壊滅した町：敵対ルートは加入せず、再戦に勝つと加入（負けても進行は止まらない）', async () => {
+  const pr = await import('../js/data/progress.js');
+  const p = clearTo33();
+  pr.finishRuinEvent(p, 'reject');
+  assert.ok(!p.units.ord.unlocked && isStageOpen(p, 'ex-1'));
+  const lose = applyResult(p, 'ex-1', 'lose', 60);
+  assert.ok(!lose.unlocked && isStageOpen(p, 'ex-1') && p.events.ruin.rematches === 1);
+  const win = applyResult(p, 'ex-1', 'win', 200);
+  assert.deepEqual(win.unlockedAll, ['ord']);
+  assert.ok(p.units.ord.unlocked && p.events.ruin.recruited && !isStageOpen(p, 'ex-1'));
+  const again = applyResult(p, 'ex-1', 'win', 200);
+  assert.deepEqual(again.unlockedAll, [], '重複して獲得しない');
+});
+test('竜人オルド：魔力炉 Lv8 でも今の最大魔力では届かない・幹部の出撃制限に従う', async () => {
+  const pr = await import('../js/data/progress.js');
+  const p = clearTo33(); pr.finishRuinEvent(p, 'recruit');
+  const m = pr.resolveMana(STAGES['3-3'].mana, p);
+  const maxWithFurnace = m.max + 7 * CONFIG.furnace.maxAdd;
+  assert.ok(maxWithFurnace < BOSSES.ord.cost, `${maxWithFurnace} < ${BOSSES.ord.cost}`);
+  assert.ok(BOSSES.ord.unique && BOSSES.ord.needFurnace === 8);
+  const b = makeBattle({ stage: noEnemies({ mana: { start: 9999, max: 99999, regen: 0 } }), deck: ['charger', 'ord'] });
+  b.furnaceLv = 8; b.queue({ type: 'summon', key: 'charger' }); b.step();
+  assert.equal(b.canSummon('ord').reason, 'bossOut');
 });

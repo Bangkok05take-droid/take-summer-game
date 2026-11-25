@@ -58,6 +58,14 @@ export const HUMANS = {
       { id: 'wave', name: '王家の剣', type: 'wave', every: 9, first: 6, windup: 0.9, recover: 0.4, reach: 240, mult: 1.6 },
     ],
   },
+  // ---- 特殊イベント「壊滅した町」（2026-11-25・仮）。絵はビジュアル制作室の納品待ち（それまでは仮の絵） ----
+  ord: {
+    name: '竜人オルド', role: '竜の戦士', hero: true, noKbFromSmall: true,
+    note: 'たった一人で町を滅ぼした竜の戦士。まわりの魔物をまとめてなぎ払う', counter: '岩男と森のお化けで持ちこたえ、ワニ将軍の突進と呪文で押し返す',
+    hp: 6500, atk: 80, range: 60, speed: 22, interval: 1.8, windup: 0.5, kb: 8, attack: 'area', mana: 600, size: 1.6,
+    blowAway: true,
+    skills: [{ id: 'wave', name: '竜の一閃', type: 'wave', every: 8, first: 3, windup: 0.9, recover: 0.4, reach: 300, mult: 2.0 }],
+  },
   // ---- 勇者（1-5 のボス）。拠点HPの割合で1回だけ登場。倒すと撤退 ----
   take: {
     name: '勇者たけ', role: '勇者', hero: true, noKbFromSmall: true,

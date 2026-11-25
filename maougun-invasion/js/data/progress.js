@@ -5,6 +5,7 @@
  *   stones      魔界石
  *   units[key]  { unlocked, level, form, formKey }   form：進化の段階（0 = 基本形）。formKey：今の進化形のキー（分岐する進化用。無ければ基本形）
  *   upgrades    { manaMax, manaRegen, cooldown, spellPower, spellCharge } の段階
+ *   events      { ruin: { done, choice: 'recruit'|'reject', recruited, rematches } }  特殊イベント「壊滅した町」
  *   formation   { units: [key…], bosses: [key…] }  出撃する編成（次のステージにも引き継ぐ）。枠の数は大魔王Lvで決まる（SLOTS）
  *   stages[id]  { cleared, clears, bestTime }
  *   seen        { [key]: true }  解放画面を見たユニット
@@ -60,7 +61,7 @@ export function newProfile() {
   const units = {};
   for (const k of [...UNIT_ORDER, 'special', 'charger']) units[k] = { unlocked: START_UNITS.includes(k), level: 1, form: 0 };
   for (const k of BOSS_ORDER) if (!units[k]) units[k] = { unlocked: false, level: 1, form: 0 };
-  const p = { version: SAVE_VERSION, stones: 0, units, upgrades: { manaMax: 0, manaRegen: 0, cooldown: 0, spellPower: 0, spellCharge: 0 }, stages: {}, story: {}, loot: [], seen: Object.fromEntries(START_UNITS.map((k) => [k, true])), formation: { units: [], bosses: [] } };
+  const p = { version: SAVE_VERSION, events: {}, stones: 0, units, upgrades: { manaMax: 0, manaRegen: 0, cooldown: 0, spellPower: 0, spellCharge: 0 }, stages: {}, story: {}, loot: [], seen: Object.fromEntries(START_UNITS.map((k) => [k, true])), formation: { units: [], bosses: [] } };
   fillFormation(p);
   return p;
 }
@@ -94,6 +95,7 @@ export function migrate(p) {
   out.story = { ...(p.story || {}) };
   out.loot = Array.isArray(p.loot) ? p.loot.slice() : [];
   out.stones = Number.isFinite(p.stones) ? p.stones : 0;
+  out.events = { ...(p.events || {}) };
   const f = p.formation;
   out.formation = { units: Array.isArray(f && f.units) ? f.units.slice() : [], bosses: Array.isArray(f && f.bosses) ? f.bosses.slice() : [] };
   normalizeFormation(out);
@@ -115,6 +117,7 @@ export function resetProfile(storage) {
 // ---------- 進行 ----------
 // 章をまたいで順に開く（1-3 をクリアすると 2-1 が開く）
 export function isStageOpen(p, id) {
+  if (id === 'ex-1') return ruinRematchOpen(p);
   const i = STAGE_ORDER.indexOf(id);
   if (i <= 0) return i === 0;
   return !!(p.stages[STAGE_ORDER[i - 1]] && p.stages[STAGE_ORDER[i - 1]].cleared);
@@ -123,7 +126,31 @@ export function nextStage(p) {
   return STAGE_ORDER.find((id) => !(p.stages[id] && p.stages[id].cleared)) || null;
 }
 export function chapterCleared(p, ch = CHAPTER1) { return ch.stages.every((id) => p.stages[id] && p.stages[id].cleared); }
-export function isChapterOpen(p, ch) { return isStageOpen(p, ch.stages[0]); }
+export function isChapterOpen(p, ch) { return ch.special ? ruinVisible(p) : isStageOpen(p, ch.stages[0]); }
+
+// ---------- 特殊イベント「壊滅した町」 ----------
+export const ruinState = (p) => (p.events && p.events.ruin) || null;
+export function ruinPending(p) { return !!(p.stages['3-3'] && p.stages['3-3'].cleared) && !(ruinState(p) && ruinState(p).done); }
+export function ruinVisible(p) { return !!(ruinState(p) && ruinState(p).done); } // イベントのあとだけ、ステージ選択に「壊滅した町」
+export function ruinRematchOpen(p) { const r = ruinState(p); return !!(r && r.done && !r.recruited); }
+// イベントの結果を記録。choice：'recruit'（すぐ加入）｜'reject'（加入しない・あとで再戦できる）
+export function finishRuinEvent(p, choice) {
+  p.events = p.events || {};
+  const r = p.events.ruin = { ...(p.events.ruin || {}), done: true, choice, rematches: (p.events.ruin && p.events.ruin.rematches) || 0 };
+  if (choice === 'recruit') recruitOrd(p);
+  else r.recruited = !!r.recruited;
+  return r;
+}
+// オルドの加入（重複しない）。戻り値：今回はじめて加入したら true
+export function recruitOrd(p) {
+  p.events = p.events || {};
+  const r = p.events.ruin = { done: true, ...(p.events.ruin || {}) };
+  if (p.units.ord && p.units.ord.unlocked) { r.recruited = true; return false; }
+  p.units.ord = { ...(p.units.ord || { level: 1, form: 0 }), unlocked: true };
+  r.recruited = true;
+  addToFormation(p, 'ord');
+  return true;
+}
 export { chapterOf };
 
 // 戦闘の結果を反映。戻り値：{ stones, firstClear, unlocked }
@@ -132,6 +159,7 @@ export function applyResult(p, stageId, result, time) {
   const rec = p.stages[stageId] || { cleared: false, clears: 0, bestTime: null };
   const out = { stones: 0, firstClear: false, unlocked: null, unlockedAll: [], slotsUp: null };
   const slots0 = slotsFor(p);
+  if (stageId === 'ex-1' && result === 'win' && p.events && p.events.ruin) p.events.ruin.rematches = (p.events.ruin.rematches || 0) + 1;
   if (result === 'win') {
     out.firstClear = !rec.cleared;
     out.stones = out.firstClear ? stage.reward.stones : Math.round(stage.reward.stones * 0.4);
@@ -141,6 +169,7 @@ export function applyResult(p, stageId, result, time) {
     if (!p.loot.includes(stageId)) p.loot.push(stageId);
     // 解放（1つ、または配列で複数）。out.unlocked は最初の1体（互換）、out.unlockedAll は全部
     for (const u of [].concat(stage.reward.unlock || [])) {
+      if (u === 'ord') { if (recruitOrd(p)) out.unlockedAll.push('ord'); continue; } // 壊滅した町の再戦に勝つとオルドが加入
       if (p.units[u] && !p.units[u].unlocked) { p.units[u].unlocked = true; out.unlockedAll.push(u); }
     }
     out.unlocked = out.unlockedAll[0] || null;
@@ -151,6 +180,7 @@ export function applyResult(p, stageId, result, time) {
     if (slots1.units > slots0.units || slots1.bosses > slots0.bosses) { out.slotsUp = slots1; fillFormation(p); } // 増えた枠は控えから順に埋める
   } else {
     out.stones = Math.round(stage.reward.stones * 0.15); // 負けても少しもらえる
+    if (stageId === 'ex-1' && p.events && p.events.ruin) p.events.ruin.rematches = (p.events.ruin.rematches || 0) + 1;
     rec.losses = (rec.losses || 0) + 1;
   }
   p.stones += out.stones;

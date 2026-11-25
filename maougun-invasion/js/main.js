@@ -9,12 +9,14 @@ import { SKIN } from './data/skin.js';
 import {
   loadProfile, saveProfile, resetProfile, buildDeck, resolveMana, applyResult, isStageOpen, nextStage,
   levelUpUnit, buyUpgrade, SAVE_KEY, resolveSpell, addToFormation, removeFromFormation, normalizeFormation,
+  ruinPending, finishRuinEvent,
 } from './data/progress.js';
 import { Renderer, VIEW_W, VIEW_H, MINIMAP } from './render/renderer.js';
 import { Hud, reasonText } from './ui/hud.js';
 import { TalkPlayer, renderSelect, renderLoot, renderUnlock, renderUpgrade, renderRecon, renderEnemyInfo, renderFormation } from './ui/screens.js';
 import { applyUiSkin } from './ui/uiskin.js';
 import { Tutor } from './ui/tutorial.js';
+import { RUIN_EVENT } from './data/event_ruin.js';
 import { SCREEN_TIPS, LOSE_TIPS, SELF_HINT, FORM_GUIDE, UPGRADE_GUIDE } from './data/tutorial.js';
 import { ScreenTutor } from './ui/screenTutor.js';
 import { CHAPTER1, STAGE_ORDER, chapterOf } from './data/stages.js';
@@ -96,6 +98,8 @@ function toSelect(ch) {
   renderer.centerOn(app.scene, app.scene.stage.length / 2);
   renderSelect(app.profile, pickStage, show1, (c) => toSelect(c));
   show('scSelect');
+  // 3-3 をクリアして戻ったら：特殊イベント「壊滅した町」（1回だけ）
+  if (ruinPending(app.profile) && !app.event) { startRuinEvent(); return; }
   // 1-2 をクリアして戻ったら：強化の手順つき説明（最初の1回）
   const r12 = app.profile.stages['1-2'];
   if (r12 && r12.cleared && !app.profile.story['tip:upgrade'] && !stutor.active) stutor.start(UPGRADE_GUIDE, () => { app.profile.story['tip:upgrade'] = true; save(); });
@@ -188,11 +192,38 @@ const hud = new Hud({
     else hud.toast(reasonText(chk));
   },
   speed(v) { clock.speed = v; hud.setSpeed(v); },
-  pause() { if (app.screen === 'battle' && app.battle && !app.battle.result && !tutor.pausing) setPaused(!clock.paused); },
+  pause() { if (app.screen === 'battle' && app.battle && !app.battle.result && !tutor.pausing && !app.forced) setPaused(!clock.paused); },
 });
 
-function startStage(id) {
+// ---------- 特殊イベント「壊滅した町」（js/data/event_ruin.js） ----------
+// ①② 会話 → 特殊戦闘（強制敗北。③の台詞を吹き出しで）→ ④ → 選択肢 → ⑤A/B → ⑥ → ステージ選択
+function startRuinEvent() {
+  app.event = 'ruin';
+  makeScene('ex-1'); renderer.camX = 0;
+  show(null);
+  talk.play(RUIN_EVENT.DISCOVER, 'ruin', () => startStage('ex-1', { forced: true }));
+}
+function ruinAfterDefeat() {
+  makeScene('ex-1'); renderer.camX = 0;
+  show(null);
+  talk.play(RUIN_EVENT.AFTER_DEFEAT, 'ruin', () => {
+    $('btnChoiceA').textContent = RUIN_EVENT.CHOICES.recruit;
+    $('btnChoiceB').textContent = RUIN_EVENT.CHOICES.reject;
+    $('ovChoice').hidden = false;
+  });
+}
+function ruinChoose(choice) {
+  $('ovChoice').hidden = true;
+  finishRuinEvent(app.profile, choice); save(); // 選んだ時点で記録（加入・再戦の状態）
+  const lines = [...(choice === 'recruit' ? RUIN_EVENT.RECRUIT : RUIN_EVENT.REJECT), ...RUIN_EVENT.MARCH];
+  talk.play(lines, 'ruin', () => { app.event = null; toSelect(); });
+}
+$('btnChoiceA').addEventListener('click', () => ruinChoose('recruit'));
+$('btnChoiceB').addEventListener('click', () => ruinChoose('reject'));
+
+function startStage(id, opts = {}) {
   app.stageId = id;
+  app.forced = !!opts.forced;
   const st = STAGES[id];
   const seed = Number(params.get('seed')) || ((Date.now() % 100000) + 1);
   const config = { ...CONFIG, spell: resolveSpell(CONFIG.spell, app.profile) }; // 魔王の力（呪文の強化）を反映
@@ -208,6 +239,21 @@ function startStage(id) {
   // チュートリアル：1-1 は手順つき説明（クリア済みなら出さない）、1-2 はヒント
   const rec = app.profile.stages[id];
   tutor.start(app.battle, st.tutorial === 'guide' && !(rec && rec.cleared) ? 'guide' : st.tutorial === 'hints' ? 'hints' : null);
+  app.forcedLines = opts.forced ? RUIN_EVENT.BATTLE_LINES.slice() : null;
+}
+// 壊滅した町の初戦（強制敗北）：オルドはとても強く呪文も効かない。台本の秒数で吹き出しを出し、最後に敗北
+function tickForced(b) {
+  if (!app.forced || b.result) return;
+  for (const e of b.entities) if (e.key === 'ord' && e.side === 'human' && !e.forcedBoost) {
+    e.forcedBoost = true; e.spellImmune = true; e.maxHp = e.hp = 999999; e.def = { ...e.def, atk: e.def.atk * 3, speed: 40 };
+  }
+  b.base.hp = b.base.maxHp; // 初戦は拠点を壊せない
+  const l = app.forcedLines[0];
+  if (l && b.t >= l.at) {
+    app.forcedLines.shift();
+    $('tutorHintWho').textContent = SKIN.speakers[l.who]; $('tutorHintText').textContent = l.text; $('tutorHint').hidden = false;
+  }
+  if (b.t >= RUIN_EVENT.BATTLE_END) { b.shrine.hp = 0; b.finish('lose'); }
 }
 
 function setPaused(p) {
@@ -230,6 +276,11 @@ function onBattleEvent(ev) {
 function showResult() {
   app.resultShown = true;
   const b = app.battle;
+  if (app.forced) { // 強制敗北：結果も記録もせず、イベントの続きへ
+    app.forced = false; $('tutorHint').hidden = true;
+    setTimeout(() => { app.battle = null; ruinAfterDefeat(); }, 1200);
+    return;
+  }
   const win = b.result === 'win';
   const t = Math.floor(b.t);
   const res = applyResult(app.profile, app.stageId, b.result, t);
@@ -356,7 +407,7 @@ function frame(now) {
     }
     if (keysDown.has('ArrowLeft')) { renderer.camX -= 700 * dt; renderer.clampCam(b); }
     if (keysDown.has('ArrowRight')) { renderer.camX += 700 * dt; renderer.clampCam(b); }
-    if (app.screen === 'battle') tutor.tick(b, now);
+    if (app.screen === 'battle') { tutor.tick(b, now); tickForced(b); }
     renderer.consume(b, onBattleEvent);
     renderer.render(b, clock.paused || b.result ? 1 : clock.alpha(), clock.paused ? 0 : dt * clock.speed);
     hud.update(b);
@@ -374,7 +425,7 @@ function frame(now) {
 window.__game = {
   app, clock, renderer, talk, SKIN,
   get battle() { return app.battle; },
-  startStage, toSelect, toTitle, toRecon, toForm, tutor, stutor,
+  startStage, toSelect, toTitle, toRecon, toForm, tutor, stutor, startRuinEvent,
 };
 
 document.addEventListener('visibilitychange', () => { if (document.hidden && app.screen === 'battle' && app.battle && !app.battle.result) setPaused(true); });
