@@ -95,7 +95,7 @@ export const BOSSES = {
     cost: 1500, needFurnace: 3, cooldown: 60, hp: 7000, atk: 160, range: 46, speed: 30,
     interval: 2.8, windup: 0.7, kb: 6, attack: 'area', size: 1.6,
     // 2026-11-25：ワニ将軍。通常攻撃に加えて「突進」：前方220の敵に攻撃力×1.8、前線を90押し下げ、自分は140前へ
-    skills: [{ id: 'charge', name: '突進', type: 'charge', every: 12, first: 3, windup: 0.9, recover: 0.6, reach: 220, trigger: 110, move: 140, mult: 1.8, push: 90 }], // trigger：敵が110まで来てから突進（前線をまとめて巻きこむ）
+    skills: [{ id: 'charge', name: '突進', type: 'charge', every: 12, first: 3, windup: 0.9, recover: 0.6, reach: 220, trigger: 110, move: 140, dashTime: 0.3, mult: 1.8, push: 90 }], // trigger：敵が110まで来てから突進（前線をまとめて巻きこむ）
     anim: { idle: 2, walk: 4, attack: 4, skill: 6 }, // 準備するアニメーションのコマ数（ART_SPEC）
   },
   // 竜人オルド（2026-11-25・特殊イベントで加入）。召喚魔力がとても高い：魔力炉を最大（Lv8）にしても、今の大魔王の力では届かない

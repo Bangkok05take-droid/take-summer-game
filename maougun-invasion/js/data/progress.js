@@ -120,6 +120,9 @@ export function isStageOpen(p, id) {
   if (id === 'ex-1') return ruinRematchOpen(p);
   const i = STAGE_ORDER.indexOf(id);
   if (i <= 0) return i === 0;
+  // 第4章は、壊滅した町のイベントが終わってから（オルドの加入・未加入は問わない）
+  const ch = chapterOf(id);
+  if (ch.needsEvent && ch.stages[0] === id && !(p.events && p.events[ch.needsEvent] && p.events[ch.needsEvent].done)) return false;
   return !!(p.stages[STAGE_ORDER[i - 1]] && p.stages[STAGE_ORDER[i - 1]].cleared);
 }
 export function nextStage(p) {

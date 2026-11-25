@@ -58,6 +58,13 @@ export const HUMANS = {
       { id: 'wave', name: '王家の剣', type: 'wave', every: 9, first: 6, windup: 0.9, recover: 0.4, reach: 240, mult: 1.6 },
     ],
   },
+  // ---- 第4章のボス（2026-11-25・仮）。絵は届くまで警備隊長と同じ代用（見習い剣士の絵を大きく） ----
+  harbor_captain: {
+    name: '港の守備隊長', role: '強敵', hero: true, noKbFromSmall: true,
+    note: '錨の一撃で前方の魔物を吹き飛ばす', counter: '岩男で受け止め、ワニ将軍の突進と呪文で押し返す',
+    hp: 3000, atk: 40, range: 46, speed: 26, interval: 1.8, windup: 0.5, kb: 6, attack: 'single', mana: 450, size: 1.4,
+    skills: [{ id: 'wave', name: '錨の一撃', type: 'wave', every: 9, first: 4, windup: 0.9, recover: 0.4, reach: 260, mult: 1.8 }],
+  },
   // ---- 特殊イベント「壊滅した町」（2026-11-25・仮）。絵はビジュアル制作室の納品待ち（それまでは仮の絵） ----
   ord: {
     name: '竜人オルド', role: '竜の戦士', hero: true, noKbFromSmall: true,

@@ -583,7 +583,8 @@ test('第3章（地方王国の城）：3ステージ。台本どおりの順番
   for (const id of [...CHAPTER1.stages, '2-1', '2-2', '2-3', '3-1', '3-2']) applyResult(p, id, 'win', 100);
   assert.ok(isStageOpen(p, '3-3'));
   applyResult(p, '3-3', 'win', 100);
-  assert.equal(nextStage(p), null);
+  assert.equal(nextStage(p), '4-1');
+  assert.ok(!isStageOpen(p, '4-1'), '壊滅した町のイベントが終わるまで第4章は開かない');
   const b = makeBattle({ stageId: '3-3', seed: 1 });
   b.damageBase(b.base, b.base.hp - b.base.maxHp * 0.59); run(b, 3);
   assert.ok(b.entities.some((e) => e.key === 'king'), '王の間：拠点HP60%で国王');
@@ -594,7 +595,8 @@ test('ワニ将軍の突進：前方の敵にダメージ、前線を押し下�
   const a = b.spawnHuman('swordsman'); a.x = 1200; a.def = { ...a.def, speed: 0, hp: 99999 }; a.hp = 99999;
   const k = b.spawnHuman('captain'); k.x = 1150; k.def = { ...k.def, speed: 0, hp: 99999 }; k.hp = 99999;
   const s = b.deckDef('charger').skills[0];
-  b.useSkill(g, s); run(b, 0.6);
+  g.state = 'skill'; g.timer = s.windup; g.skill = { ...s, done: true };
+  b.useSkill(g, s); run(b, 0.6); // 突進は0.3秒かけて踏み込む
   assert.ok(a.hp < 99999 && k.hp < 99999, 'ダメージ');
   assert.ok(1200 - a.x >= s.push - 1 && 1150 - k.x >= s.push - 1, `押し下げ ${(1200 - a.x).toFixed(0)}・${(1150 - k.x).toFixed(0)}`);
   assert.ok(1300 - g.x > 100, '将軍は前へ出る');
@@ -642,4 +644,29 @@ test('竜人オルド：魔力炉 Lv8 でも今の最大魔力では届かない
   const b = makeBattle({ stage: noEnemies({ mana: { start: 9999, max: 99999, regen: 0 } }), deck: ['charger', 'ord'] });
   b.furnaceLv = 8; b.queue({ type: 'summon', key: 'charger' }); b.step();
   assert.equal(b.canSummon('ord').reason, 'bossOut');
+});
+
+test('第4章（港町）：壊滅した町のあと開く（加入・未加入どちらでも）。台本どおりの順番', async () => {
+  const pr = await import('../js/data/progress.js');
+  const { STORY } = await import('../js/data/story.js');
+  const { CHAPTER4 } = await import('../js/data/stages.js');
+  assert.deepEqual(CHAPTER4.stages, ['4-1', '4-2', '4-3']);
+  assert.equal(CHAPTER4.name, '港町を制圧せよ');
+  for (const choice of ['recruit', 'reject']) {
+    const p = clearTo33(); pr.finishRuinEvent(p, choice);
+    assert.ok(isStageOpen(p, '4-1'), choice);
+    for (const id of CHAPTER4.stages) { assert.ok(isStageOpen(p, id)); applyResult(p, id, 'win', 100); }
+    assert.equal(nextStage(p), null, '第5章は未実装');
+    assert.equal(p.units.ord.unlocked, choice === 'recruit', 'オルドの状態はそのまま');
+    if (choice === 'reject') assert.ok(isStageOpen(p, 'ex-1'), '再戦できる状態もそのまま');
+  }
+  for (const id of CHAPTER4.stages) assert.ok(!STAGES[id].talk, id);
+  assert.equal(STORY.before['4-2'].map((l) => l.who).join(','), 'aide,港の警備兵,lord');
+  assert.equal(STORY.before['4-3'].map((l) => l.who).join(','), 'aide,港の守備隊長,lord');
+  const a = STORY.after['4-3'];
+  assert.equal(a.length, 10); assert.equal(a[7].text, 'そればっかりじゃないかぁぁ！！'); assert.equal(a[9].text, '――魔王軍は海を渡り、鉄鋼の要塞都市へと向かった。');
+  assert.equal(STORY.after['4-2'].length, 6);
+  const b = makeBattle({ stageId: '4-3', seed: 1 });
+  b.damageBase(b.base, b.base.hp - b.base.maxHp * 0.59); run(b, 3);
+  assert.ok(b.entities.some((e) => e.key === 'harbor_captain'), '4-3：港の守備隊長');
 });

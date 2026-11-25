@@ -35,7 +35,9 @@ export const CHAPTER1 = { id: 1, name: 'はじまりの村を侵略せよ', stag
 export const CHAPTER2 = { id: 2, name: '城下町を制圧せよ', stages: ['2-1', '2-2', '2-3'] };
 // 第3章（2026-11-25）：地方王国の城。台本は承認済み。敵編成・ボス・報酬は仮（別途バトル設計）
 export const CHAPTER3 = { id: 3, name: '地方王国の城を攻略せよ', stages: ['3-1', '3-2', '3-3'] };
-export const CHAPTERS = [CHAPTER1, CHAPTER2, CHAPTER3];
+// 第4章（2026-11-25）：港町。台本は承認済み。壊滅した町のイベントが終わると開く（オルドの加入・未加入は問わない）。敵編成・ボス・報酬は仮
+export const CHAPTER4 = { id: 4, name: '港町を制圧せよ', stages: ['4-1', '4-2', '4-3'], needsEvent: 'ruin' };
+export const CHAPTERS = [CHAPTER1, CHAPTER2, CHAPTER3, CHAPTER4];
 // 全ステージの順番（章をまたいで、前のステージをクリアすると次が開く）
 export const STAGE_ORDER = CHAPTERS.flatMap((c) => c.stages);
 // 特別（2026-11-25）：特殊イベント「壊滅した町」。ステージ選択の「特別」タブ（イベントのあとだけ出る）。通常の進行（STAGE_ORDER）には入れない
@@ -257,6 +259,52 @@ export const STAGES = {
       { trigger: { baseBelow: 0.25 }, wave: [{ who: 'knight', count: 2 }, { who: 'rider', count: 3 }, { who: 'archer', count: 2 }], gap: 0.5 },
     ],
     reward: { stones: 450 },
+  },
+  // ---------------- 第4章 港町（敵編成・ボス・報酬は仮） ----------------
+  '4-1': {
+    id: '4-1', chapter: 4, name: '港町の入口', theme: 'harbor',
+    length: L(2400), shrineHp: 8500, baseHp: 7500, enemyScale: 1.4, mana: MANA,
+    spawns: [
+      { who: 'militia', start: 3, every: 4, max: 7 },
+      { who: 'swordsman', start: 8, every: 8, max: 4 },
+      { who: 'archer', start: 14, every: 10, max: 3 },
+      { who: 'rider', start: 30, every: 12, max: 3 },
+      { who: 'shield', start: 45, every: 22, max: 2 },
+      { who: 'priest', start: 60, every: 24, max: 1 },
+      { trigger: { baseBelow: 0.6 }, wave: [{ who: 'rider', count: 3 }, { who: 'swordsman', count: 3 }], gap: 0.6 },
+      { trigger: { baseBelow: 0.3 }, wave: [{ who: 'knight', count: 1 }, { who: 'archer', count: 3 }, { who: 'priest', count: 1 }], gap: 0.6 },
+    ],
+    reward: { stones: 360 },
+  },
+  '4-2': {
+    id: '4-2', chapter: 4, name: '港の管理所', theme: 'harbor',
+    length: L(2400), shrineHp: 9000, baseHp: 8000, enemyScale: 1.45, mana: MANA,
+    spawns: [
+      { who: 'swordsman', start: 3, every: 7, max: 4 },
+      { who: 'archer', start: 8, every: 8, max: 4 },
+      { who: 'priest', start: 20, every: 20, max: 2 },
+      { who: 'shield', start: 30, every: 20, max: 2 },
+      { who: 'knight', start: 50, every: 24, max: 2 },
+      { who: 'rider', start: 70, every: 13, max: 3 },
+      { trigger: { baseBelow: 0.6 }, wave: [{ who: 'archer', count: 3 }, { who: 'priest', count: 1 }, { who: 'shield', count: 1 }], gap: 0.6 },
+      { trigger: { baseBelow: 0.3 }, wave: [{ who: 'knight', count: 2 }, { who: 'rider', count: 3 }], gap: 0.6 },
+    ],
+    reward: { stones: 380 },
+  },
+  '4-3': {
+    id: '4-3', chapter: 4, name: '大船着き場', theme: 'harbor', boss: true,
+    length: L(2500), shrineHp: 9500, baseHp: 7500, enemyScale: 1.3, mana: { ...MANA, start: 400 },
+    spawns: [
+      { who: 'swordsman', start: 2, every: 7, max: 4 },
+      { who: 'archer', start: 10, every: 10, max: 3 },
+      { who: 'knight', start: 15, every: 22, max: 2 },
+      { who: 'priest', start: 35, every: 24, max: 2 },
+      { who: 'rider', start: 50, every: 13, max: 3 },
+      { who: 'shield', start: 60, every: 24, max: 2 },
+      { trigger: { baseBelow: 0.6 }, hero: 'harbor_captain', wave: [{ who: 'harbor_captain', count: 1 }, { who: 'knight', count: 1 }, { who: 'archer', count: 2 }], gap: 0.8 },
+      { trigger: { baseBelow: 0.25 }, wave: [{ who: 'rider', count: 3 }, { who: 'knight', count: 2 }, { who: 'priest', count: 1 }], gap: 0.5 },
+    ],
+    reward: { stones: 500 },
   },
   // ---------------- 特別：壊滅した町（竜人オルド）。能力・報酬は仮（別途調整） ----------------
   // forced：初戦は強制敗北（main.js が台本の秒数で終わらせる）。再戦は通常の勝敗で、勝つとオルドが加入（reward.unlock）

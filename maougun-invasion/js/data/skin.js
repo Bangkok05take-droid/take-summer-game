@@ -62,6 +62,8 @@ export const SKIN = {
       chapter1: { src: 'assets/approved/bg/pano_village_small.png', scale: 1.36, offsetY: 0, parallax: 0.35, focus: 0.5 },
       chapter2: { src: 'assets/approved/bg/pano_village_town.png', scale: 1.36, offsetY: 0, parallax: 0.35, focus: 0.5 }, // 第2章 城下町（町のパノラマ）
       'ex-1': { src: 'assets/approved/bg/pano_village_town.png', scale: 1.36, offsetY: 0, parallax: 0.35, focus: 0.5, tint: 'rgba(40,10,20,.55)' }, // 壊滅した町（仮）：専用背景の納品待ち。町のパノラマを暗く
+      // 第4章 港町：承認済みの港町背景が届いたら src をその画像にする（今は町のパノラマで代用）
+      chapter4: { src: 'assets/approved/bg/pano_village_town.png', scale: 1.36, offsetY: 0, parallax: 0.35, focus: 0.5 },
       chapter3: { src: 'assets/approved/bg/pano_village_town.png', scale: 1.36, offsetY: 0, parallax: 0.35, focus: 0.5 }, // 第3章（仮）：城の背景が届くまで町のパノラマ
     },
     // 人間軍の拠点（tower：1-1〜1-3、gate：1-4、castle：1-5）と、魔王軍の祠。{ src, width, footY }
@@ -117,6 +119,14 @@ export const SKIN = {
     flight: { src: 'assets/approved/fx/phoenix_flight.png', ax: 89, ay: 349, w: 190, angle: Math.atan2(349 - 120, 89 - 330) },
     impact: { src: 'assets/approved/fx/phoenix_impact.png', ax: 256, ay: 223, life: 0.27 },
   },
+  /* ワニ将軍の大盾突進（2026-11-25・maougun_crocodile_charge_fx.zip）
+   *   wind：突進中、盾の前に付いていく青緑の風圧（膨らむ側が進む向き）／dust：足の少し後ろに残る土煙／impact：命中した所の金色の衝撃（盾側の基準点から相手側へ伸びる・約0.2秒） */
+  chargeFx: {
+    keys: ['charger'],
+    wind: { src: 'assets/approved/fx/crocodile_charge_wind.png', ax: 102, ay: 148, h: 120, ahead: 34, life: 0.35 },
+    dust: { src: 'assets/approved/fx/crocodile_charge_dust.png', ax: 75, ay: 103, w: 100, behind: 18, life: 0.45 },
+    impact: { src: 'assets/approved/fx/crocodile_charge_impact.png', ax: 241, ay: 116, w: 120, life: 0.2 },
+  },
   colors: {
     mass: ['#8b5cf6', '#3b1d74'],
     vanguard: ['#6d6a86', '#25233a'],
@@ -146,6 +156,7 @@ if (SKIN.sprites.swordsman && !SKIN.sprites.captain) SKIN.sprites.captain = { ..
 // 第3章（仮）：王国騎士は盾兵の絵を1.15倍、国王は盾兵の絵を1.45倍（専用の絵が届くまで）
 if (SKIN.sprites.shield && !SKIN.sprites.knight) SKIN.sprites.knight = { ...SKIN.sprites.shield, scale: (SKIN.sprites.shield.scale || 0.25) * 1.15 };
 // 竜人オルド（仮）：ビジュアル制作室の絵が届くまで、闇の騎士の絵を1.6倍で代用
+if (SKIN.sprites.swordsman && !SKIN.sprites.harbor_captain) SKIN.sprites.harbor_captain = { ...SKIN.sprites.swordsman, scale: (SKIN.sprites.swordsman.scale || 0.25) * 1.5 };
 if (SKIN.sprites.vanguard && !SKIN.sprites.ord) SKIN.sprites.ord = { ...SKIN.sprites.vanguard, scale: (SKIN.sprites.vanguard.scale || 0.25) * 1.6 };
 if (SKIN.sprites.shield && !SKIN.sprites.king) SKIN.sprites.king = { ...SKIN.sprites.shield, scale: (SKIN.sprites.shield.scale || 0.25) * 1.45 };
 Object.assign(SKIN.portraits, APPROVED.portraits);

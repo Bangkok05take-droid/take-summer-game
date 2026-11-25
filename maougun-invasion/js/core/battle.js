@@ -279,7 +279,11 @@ export class Battle {
     if (e.state === 'skill') {
       const s = e.skill;
       if (!s.done && e.timer >= s.windup) { s.done = true; this.useSkill(e, s); }
-      if (e.timer >= s.windup + (s.recover ?? 0.5)) { e.state = 'walk'; e.timer = 0; e.skill = null; }
+      if (e.dash) { // 突進の踏み込み：決まった距離を dashTime 秒で進む（瞬間移動しない）
+        const step = Math.min(e.dash.left, e.dash.speed * dt); e.x += e.dir * step; e.dash.left -= step;
+        if (e.dash.left <= 1e-6) e.dash = null;
+      }
+      if (e.timer >= s.windup + (s.recover ?? 0.5)) { e.dash = null; e.state = 'walk'; e.timer = 0; e.skill = null; }
       return;
     }
 
@@ -434,14 +438,18 @@ export class Battle {
     } else if (s.type === 'charge') {
       // 突進：前方へ進みながら、通り道の敵をまとめて吹き飛ばす。
       // push があれば、当たった敵の前線を push だけ後ろへ押し下げる（強敵・押されにくい敵も下がる）
-      for (const t of this.targetsAhead(e, -12, s.reach)) {
+      const hitList = this.targetsAhead(e, -12, s.reach);
+      ev.hitX = hitList.length ? (hitList[0].isBase ? e.x + e.dir * hitList[0].dist : hitList[0].target.x) : null; // 見た目用：最初に当たった位置（空振りは null）
+      ev.hitLane = hitList.length && !hitList[0].isBase ? hitList[0].target.lane : e.lane;
+      for (const t of hitList) {
         if (t.isBase) { this.damageBase(t.target, Math.round(e.def.atk * s.mult), e); continue; }
         this.damageUnit(t.target, Math.round(e.def.atk * s.mult), e, !s.push);
         if (s.push && t.target.state !== 'dead') this.knockback(t.target, Math.max(s.push, this.config.kbDistance));
       }
       const b = this.enemyBase(e);
       const limit = b.x - e.dir * (b.halfWidth + 20);
-      e.x += e.dir * Math.min(s.move, Math.max(0, (limit - e.x) * e.dir));
+      const dist = Math.min(s.move, Math.max(0, (limit - e.x) * e.dir));
+      if (s.dashTime) e.dash = { left: dist, speed: dist / s.dashTime }; else e.x += e.dir * dist;
     }
   }
 

@@ -9,6 +9,7 @@ import { SKIN } from '../data/skin.js';
 // 魔法使いの火球の画像は先に読み込んでおく（最初の1発から出るように）
 if (SKIN.mageFire) preload([SKIN.mageFire.charge.src, SKIN.mageFire.shot.src, SKIN.mageFire.impact.src]);
 if (SKIN.goblinArrow) preload([SKIN.goblinArrow.src]);
+if (SKIN.chargeFx) preload([SKIN.chargeFx.wind.src, SKIN.chargeFx.dust.src, SKIN.chargeFx.impact.src]);
 if (SKIN.malletThrow) preload([SKIN.malletThrow.shot.src, SKIN.malletThrow.impact.src]);
 if (SKIN.spellPhoenix) preload([SKIN.spellPhoenix.charge.src, SKIN.spellPhoenix.flight.src, SKIN.spellPhoenix.impact.src]);
 const phoenixReady = () => { const s = SKIN.spellPhoenix; return !!(s && getImage(s.charge.src) && getImage(s.flight.src) && getImage(s.impact.src)); };
@@ -153,7 +154,15 @@ export class Renderer {
           if (ev.skill === 'wave') this.add({ kind: 'wave', x: ev.x, dir: ev.dir, reach: ev.reach, life: 0.45 });
           else if (ev.skill === 'stun') this.add({ kind: 'lightBurst', x: ev.x, dir: ev.dir, reach: ev.reach, life: 0.6 });
           else if (ev.skill === 'heal') this.add({ kind: 'ring', heal: true, x: ev.x, y: GROUND_Y + 10, color: '#a8ffcf', life: 0.9, w: 260 });
-          else if (ev.skill === 'charge') this.add({ kind: 'wave', x: ev.x, dir: ev.dir, reach: ev.reach, life: 0.45, color: '#ffb070' });
+          else if (ev.skill === 'charge') {
+            const cf = SKIN.chargeFx; const e = byId(ev.id);
+            if (cf && e && cf.keys.includes(e.key) && getImage(cf.wind.src)) {
+              // 風圧は本人に付いていく／土煙はその場に残る／命中したときだけ衝撃（空振りは風圧と土煙だけ）
+              this.add({ kind: 'cWind', id: ev.id, dir: ev.dir, life: cf.wind.life });
+              this.add({ kind: 'cDust', x: ev.x - ev.dir * cf.dust.behind, y: laneY(e.lane) + 2, dir: ev.dir, life: cf.dust.life });
+              if (ev.hitX != null) this.add({ kind: 'cImpact', x: ev.hitX - ev.dir * 14, y: laneY(ev.hitLane) - 30, dir: ev.dir, life: cf.impact.life });
+            } else this.add({ kind: 'wave', x: ev.x, dir: ev.dir, reach: ev.reach, life: 0.45, color: '#ffb070' });
+          }
           this.shake = Math.max(this.shake, 4);
           break;
         case 'baseHit': this.baseShake = this.baseShake || { human: 0, demon: 0 }; this.baseShake[ev.side] = 0.15; this.shake = Math.max(this.shake, 2.5); this.add({ kind: 'spark', x: ev.x + (ev.side === 'human' ? 40 : -40), y: GROUND_Y - 60 - Math.random() * 70, color: '#fff', life: 0.25 }); break;
@@ -482,6 +491,22 @@ export class Renderer {
           ctx.save(); ctx.translate(x, y); ctx.rotate(Math.atan2(f.toY - f.fromY, f.to - f.from) - d.angle);
           ctx.drawImage(img, -d.ax * k, -d.ay * k, img.naturalWidth * k, img.naturalHeight * k); ctx.restore();
           break;
+        }
+        case 'cWind': { // 盾の前の風圧：本人の前に付いていき、膨らんで薄れる。高さは盾の約2倍まで
+          const d = SKIN.chargeFx.wind; const img = getImage(d.src); const e = b && b.entities.find((x) => x.id === f.id); if (!img || !e) break;
+          const k = d.h / img.naturalHeight * (0.6 + 0.6 * Math.min(1, p * 2));
+          ctx.save(); ctx.globalAlpha = p < 0.6 ? 0.95 : (1 - p) / 0.4; ctx.translate(e.x + e.dir * d.ahead, GROUND_Y + e.lane * LANE_DEPTH - 46); ctx.scale(-f.dir * k, k);
+          ctx.drawImage(img, -d.ax, -d.ay); ctx.restore(); break;
+        }
+        case 'cDust': { // 足元の土煙：その場に残って広がり、消える（細い側が進む向きの反対）
+          const d = SKIN.chargeFx.dust; const img = getImage(d.src); if (!img) break;
+          const k = d.w / img.naturalWidth * (0.7 + 0.5 * p);
+          ctx.save(); ctx.globalAlpha = 1 - p; ctx.translate(f.x, f.y); ctx.scale(-f.dir * k, k); ctx.drawImage(img, -d.ax, -d.ay); ctx.restore(); break;
+        }
+        case 'cImpact': { // 命中の閃光：盾側（基準点）を当たった所に固定し、相手側へ横に伸ばす
+          const d = SKIN.chargeFx.impact; const img = getImage(d.src); if (!img) break;
+          const k = d.w / img.naturalWidth;
+          ctx.save(); ctx.globalAlpha = p < 0.5 ? 1 : (1 - p) * 2; ctx.translate(f.x, f.y); ctx.scale(-f.dir * k * (0.7 + 0.6 * p), k); ctx.drawImage(img, -d.ax, -d.ay); ctx.restore(); break;
         }
         case 'mThrow': { // ゆるい弧＋約1回転。同じ絵を薄く短く重ねて残像
           const d = SKIN.malletThrow.shot; const img = getImage(d.src); if (!img) break;
