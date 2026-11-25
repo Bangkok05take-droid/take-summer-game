@@ -29,6 +29,8 @@ export const SKIN = {
   // エンディングのムービー（保留中・2026-11-25）。{ src: 'assets/approved/movie/…mp4', replaces: ['lines'] } を入れると、その段の代わりに動画を流す
   movies: { ending: null },
   sprites: {
+    // 2026-11-25：マスター・ヤナイ（承認済みデザイン・個別の透過画像 1254×1254・右向き。PNGに保存しただけで絵は変更なし）。最終ボスなので兵士の約1.6倍
+    yanai: { src: 'assets/approved/humans/master_yanai.png', frameW: 1254, frameH: 1254, frames: { walk: [0], windup: 0, attack: 0 }, footY: 1202, facing: 'right', scale: 0.105 },
     // 2026-11-25：第1〜3章の追加キャラクター（ビジュアル制作室・11528.png の5体を1体ずつに切り出し。絵は変更なし）。右向き。足元は不透明部分の下端
     militia_captain: { src: 'assets/approved/humans/militia_captain.png', frameW: 468, frameH: 544, frames: { walk: [0], windup: 0, attack: 0 }, footY: 538, facing: 'right', scale: 0.152 },
     captain: { src: 'assets/approved/humans/guard_captain.png', frameW: 483, frameH: 650, frames: { walk: [0], windup: 0, attack: 0 }, footY: 643, facing: 'right', scale: 0.14 },

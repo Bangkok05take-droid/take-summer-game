@@ -47,7 +47,7 @@
 | sky_guardian | 天空の守護者（デザインなし） | 代用(shield.png) | 10-4 |
 | take | 勇者たけ | 代用(swordsman.png) | 10-5 |
 | sai | 勇者サイ | 代用(priest.png) | 10-5 |
-| yanai | マスター・ヤナイ | 代用(swordsman.png) | 10-5 |
+| yanai | マスター・ヤナイ | 本番（master_yanai.png） | 10-5 |
 | ord | 竜人オルド | 本番 | ex-1 |
 
 - 「本番」＝承認済みの個別画像。「代用」＝個別の透過PNG待ちで既存の兵士の絵を大きさだけ変えて表示（右向き・足元は既存の兵士と同じ）
