@@ -8,6 +8,7 @@ import { SKIN } from '../data/skin.js';
 
 // 魔法使いの火球の画像は先に読み込んでおく（最初の1発から出るように）
 if (SKIN.mageFire) preload([SKIN.mageFire.charge.src, SKIN.mageFire.shot.src, SKIN.mageFire.impact.src]);
+if (SKIN.goblinArrow) preload([SKIN.goblinArrow.src]);
 
 export const VIEW_W = 960;
 export const VIEW_H = 540;
@@ -81,9 +82,22 @@ export class Renderer {
           const mf = SKIN.mageFire;
           if (e && mf && mf.keys.includes(e.key) && getImage(mf.shot.src)) {
             const hy = this.headY(e);
-            const gy = laneY(e.lane) + 2;
-            this.add({ kind: 'fireball', from: e.x + e.dir * 10, fromY: hy, to: ev.to, toY: gy - 6, life: mf.shot.life });
-            if (!ev.miss) this.add({ kind: 'fireRing', x: ev.to, y: gy, delay: mf.shot.life, life: mf.shot.life + mf.impact.life });
+            const gy = laneY(ev.toLane ?? e.lane) + 2;
+            const fl = ev.delay || mf.shot.life; // 届くまでの時間（ダメージもこの時に入る）
+            this.add({ kind: 'fireball', from: e.x + e.dir * 10, fromY: hy, to: ev.to, toY: gy - 6, life: fl });
+            if (!ev.miss) this.add({ kind: 'fireRing', x: ev.to, y: gy, delay: fl, life: fl + mf.impact.life });
+            break;
+          }
+          // 弓ゴブリンの矢：弓の位置から放物線で飛び、届いたら黄緑の火花
+          const ga = SKIN.goblinArrow;
+          if (e && ga && ga.keys.includes(e.key) && getImage(ga.src)) {
+            const sx = e.x + e.dir * 12; const sy = laneY(e.lane) - this.headDrop(e) * 0.55;
+            const ex = ev.to; const ey = ev.toLane != null ? laneY(ev.toLane) - 26 : GROUND_Y - 60;
+            const lift = Math.max(ga.liftMin, Math.min(ga.liftMax, Math.abs(ex - sx) * ga.liftRate));
+            const fl = ev.delay || 0.28;
+            this.add({ kind: 'gArrow', sx, sy, ex, ey, lift, life: fl });
+            this.add({ kind: 'gGlow', x: sx, y: sy, r: 7, life: 0.12 });
+            if (!ev.miss) this.add({ kind: 'gGlow', x: ex, y: ey, r: 10, spark: true, delay: fl, life: fl + 0.2 });
             break;
           }
           this.add({ kind: 'shot', shot: ev.kind, from: ev.from, to: ev.to, y: laneY(e ? e.lane : 0.5) - 32, side: ev.side, big: ev.big, life: ev.kind === 'arrow' ? 0.22 : ev.kind === 'hammer' ? 0.5 : 0.26 });
@@ -427,6 +441,31 @@ export class Renderer {
           ctx.drawImage(img, -d.ax * k, -d.ay * k, img.naturalWidth * k, img.naturalHeight * k); ctx.restore();
           break;
         }
+        case 'gArrow': { // 放物線の矢：接線の向きに回す（画像は左向きなので −π）。直近だけ薄い黄緑の残光
+          const d = SKIN.goblinArrow; const img = getImage(d.src); if (!img) break;
+          const pos = (u) => [f.sx + (f.ex - f.sx) * u, f.sy + (f.ey - f.sy) * u - 4 * f.lift * u * (1 - u)];
+          const [x, y] = pos(p);
+          ctx.strokeStyle = d.glow; ctx.lineCap = 'round';
+          for (let k = 1; k <= 3; k++) {
+            const [ax, ay] = pos(Math.max(0, p - k * 0.05)); const [bx, by] = pos(Math.max(0, p - (k - 1) * 0.05));
+            ctx.globalAlpha = 0.35 * (1 - k / 4); ctx.lineWidth = 3 - k * 0.6;
+            ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(bx, by); ctx.stroke();
+          }
+          ctx.globalAlpha = 1;
+          const dx = f.ex - f.sx; const dy = (f.ey - f.sy) - 4 * f.lift * (1 - 2 * p); // 接線
+          const k = d.w / img.naturalWidth;
+          ctx.save(); ctx.translate(x, y); ctx.rotate(Math.atan2(dy, dx) - Math.PI);
+          ctx.drawImage(img, -d.ax * k, -d.ay * k, img.naturalWidth * k, img.naturalHeight * k); ctx.restore();
+          break;
+        }
+        case 'gGlow': { // 弦を放つ瞬間の小さな光／着弾の小さな火花（黄緑）
+          if (f.delay && f.age < f.delay) break;
+          const q = f.delay ? (f.age - f.delay) / (f.life - f.delay) : p;
+          ctx.globalAlpha = 1 - q; ctx.fillStyle = SKIN.goblinArrow.glow;
+          ctx.beginPath(); ctx.arc(f.x, f.y, f.r * (0.5 + q * 0.6), 0, Math.PI * 2); ctx.fill();
+          if (f.spark) { ctx.strokeStyle = '#efffc0'; ctx.lineWidth = 1.5; for (let i = 0; i < 6; i++) { const a = i * Math.PI / 3 + 0.3; ctx.beginPath(); ctx.moveTo(f.x + Math.cos(a) * 4, f.y + Math.sin(a) * 4); ctx.lineTo(f.x + Math.cos(a) * (6 + q * 10), f.y + Math.sin(a) * (6 + q * 10)); ctx.stroke(); } }
+          ctx.globalAlpha = 1; break;
+        }
         case 'fireRing': { // 低い炎の輪：横に広がりながら消える（敵を覆う高さにはしない）
           if (f.age < f.delay) break;
           const d = SKIN.mageFire.impact; const img = getImage(d.src); if (!img) break;
@@ -586,6 +625,8 @@ export class Renderer {
   }
 
   // ---------- 承認済みのエフェクト画像（SKIN.fx）。無ければ false を返し、仮の演出を描く ----------
+  // ユニットの足元から頭までの高さ
+  headDrop(e) { const apr = spriteFor(e.key); const px = unitSprite(e.key); return apr ? apr.footY * apr.scale : px ? px.h * PIX : 60; }
   // ユニットの頭上の高さ（火球の溜め・発射の位置）
   headY(e, sh, float = 0) {
     if (sh == null) { const apr = spriteFor(e.key); const px = unitSprite(e.key); sh = apr ? apr.footY * apr.scale : px ? px.h * PIX : 60; }

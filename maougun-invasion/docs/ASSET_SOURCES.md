@@ -38,3 +38,4 @@
 | 2026-11-25 | （チャットで受け取った画像 11496.png） | — | — | `assets/approved/units/fast.png` | — | 加工なし。こうもり（新デザイン）。1536×1024・1コマ・左向き・透過・足元 y=914 |
 | 2026-11-25 | （チャットで受け取った画像 11497.png） | — | — | `assets/approved/units/area.png` | — | 加工なし。魔法使い（新デザイン）。1312×1199・1コマ・右向き（ゲームで反転）・透過・足元 y=1118 |
 | 2026-11-25 | `7ef70110-maougun_mage_fireball_fx.zip` | `fx/mage_fireball_charge.png`・`projectile.png`・`impact.png` | — | `assets/approved/fx/mage_fireball_*.png` | — | 加工なし。魔法使いの火球（溜め・発射・着弾）。見た目だけで戦闘の数値は変えない |
+| 2026-11-25 | `326203d9-maougun_goblin_arrow_fx.zip` | `fx/goblin_arrow.png` | — | `assets/approved/fx/goblin_arrow.png` | — | 加工なし。弓ゴブリンの放物線の矢（192×48・左向き） |

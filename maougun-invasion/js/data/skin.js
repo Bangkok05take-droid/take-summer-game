@@ -71,6 +71,13 @@ export const SKIN = {
     shot: { src: 'assets/approved/fx/mage_fireball_projectile.png', ax: 59, ay: 212, w: 72, life: 0.16, angle: Math.atan2(172, -271) },
     impact: { src: 'assets/approved/fx/mage_fireball_impact.png', ax: 190, ay: 141, w: 110, life: 0.35 },
   },
+  /* 弓ゴブリン（ranged）の矢（2026-11-25・maougun_goblin_arrow_fx.zip）。192×48・左向き・矢じり (6,24)。
+   *   放物線：x は直線、y は lerp − 4・lift・u(1−u)。lift は距離に合わせる（liftRate × 距離、liftMin〜liftMax）。飛ぶ時間は units.js の flight */
+  goblinArrow: {
+    keys: ['ranged'],
+    src: 'assets/approved/fx/goblin_arrow.png', ax: 6, ay: 24, w: 40,
+    liftRate: 0.28, liftMin: 18, liftMax: 62, glow: '#c8ff6a',
+  },
   colors: {
     mass: ['#8b5cf6', '#3b1d74'],
     vanguard: ['#6d6a86', '#25233a'],

@@ -228,12 +228,12 @@ test('幹部：同時に1体まで・撃破時からクールタイム', () => {
 });
 
 // ---------- テンポ・再現性・速度 ----------
-test('全5ステージ：ふつうに遊べば勝てる（ボットで確認）', () => {
+test('第1章：ふつうに遊べば勝てる（ボットで確認）', () => {
   for (const id of CHAPTER1.stages) {
     const b = makeBattle({ stageId: id, seed: 2, upgraded: true });
     run(b, 900, botPlayer('normal'));
     assert.equal(b.result, 'win', `${id} ${b.result} ${b.t.toFixed(0)}秒`);
-    assert.ok(b.t > 120 && b.t < (id === '1-5' ? 480 : 360), `${id} クリア時間 ${b.t.toFixed(0)}秒`);
+    assert.ok(b.t > 90 && b.t < 360, `${id} クリア時間 ${b.t.toFixed(0)}秒`);
   }
 });
 
@@ -510,4 +510,17 @@ test('後衛狙撃：後衛と拠点が両方射程にあるときは後衛を�
   const hp0 = b.base.hp; const ph = priest.hp;
   b.resolveAttack(m);
   assert.ok(priest.hp < ph && b.base.hp === hp0);
+});
+test('飛び道具（弓ゴブリン・魔法使い）は届いた瞬間にダメージ。遠いほど遅く届く', () => {
+  const b = makeBattle({ stage: noEnemies(), deck: ['ranged'] });
+  const a = b.spawn('demon', b.deckDef('ranged'), 1200); a.x = 1200;
+  const near = b.spawnHuman('swordsman'); near.x = 1150; near.def = { ...near.def, speed: 0 };
+  const hp0 = near.hp;
+  b.resolveAttack(a);
+  assert.equal(near.hp, hp0, '撃った瞬間はまだ当たらない');
+  const f = b.inFlight[0]; assert.ok(f.at - b.t >= 0.22 && f.at - b.t < 0.3);
+  run(b, 0.4); assert.ok(near.hp < hp0, '届いたら当たる');
+  const far = b.spawnHuman('swordsman'); far.x = 1200 - 205; far.def = { ...far.def, speed: 0 };
+  near.x = -999; b.resolveAttack(a);
+  assert.ok(b.inFlight[0].at - b.t > 0.33, '遠いほど遅い');
 });

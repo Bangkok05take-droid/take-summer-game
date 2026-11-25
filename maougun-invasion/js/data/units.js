@@ -44,6 +44,7 @@ export const UNITS = {
     role: '遠距離', attackType: 'long', target: 'front', line: 'back', tier: 1, evolvesTo: null, growth: GROWTH,
     cost: 200, cooldown: 6, hp: 170, atk: 34, range: 210, speed: 36,
     interval: 2.3, windup: 0.5, kb: 2, attack: 'single', projectile: 'arrow', size: 0.85,
+    flight: [0.22, 0.35], // 2026-11-25：放物線の矢。近いほど早く届き、届いた瞬間にダメージ
   },
   fast: {
     role: '高速型', attackType: 'melee', target: 'front', tier: 1, evolvesTo: null, growth: GROWTH, flying: true,
@@ -54,6 +55,7 @@ export const UNITS = {
     role: '範囲攻撃', attackType: 'mid', target: 'front', line: 'back', tier: 1, evolvesTo: null, growth: GROWTH,
     cost: 300, cooldown: 10, hp: 260, atk: 28, range: 160, speed: 32,
     interval: 2.6, windup: 0.7, kb: 2, attack: 'area', projectile: 'magic', size: 0.9,
+    flight: [0.16, 0.16], // 2026-11-25：火球が届いた瞬間にダメージ（演出と数字を合わせる）
   },
   healer: {
     role: '回復支援', attackType: 'mid', target: 'front', line: 'back', tier: 1, evolvesTo: null, growth: GROWTH,

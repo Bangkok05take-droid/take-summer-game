@@ -51,7 +51,8 @@ export class Battle {
 
     this.spawnState = stage.spawns.map((s) => ({ nextAt: s.start ?? 0, fired: false }));
     this.pending = []; // { at, who }
-    this.spawnT = 0;          // 敵の出現の時計（spawnerOff の間は進まない）
+    this.spawnT = 0;
+    this.inFlight = [];       // 飛んでいる最中の攻撃 { at, hits, dmg, src }          // 敵の出現の時計（spawnerOff の間は進まない）
     this.spawnerOff = false;  // true：敵が出てこない（チュートリアル用）
   }
 
@@ -122,6 +123,10 @@ export class Battle {
     if (!this.spawnerOff) { this.runSpawner(); this.spawnT += dt; }
 
     for (const e of this.entities) { e.px = e.x; this.updateEntity(e, dt); }
+    if (this.inFlight.length) { // 届いた飛び道具のダメージ
+      const due = this.inFlight.filter((f) => f.at <= this.t + 1e-9);
+      if (due.length) { this.inFlight = this.inFlight.filter((f) => f.at > this.t + 1e-9); for (const f of due) this.applyHits(f.hits, f.dmg, f.src); }
+    }
 
     if (this.entities.some((e) => e.state === 'dead' && e.timer >= this.config.deathTime)) {
       this.entities = this.entities.filter((e) => !(e.state === 'dead' && e.timer >= this.config.deathTime));
@@ -364,12 +369,22 @@ export class Battle {
       hits = this.targetsAhead(e, -12, d.range + 10 + radius).filter((h) => Math.abs(h.target.x - cx) <= radius || h.isBase && Math.abs(h.dist - list[0].dist) <= radius);
     } else hits = area ? list : [list[0]];
 
-    if (d.projectile) this.events.push({ type: 'shot', id: e.id, kind: d.projectile, from: e.x, to: hits[0].target.x, side: e.side, big: mult > 1 });
+    // flight [最短, 最長]：飛び道具が届くまでの秒数（距離で決まる）。ダメージは届いた瞬間に入る（2026-11-25）
+    let delay = 0;
+    if (d.flight) {
+      const [lo, hi] = d.flight;
+      delay = lo + (hi - lo) * Math.max(0, Math.min(1, hits[0].dist / Math.max(1, d.range)));
+    }
+    if (d.projectile) this.events.push({ type: 'shot', id: e.id, kind: d.projectile, from: e.x, to: hits[0].target.x, toLane: hits[0].isBase ? null : hits[0].target.lane, side: e.side, big: mult > 1, delay });
     this.events.push({ type: 'strike', id: e.id, area, side: e.side });
     const dmg = Math.round(d.atk * mult);
+    if (delay > 0) { this.inFlight.push({ at: this.t + delay, hits, dmg, src: e }); return; }
+    this.applyHits(hits, dmg, e);
+  }
+  applyHits(hits, dmg, e) {
     for (const h of hits) {
       if (h.isBase) this.damageBase(h.target, dmg, e);
-      else this.damageUnit(h.target, dmg, e, d.blowAway);
+      else this.damageUnit(h.target, dmg, e, e.def.blowAway); // 届く前に倒れていたら damageUnit が何もしない
     }
   }
 
