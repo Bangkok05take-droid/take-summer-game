@@ -49,10 +49,11 @@ export const SKIN = {
     // 戦闘の背景。ステージIDで個別に、無ければ chapter1（1-3 以降は大きな町の背景）。scale：論理画面（960×540）での倍率、offsetY：上下の位置
     stageBg: {
       chapter1: { src: 'assets/approved/bg/ch1_village.webp', scale: 0.62, offsetY: -66 },
-      // 2026-11-24：小さな村（1-1・見張り小屋）。ユーザー承認の 1920×1080。画面ちょうど（960×540）に合わせて表示し、土の道が足元の列に重なる。
-      '1-1': { src: 'assets/approved/bg/village_small.png', scale: 0.5, offsetY: 0 },
-      // 2026-11-24：町（1-2）。祠を消した修正版（maougun_background_fix.zip）。1-1 も見張り台を消した修正版に差し替え
-      '1-2': { src: 'assets/approved/bg/village_town.png', scale: 0.5, offsetY: 0 },
+      // 2026-11-25：横長パノラマ（2172×358・引きの構図）。高さを画面に合わせて ×1.36（上に黒帯を出さず、土の道が足元の列に重なる）。
+      // カメラの移動量の35%だけ背景が動く（parallax）。focus：動く範囲の中心を画像のどこに置くか（0＝左端・0.5＝中央・1＝右端）
+      // 以前の16:9の背景（village_small.png・village_town.png）はファイルを残してある（戻すときはここを差し替える）
+      '1-1': { src: 'assets/approved/bg/pano_village_small.png', scale: 1.36, offsetY: 0, parallax: 0.35, focus: 0.5 },
+      '1-2': { src: 'assets/approved/bg/pano_village_town.png', scale: 1.36, offsetY: 0, parallax: 0.35, focus: 0.5 },
     },
     // 人間軍の拠点（tower：1-1〜1-3、gate：1-4、castle：1-5）と、魔王軍の祠。{ src, width, footY }
     base: {},

@@ -34,3 +34,4 @@
 | 2026-11-24 | `deccc71f-maougun_background_fix.zip`（ZIP SHA256 `8acf30b0be80b43d…`。承認はユーザーのメッセージで受領） | `bg/village_small.png` | `ae6ce9d3a7b24fb6…` | `assets/approved/bg/village_small.png` | `ae6ce9d3a7b24fb6…` | 加工なし。1-1 の背景を見張り台を消した修正版に差し替え |
 | 2026-11-24 | 同上 | `bg/village_town.png` | `a9cd1a7ed0c96a3f…` | `assets/approved/bg/village_town.png` | `a9cd1a7ed0c96a3f…` | 加工なし。1-2 の背景（祠を消した修正版） |
 | 2026-11-24 | （チャットで受け取った画像 village_small.png） | — | `3eb60ee407483e43…` | `assets/approved/bg/village_small.png` | `3eb60ee407483e43…` | 加工なし。1-1 の背景を継ぎ目を直した再修正版に差し替え（1920×1080） |
+| 2026-11-25 | `c79f59a8-maougun_panorama_backgrounds.zip`（ZIP SHA256 `ef9b84faa7daf816…`） | `bg/village_small.png`・`bg/village_town.png` | `a3165033…`・`adb14c76…` | `assets/approved/bg/pano_village_small.png`・`pano_village_town.png` | 同じ | 加工なし。1-1・1-2 の横長パノラマ背景（2172×358）。カメラの35%で動く |

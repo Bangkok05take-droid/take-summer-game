@@ -58,7 +58,7 @@ try {
   // ---- 1-1 の操作 ----
   check('初期の召喚カードは4種', (await page.locator('.slot').count()) === 4);
   const bgs = await ev(async () => { const { SKIN } = await import('./js/data/skin.js'); const r = window.__game.renderer; const g = SKIN.images.stageBg; return { s11: (g['1-1'] || {}).src, s12: (g['1-2'] || g.chapter1).src, s13: (g['1-3'] || g.chapter1).src, drawn: !!document.querySelector('canvas') }; });
-  check('背景：1-1 小さな村・1-2 町・1-3 以降は今までの背景', bgs.s11 === 'assets/approved/bg/village_small.png' && bgs.s12 === 'assets/approved/bg/village_town.png' && bgs.s13 === 'assets/approved/bg/ch1_village.webp', JSON.stringify(bgs));
+  check('背景：1-1 小さな村・1-2 町・1-3 以降は今までの背景', bgs.s11 === 'assets/approved/bg/pano_village_small.png' && bgs.s12 === 'assets/approved/bg/pano_village_town.png' && bgs.s13 === 'assets/approved/bg/ch1_village.webp', JSON.stringify(bgs));
   await waitSprite('mass');
   const gumi = await ev(async () => { const { spriteFor } = await import('./js/render/shapes.js'); const sp = spriteFor('mass'); const cv = document.querySelector('.slot[data-key="mass"] canvas'); const px = cv && cv.getContext('2d').getImageData(cv.width / 2, cv.height - 8, 1, 1).data; return { label: document.querySelector('.slot[data-key="mass"]').textContent, w: sp.img.width, src: sp.src, px: px && [...px] }; });
   check('グミ：名前が「グミ」・承認済みの画像が読み込まれる', gumi.label.includes('グミ') && gumi.src === 'assets/approved/units/mass.png', JSON.stringify({ label: gumi.label, w: gumi.w }));

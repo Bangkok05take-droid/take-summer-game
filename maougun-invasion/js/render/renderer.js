@@ -150,13 +150,20 @@ export class Renderer {
     if (b.entities.length || b.t > 0) this.drawMinimap(b);
   }
 
-  // 承認済みの背景画像（1枚）。見た目は変えず、拡大縮小と位置だけ。横に余る分だけ、カメラに合わせてゆっくり動かす
+  // 承認済みの背景画像（1枚）。見た目は変えず、拡大縮小と位置だけ。
+  // parallax があれば「カメラの移動量 × parallax」で動かす（パノラマ）。無ければ横に余る分だけ、カメラに合わせてゆっくり動かす
   drawStageImage(b, img, def) {
     const ctx = this.ctx;
     const w = img.naturalWidth * def.scale; const h = img.naturalHeight * def.scale;
     const range = Math.max(0, b.stage.length - VIEW_W);
     const extra = Math.max(0, w - VIEW_W);
-    const x = range ? -extra * (this.camX / range) : -extra / 2;
+    let x;
+    if (def.parallax != null) {
+      // パノラマ：カメラの移動量 × parallax だけ背景を動かす。動く幅の中心を画像の focus（0〜1）に合わせ、画像の端で止める（黒帯を出さない）
+      const travel = range * def.parallax;
+      const start = (extra - travel) * (def.focus ?? 0.5);
+      x = -Math.max(0, Math.min(extra, start + this.camX * def.parallax));
+    } else x = range ? -extra * (this.camX / range) : -extra / 2;
     ctx.imageSmoothingEnabled = true;
     ctx.drawImage(img, x, def.offsetY || 0, w, h);
     ctx.imageSmoothingEnabled = false;
