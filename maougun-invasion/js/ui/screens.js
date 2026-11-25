@@ -114,12 +114,15 @@ export class TalkPlayer {
     $('talkText').textContent = l.text;
     // 演出（台詞は変えない）：absorb＝発光と魔力の放出／quake＝画面の振動
     { const sc = $('scTalk'); sc.classList.remove('fx-absorb', 'fx-quake'); if (l.fx) { void sc.offsetWidth; sc.classList.add('fx-' + l.fx); } }
+    if (l.revive) this.revived = true;
     if (l.who !== 'narr') {
       const side = SIDE[l.who] || 'left';
       const c = side === 'left' ? $('ptLeft') : $('ptRight');
-      const key = l.who + ':' + (l.face || 'normal');
+      // 完全復活（エンディング）：revive の付いた行から、大魔王の顔を復活後の絵に（this.revived は TalkPlayer の外から戻す）
+      const revived = l.who === 'lord' && this.revived && SKIN.portraits.lord_revived;
+      const key = l.who + ':' + (revived ? 'revived' : (l.face || 'normal'));
       if (this.shown[side] !== key) {
-        const src = SKIN.portraits[`${l.who}_${l.face || 'normal'}`] || SKIN.portraits[`${l.who}_normal`] || SKIN.portraits[l.who];
+        const src = revived ? SKIN.portraits.lord_revived : SKIN.portraits[`${l.who}_${l.face || 'normal'}`] || SKIN.portraits[`${l.who}_normal`] || SKIN.portraits[l.who];
         const img = getImage(src);
         const g = c.getContext('2d');
         if (img) { g.clearRect(0, 0, c.width, c.height); g.drawImage(img, 0, 0, c.width, c.height); this.shown[side] = key; }
@@ -128,7 +131,7 @@ export class TalkPlayer {
       c.hidden = false;
       // 表情（仮）：その表情の立ち絵が無いときは、通常の絵のまま動きと色で表す（絵は変えない）
       const face = l.face || 'normal';
-      const hasFace = !!SKIN.portraits[`${l.who}_${face}`];
+      const hasFace = !!SKIN.portraits[`${l.who}_${face}`] || !!revived; // 復活後は表情の動きを付けない
       c.classList.remove('face-angry', 'face-happy', 'face-sad');
       if (face !== 'normal' && !hasFace) { void c.offsetWidth; c.classList.add('face-' + face); }
       $('ptLeft').classList.toggle('dim', side !== 'left');

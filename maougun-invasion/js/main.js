@@ -360,6 +360,8 @@ function showTitleCard(T, bg, done) {
 }
 // エンディング：ENDING.STEPS の順に進める。SKIN.movies.ending（保留中）があれば、replaces の段の代わりに動画を流す
 function playEnding(done) {
+  talk.revived = false; // 復活の行から復活後の絵。おまけ会話も復活後のまま
+  const finish = done; done = () => { talk.revived = false; finish(); };
   const movie = SKIN.movies && SKIN.movies.ending;
   const steps = ENDING.STEPS.slice();
   let movieShown = false;

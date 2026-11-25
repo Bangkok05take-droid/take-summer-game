@@ -655,7 +655,7 @@ export const ENDING = {
       { who: 'narr', text: '――大魔王を縛り続けていた封印が崩れ始める。', fx: 'quake' },
       { who: 'narr', text: '――封印の祠から、巨大な闇の魔力があふれ出した。', fx: 'absorb' },
       { who: 'aide', text: '大魔王様……ついに、この時が……！' },
-      { who: 'narr', text: '――大魔王が本来の姿を取り戻す。', fx: 'absorb' },
+      { who: 'narr', text: '――大魔王が本来の姿を取り戻す。', fx: 'absorb', revive: true },
       { who: 'lord', text: 'ふはははははははは！！', face: 'happy', fx: 'quake' },
       { who: 'lord', text: 'これじゃ！ これが本来のわしの姿じゃ！！', face: 'happy' },
       { who: 'narr', text: '――復活した大魔王が、ついに魔王軍の前に姿を現す。' },

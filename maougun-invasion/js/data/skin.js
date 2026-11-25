@@ -96,6 +96,7 @@ export const SKIN = {
   // 会話の立ち絵（2026-11-24 ユーザー承認。大魔王は左枠・右向き、影の側近は右枠・左向き）。表情差分が無いときは _normal を使う
   portraits: {
     lord_normal: 'assets/approved/talk/lord_normal.png',
+    lord_revived: 'assets/approved/talk/lord_revived.png', // 2026-11-25：完全復活後の大魔王（11551.png・全身。正方形の透明な余白を足しただけ）。エンディングの復活の場面から使う
     aide_normal: 'assets/approved/talk/aide_normal.png',
   },
   /* 画面の各場所に入れる承認済み画像（場所と仕様の一覧：docs/ASSET_MAP.md）。
