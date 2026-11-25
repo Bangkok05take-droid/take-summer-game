@@ -994,9 +994,11 @@ test('第1〜3章の追加キャラクター（承認済みデザイン）：人
   const { SKIN } = await import('../js/data/skin.js');
   const keys = ['militia', 'swordsman', 'archer', 'shield', 'priest', 'rider', 'militia_captain', 'captain', 'knight', 'court_mage', 'knight_commander'];
   for (const k of keys) { const s = SKIN.sprites[k]; assert.ok(s && /assets\/approved\/humans\//.test(s.src), k); assert.equal(s.facing, 'right', k); }
-  const h = (k) => SKIN.sprites[k].footY * SKIN.sprites[k].scale; // 画面での背の高さ（足元まで）
-  for (const k of ['knight', 'court_mage']) assert.ok(h(k) >= h('swordsman') * 0.95 && h(k) <= h('swordsman') * 1.25, k + '：通常兵と同じくらい');
-  for (const k of ['militia_captain', 'captain', 'knight_commander']) assert.ok(h(k) > h('swordsman') * 1.3, k + '：ボスは存在感のある大きさ');
+  // 2026-11-25：大中小＋特大のサイズ分類（skin.js の SIZE_CLASS）
+  const { displayHeight, SIZE_PX } = await import('../js/data/skin.js');
+  assert.equal(displayHeight('knight'), SIZE_PX.M); assert.equal(displayHeight('swordsman'), SIZE_PX.M); assert.equal(displayHeight('court_mage'), SIZE_PX.S);
+  for (const k of ['militia_captain', 'captain', 'knight_commander']) assert.ok(displayHeight(k) >= SIZE_PX.XL, k + '：ボスは特大');
+  assert.ok(displayHeight('holy_dragon') > displayHeight('captain') && displayHeight('mass_2') > displayHeight('mass'), '聖竜はさらに大きく・進化形は基本形より大きい');
   const used = (id) => STAGES[id].spawns.flatMap((x) => x.who ? [x.who] : x.wave.map((w) => w.who));
   assert.ok(used('1-3').includes('militia_captain') && STAGES['1-3'].spawns.some((x) => x.hero === 'militia_captain'));
   assert.ok(STAGES['2-3'].spawns.some((x) => x.hero === 'captain'));

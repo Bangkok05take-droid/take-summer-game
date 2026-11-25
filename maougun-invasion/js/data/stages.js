@@ -67,7 +67,7 @@ const MANA = { start: 200, max: 1000, regen: 28 };
 
 /* 戦場の横幅の倍率。元の長さ（L(…) の中の数字）に掛ける。
  * 2026-11-23：「横が長い」とのことで 0.7 に短縮（1-1 は 2200 → 1540、約1.6画面）。元に戻すときは 1 にする */
-export const FIELD_SCALE = 0.7;
+export const FIELD_SCALE = 0.6; // 2026-11-25：「距離が遠い」とのことで 0.7 → 0.6
 const L = (len) => Math.round(len * FIELD_SCALE);
 
 export const STAGES = {

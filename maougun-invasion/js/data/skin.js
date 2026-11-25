@@ -353,3 +353,37 @@ if (APPROVED.images.shrine) SKIN.images.shrine = APPROVED.images.shrine;
 // エフェクト（{ src, frameW, frameH, frames }）と UI 画像（ファイルのパス）。docs/ASSET_MAP.md
 SKIN.fx = { ...(APPROVED.fx || {}) };
 SKIN.ui = { ...(APPROVED.ui || {}) };
+
+/* ---------- 表示サイズの統一（2026-11-25 ユーザー依頼：大中小＋特大） ----------
+ * 画面での背の高さ（論理ドット・画面は 960×540）。絵の倍率はここから自動で決める（絵そのものは変えない）。
+ *   小 S＝軽い兵・後衛・小さな魔物／中 M＝ふつうの兵・前衛／大 L＝重装・騎兵・大型の魔物／特大 XL＝ボス・幹部（数字はその都度）
+ * 進化形は基本形と同じ分類で ×1.12。サイズを変えるときは SIZE_PX か SIZE_CLASS を直す */
+export const SIZE_PX = { S: 64, M: 80, L: 100, XL: 118 };
+export const SIZE_CLASS = {
+  // 魔王軍
+  mass: ['S', 0.8], fast: 'S', ranged: 'S', mallet: 'S', healer: 'S', vanguard: 'M', area: 'M', tank: 'L',
+  charger: ['XL', 125], ord: ['XL', 132],
+  // 人間軍：小
+  militia: 'S', archer: 'S', priest: 'S', court_mage: 'S', mage: 'S', ice_mage: 'S', elite_mage: 'S', ancient_priest: 'S', high_priest: 'S', celestial_mage: 'S', engineer: 'S',
+  // 人間軍：中
+  swordsman: 'M', shield: 'M', rider: 'M', knight: 'M', naval_soldier: 'M', ancient_soldier: 'M', paladin: 'M', magic_knight: 'M', royal_guard: 'M', sky_guard: 'M',
+  // 人間軍：大
+  heavy: 'L', guardian: 'L', turret: 'L', royal_guard_cavalry: 'L', celestial_knight: 'L',
+  // ボス（特大）
+  militia_captain: 'XL', captain: 'XL', king: 'XL', knight_commander: 'XL', harbor_captain: 'XL', commander: 'XL', heavy_captain: 'XL', ancient_king: 'XL',
+  holy_captain: 'XL', mage_captain: 'XL', archmage: 'XL', royal_commander: 'XL', supreme_commander: 'XL', sky_commander: 'XL', sky_guardian: 'XL',
+  take: ['XL', 126], sai: ['XL', 126], yanai: ['XL', 136], holy_dragon: ['XL', 150],
+};
+// 各画像の「絵の上端」（不透明部分の一番上・画像の上からの距離。Claude Code が画像から計測）
+const INK_TOP = {"mallet_2": 68, "healer_2": 38, "mass_2": 121, "vanguard_2": 58, "tank_2": 50, "fast_2": 67, "ranged_2": 90, "area_2": 69, "heavy_captain": 16, "elite_mage": 15, "mage_captain": 16, "royal_commander": 15, "sky_commander": 16, "sky_guardian": 15, "naval_soldier": 15, "harbor_captain": 15, "heavy": 15, "engineer": 58, "turret": 15, "commander": 29, "ancient_soldier": 15, "guardian": 14, "ancient_priest": 15, "ancient_king": 15, "paladin": 15, "high_priest": 14, "holy_captain": 15, "mage": 15, "ice_mage": 15, "magic_knight": 15, "archmage": 15, "royal_guard": 15, "royal_guard_cavalry": 15, "supreme_commander": 25, "sky_guard": 15, "celestial_mage": 15, "celestial_knight": 15, "holy_dragon": 165, "take": 14, "sai": 14, "yanai": 69, "militia_captain": 7, "captain": 7, "knight": 7, "court_mage": 7, "knight_commander": 6, "ord": 9, "charger": 66, "mallet": 21, "area": 64, "fast": 76, "mass": 241, "vanguard": 10, "tank": 48, "ranged": 49, "healer": 47, "archer": 8, "militia": 8, "priest": 8, "rider": 9, "shield": 8, "swordsman": 8, "king": 8};
+export function displayHeight(key) {
+  const evolved = /_2$/.test(key); const base = evolved ? key.slice(0, -2) : key;
+  const c = SIZE_CLASS[base]; if (!c) return null;
+  const [cls, v] = Array.isArray(c) ? c : [c];
+  const h = cls === 'XL' && v ? v : SIZE_PX[cls] * (v && cls !== 'XL' ? v : 1);
+  return evolved ? h * 1.12 : h;
+}
+for (const [k, sp] of Object.entries(SKIN.sprites)) {
+  const h = displayHeight(k); if (!h || INK_TOP[k] == null) continue;
+  sp.scale = Math.round(h / Math.max(1, sp.footY - INK_TOP[k]) * 10000) / 10000;
+}
