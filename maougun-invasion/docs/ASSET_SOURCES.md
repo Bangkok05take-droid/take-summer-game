@@ -37,3 +37,4 @@
 | 2026-11-25 | `c79f59a8-maougun_panorama_backgrounds.zip`（ZIP SHA256 `ef9b84faa7daf816…`） | `bg/village_small.png`・`bg/village_town.png` | `a3165033…`・`adb14c76…` | `assets/approved/bg/pano_village_small.png`・`pano_village_town.png` | 同じ | 加工なし。1-1・1-2 の横長パノラマ背景（2172×358）。カメラの35%で動く |
 | 2026-11-25 | （チャットで受け取った画像 11496.png） | — | — | `assets/approved/units/fast.png` | — | 加工なし。こうもり（新デザイン）。1536×1024・1コマ・左向き・透過・足元 y=914 |
 | 2026-11-25 | （チャットで受け取った画像 11497.png） | — | — | `assets/approved/units/area.png` | — | 加工なし。魔法使い（新デザイン）。1312×1199・1コマ・右向き（ゲームで反転）・透過・足元 y=1118 |
+| 2026-11-25 | `7ef70110-maougun_mage_fireball_fx.zip` | `fx/mage_fireball_charge.png`・`projectile.png`・`impact.png` | — | `assets/approved/fx/mage_fireball_*.png` | — | 加工なし。魔法使いの火球（溜め・発射・着弾）。見た目だけで戦闘の数値は変えない |

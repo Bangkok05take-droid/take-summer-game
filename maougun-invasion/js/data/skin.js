@@ -62,6 +62,15 @@ export const SKIN = {
     // 会話の背景（shrine：祠の中、field：戦場）
     talkBg: {},
   },
+  /* 魔法使い（area）の火球（2026-11-25・maougun_mage_fireball_fx.zip）。各1コマ。ax・ay：画像の基準点（manifest.csv）、w：表示の幅（論理ドット）
+   *   charge：攻撃の溜めの間、頭上で膨らむ／shot：発射から着弾まで（先端が基準点・約0.16秒）／impact：着弾で足元に広がる低い炎の輪（約0.35秒）
+   *   見た目だけ。ダメージの瞬間・射程・範囲・攻撃間隔は units.js のまま */
+  mageFire: {
+    keys: ['area'],
+    charge: { src: 'assets/approved/fx/mage_fireball_charge.png', ax: 124, ay: 142, w: 40 },
+    shot: { src: 'assets/approved/fx/mage_fireball_projectile.png', ax: 59, ay: 212, w: 72, life: 0.16, angle: Math.atan2(172, -271) },
+    impact: { src: 'assets/approved/fx/mage_fireball_impact.png', ax: 190, ay: 141, w: 110, life: 0.35 },
+  },
   colors: {
     mass: ['#8b5cf6', '#3b1d74'],
     vanguard: ['#6d6a86', '#25233a'],

@@ -6,6 +6,9 @@ import { backdrop, shrineArt, baseArt, BASE_KIND, BG_PIX, PARALLAX } from './bac
 import { getImage, preload } from './images.js';
 import { SKIN } from '../data/skin.js';
 
+// 魔法使いの火球の画像は先に読み込んでおく（最初の1発から出るように）
+if (SKIN.mageFire) preload([SKIN.mageFire.charge.src, SKIN.mageFire.shot.src, SKIN.mageFire.impact.src]);
+
 export const VIEW_W = 960;
 export const VIEW_H = 540;
 export const GROUND_Y = 388;      // 足元の基準（奥の列）
@@ -74,6 +77,15 @@ export class Renderer {
         case 'healCast': this.add({ kind: 'ring', heal: true, x: ev.x, y: GROUND_Y + 10, color: '#7ef0b0', life: 0.7, w: ev.radius }); break;
         case 'shot': {
           const e = byId(ev.id);
+          // 魔法使いの火球：頭上から敵の足元へ斜めに飛び、着いた瞬間に足元へ炎の輪
+          const mf = SKIN.mageFire;
+          if (e && mf && mf.keys.includes(e.key) && getImage(mf.shot.src)) {
+            const hy = this.headY(e);
+            const gy = laneY(e.lane) + 2;
+            this.add({ kind: 'fireball', from: e.x + e.dir * 10, fromY: hy, to: ev.to, toY: gy - 6, life: mf.shot.life });
+            if (!ev.miss) this.add({ kind: 'fireRing', x: ev.to, y: gy, delay: mf.shot.life, life: mf.shot.life + mf.impact.life });
+            break;
+          }
           this.add({ kind: 'shot', shot: ev.kind, from: ev.from, to: ev.to, y: laneY(e ? e.lane : 0.5) - 32, side: ev.side, big: ev.big, life: ev.kind === 'arrow' ? 0.22 : ev.kind === 'hammer' ? 0.5 : 0.26 });
           break;
         }
@@ -368,6 +380,19 @@ export class Renderer {
     }
     ctx.restore();
 
+    // 魔法使いの火球の溜め：攻撃の準備のあいだ頭上で膨らみ、最後に小さく脈打つ（攻撃が止まれば消える）
+    const mf = SKIN.mageFire;
+    if (mf && mf.keys.includes(e.key) && e.state === 'attack' && e.timer < d.windup && e.stun <= 0) {
+      const img = getImage(mf.charge.src);
+      if (img) {
+        const q = e.timer / d.windup;
+        const grow = q < 0.75 ? 0.25 + 0.75 * (q / 0.75) : 1 + Math.sin((q - 0.75) / 0.25 * Math.PI * 2) * 0.08;
+        const k = mf.charge.w * grow / img.naturalWidth;
+        const cx = x + e.dir * 10; const cy = this.headY(e, sh, float);
+        ctx.drawImage(img, cx - mf.charge.ax * k, cy - mf.charge.ay * k, img.naturalWidth * k, img.naturalHeight * k);
+        ctx.fillStyle = `rgba(200,120,255,${0.35 * (1 - q)})`; ctx.beginPath(); ctx.arc(x - e.dir * 14, y - sh * 0.75, 7, 0, Math.PI * 2); ctx.fill(); // 杖の宝玉の紫の光
+      }
+    }
     const top = y - sh - float - 8;
     // 気絶：頭の上で星が回る
     if (e.stun > 0 && e.state !== 'dead') {
@@ -394,6 +419,23 @@ export class Renderer {
       if ((f.kind === 'banner') !== screen) continue;
       if (this.approvedFx(ctx, f, p)) continue; // 承認済みのエフェクト画像があれば、そちらで描く
       switch (f.kind) {
+        case 'fireball': { // 先端（基準点）を軌道上に置き、尾は進む向きの反対へ
+          const d = SKIN.mageFire.shot; const img = getImage(d.src); if (!img) break;
+          const x = f.from + (f.to - f.from) * p; const y = f.fromY + (f.toY - f.fromY) * p;
+          const k = d.w / img.naturalWidth;
+          ctx.save(); ctx.translate(x, y); ctx.rotate(Math.atan2(f.toY - f.fromY, f.to - f.from) - d.angle);
+          ctx.drawImage(img, -d.ax * k, -d.ay * k, img.naturalWidth * k, img.naturalHeight * k); ctx.restore();
+          break;
+        }
+        case 'fireRing': { // 低い炎の輪：横に広がりながら消える（敵を覆う高さにはしない）
+          if (f.age < f.delay) break;
+          const d = SKIN.mageFire.impact; const img = getImage(d.src); if (!img) break;
+          const q = (f.age - f.delay) / (f.life - f.delay);
+          const sx = (0.55 + 0.6 * q) * d.w / img.naturalWidth; const sy = (0.7 + 0.25 * q) * d.w / img.naturalWidth;
+          ctx.globalAlpha = q < 0.6 ? 1 : 1 - (q - 0.6) / 0.4;
+          ctx.drawImage(img, f.x - d.ax * sx, f.y - d.ay * sy, img.naturalWidth * sx, img.naturalHeight * sy);
+          ctx.globalAlpha = 1; break;
+        }
         case 'num': {
           ctx.globalAlpha = 1 - p * p;
           ctx.font = `800 ${f.big ? 20 : f.small ? 12 : 15}px system-ui, sans-serif`;
@@ -544,6 +586,12 @@ export class Renderer {
   }
 
   // ---------- 承認済みのエフェクト画像（SKIN.fx）。無ければ false を返し、仮の演出を描く ----------
+  // ユニットの頭上の高さ（火球の溜め・発射の位置）
+  headY(e, sh, float = 0) {
+    if (sh == null) { const apr = spriteFor(e.key); const px = unitSprite(e.key); sh = apr ? apr.footY * apr.scale : px ? px.h * PIX : 60; }
+    return GROUND_Y + e.lane * LANE_DEPTH - sh - float - 12;
+  }
+
   fxImage(name) {
     const def = SKIN.fx && SKIN.fx[name];
     const img = def && getImage(def.src);
