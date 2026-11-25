@@ -187,6 +187,9 @@ if (SKIN.sprites.shield && !SKIN.sprites.knight) SKIN.sprites.knight = { ...SKIN
 // 竜人オルド（仮）：ビジュアル制作室の絵が届くまで、闇の騎士の絵を1.6倍で代用
 if (SKIN.sprites.swordsman && !SKIN.sprites.harbor_captain) SKIN.sprites.harbor_captain = { ...SKIN.sprites.swordsman, scale: (SKIN.sprites.swordsman.scale || 0.25) * 1.5 };
 // 第5章（仮）：防衛砲台は弓兵の絵、重装兵は盾兵の絵、要塞司令官は見習い剣士の絵を大きくして代用（兵器・重装兵のデザインは未承認）
+// 第10章の追加（2026-11-25）：個別の透過PNGが届くまでの代用
+if (SKIN.sprites.priest && !SKIN.sprites.celestial_mage) SKIN.sprites.celestial_mage = { ...SKIN.sprites.priest };
+if (SKIN.sprites.shield && !SKIN.sprites.celestial_knight) SKIN.sprites.celestial_knight = { ...SKIN.sprites.shield, scale: (SKIN.sprites.shield.scale || 0.25) * 1.25 };
 // 第8〜9章の追加（2026-11-25）：個別の透過PNGが届くまでの代用
 if (SKIN.sprites.priest && !SKIN.sprites.ice_mage) SKIN.sprites.ice_mage = { ...SKIN.sprites.priest };
 if (SKIN.sprites.swordsman && !SKIN.sprites.magic_knight) SKIN.sprites.magic_knight = { ...SKIN.sprites.swordsman, scale: (SKIN.sprites.swordsman.scale || 0.25) * 1.05 };

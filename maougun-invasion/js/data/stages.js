@@ -5,6 +5,10 @@
  *   { trigger: { baseBelow }, wave: [{ who, count }], gap, hero?, line? }
  *                                        拠点HPがその割合以下になったら1回だけ、gap 秒間隔で順に出す
  */
+/* テストプレイ用（2026-11-25 ユーザー依頼）：敵の強さの倍率。1/3 にすると、人間軍のHP・攻撃力と拠点HPが 1/3 になる。
+ * 本番に戻すときは 1 にする（自動テスト・バランス確認は常に本番の強さで動く） */
+export const TEST_ENEMY_POWER = 1 / 3;
+
 export const CONFIG = {
   demonCap: 30,          // 魔王軍の同時出撃上限
   humanCap: 30,          // 人間軍の同時出撃上限（勇者は上限でも出る）
@@ -591,11 +595,11 @@ export const STAGES = {
     length: L(2500), shrineHp: 15000, baseHp: 13000, enemyScale: 1.45, mana: MANA,
     spawns: [
       { who: 'sky_guard', start: 3, every: 10, max: 2 },
-      { who: 'elite_mage', start: 8, every: 18, max: 1 },
+      { who: 'celestial_mage', start: 8, every: 16, max: 1 } /* 2026-11-25：天空の魔導士 */,
       { who: 'archer', start: 18, every: 11, max: 2 },
-      { who: 'heavy', start: 30, every: 24, max: 1 },
+      { who: 'celestial_knight', start: 24, every: 24, max: 1 } /* 2026-11-25：天空の守護騎士 */,
       { trigger: { baseBelow: 0.5 }, hero: 'sky_commander', wave: [{ who: 'sky_commander', count: 1 }, { who: 'sky_guard', count: 1 }], gap: 0.8 },
-      { trigger: { baseBelow: 0.25 }, wave: [{ who: 'sky_guard', count: 2 }, { who: 'mage', count: 2 }], gap: 0.5 },
+      { trigger: { baseBelow: 0.25 }, wave: [{ who: 'sky_guard', count: 2 }, { who: 'celestial_mage', count: 2 }], gap: 0.5 },
     ],
     reward: { stones: 1050 },
   },
@@ -605,7 +609,7 @@ export const STAGES = {
     spawns: [
       { who: 'sky_guard', start: 3, every: 11, max: 2 },
       { who: 'archer', start: 10, every: 12, max: 2 },
-      { who: 'mage', start: 16, every: 14, max: 1 },
+      { who: 'celestial_mage', start: 16, every: 14, max: 1 } /* 2026-11-25：天空の魔導士 */,
       { who: 'rider', start: 40, every: 16, max: 2 },
       { trigger: { baseBelow: 0.6 }, hero: 'holy_dragon', wave: [{ who: 'holy_dragon', count: 1 }], gap: 0.8 },
       { trigger: { baseBelow: 0.3 }, wave: [{ who: 'sky_guard', count: 2 }, { who: 'knight', count: 1 }, { who: 'mage', count: 1 }], gap: 0.5 },
@@ -618,9 +622,9 @@ export const STAGES = {
     spawns: [
       { who: 'sky_guard', start: 3, every: 10, max: 2 },
       { who: 'guardian', start: 8, every: 20, max: 1 },
-      { who: 'elite_mage', start: 12, every: 18, max: 1 },
+      { who: 'celestial_mage', start: 12, every: 18, max: 1 } /* 2026-11-25：天空の魔導士 */,
       { who: 'archer', start: 18, every: 11, max: 2 },
-      { who: 'knight', start: 26, every: 16, max: 1 },
+      { who: 'celestial_knight', start: 26, every: 22, max: 1 } /* 2026-11-25：天空の守護騎士 */,
       { trigger: { baseBelow: 0.5 }, hero: 'sky_guardian', wave: [{ who: 'sky_guardian', count: 1 }, { who: 'sky_guard', count: 1 }], gap: 0.8 },
       { trigger: { baseBelow: 0.25 }, wave: [{ who: 'paladin', count: 1 }, { who: 'heavy', count: 1 }, { who: 'mage', count: 2 }], gap: 0.5 },
     ],
@@ -634,7 +638,7 @@ export const STAGES = {
       { trigger: { baseBelow: 1.0 }, hero: 'take', wave: [{ who: 'take', count: 1 }, { who: 'sai', count: 1 }], gap: 1.5 },
       { who: 'sky_guard', start: 6, every: 11, max: 2 },
       { who: 'archer', start: 12, every: 12, max: 2 },
-      { who: 'mage', start: 20, every: 15, max: 1 },
+      { who: 'celestial_mage', start: 20, every: 15, max: 1 } /* 2026-11-25：天空の魔導士 */,
       { who: 'rider', start: 45, every: 16, max: 2 },
       { trigger: { baseBelow: 0.6 }, hero: 'yanai', wave: [{ who: 'yanai', count: 1 }, { who: 'sky_guard', count: 1 }], gap: 0.8 },
       { trigger: { baseBelow: 0.3 }, wave: [{ who: 'sky_guard', count: 2 }, { who: 'knight', count: 1 }, { who: 'elite_mage', count: 1 }], gap: 0.5 },

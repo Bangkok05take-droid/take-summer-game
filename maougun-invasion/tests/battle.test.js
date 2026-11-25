@@ -1057,3 +1057,19 @@ test('第8〜9章の追加キャラクター：火炎・氷結魔導士・魔法
     assert.ok(b.entities.some((e) => e.key === hero), id);
   }
 });
+
+test('第10章の追加キャラクター：天空の魔導士・天空の守護騎士の配置／テストプレイ用の敵の強さは自動テストに効かない', async () => {
+  const used = (id) => STAGES[id].spawns.flatMap((x) => x.who ? [x.who] : x.wave.map((w) => w.who));
+  assert.ok(used('10-1').includes('sky_guard'));
+  assert.ok(used('10-2').includes('celestial_mage') && used('10-2').includes('celestial_knight'));
+  assert.ok(used('10-4').includes('celestial_mage') && used('10-4').includes('celestial_knight'));
+  assert.equal(HUMANS.celestial_mage.line, 'back');
+  const { TEST_ENEMY_POWER } = await import('../js/data/stages.js');
+  assert.ok(TEST_ENEMY_POWER > 0 && TEST_ENEMY_POWER <= 1);
+  const full = makeBattle({ stageId: '1-1', seed: 1 });
+  assert.equal(full.base.maxHp, STAGES['1-1'].baseHp, '自動テストは本番の強さ');
+  const easy = makeBattle({ stageId: '1-1', seed: 1, config: { ...CONFIG, enemyPower: 1 / 3 } });
+  assert.equal(easy.base.maxHp, Math.round(STAGES['1-1'].baseHp / 3));
+  const h = easy.spawnHuman('swordsman'); const h2 = full.spawnHuman('swordsman');
+  assert.ok(Math.abs(h.maxHp - h2.maxHp / 3) <= 1, '敵のHPも1/3');
+});

@@ -386,15 +386,27 @@ body.portrait #rotate { display: flex; }
 .tutorBox p { margin: calc(var(--u) * 3) 0 0; font-size: calc(var(--u) * 16); line-height: 1.5; font-weight: 700; text-wrap: pretty; }
 .tutorBox .tnext { display: block; text-align: right; font-size: calc(var(--u) * 12); color: #8a5ad0; font-weight: 800; }
 .tutorBox .tskip { position: absolute; right: calc(var(--u) * 8); top: calc(var(--u) * -30); padding: calc(var(--u) * 4) calc(var(--u) * 10); border-radius: calc(var(--u) * 8); border: calc(var(--u) * 2) solid var(--gold); background: rgba(30, 10, 50, .9); color: var(--text); font-weight: 800; font-size: calc(var(--u) * 12); }
-.tutor-focus { animation: tutorGlow .9s ease-in-out infinite alternate; z-index: 6; }
-@keyframes tutorGlow { from { box-shadow: 0 0 0 calc(var(--u) * 3) #ffe39a, 0 0 calc(var(--u) * 12) #ffd24a; } to { box-shadow: 0 0 0 calc(var(--u) * 5) #fff3c0, 0 0 calc(var(--u) * 26) #ffd24a; } }
+/* 2026-11-25：「ここを押してね」をはっきり（太い光る枠・強い光・点滅）。▼ここ！は js/ui/pointer.js */
+.tutor-focus { animation: tutorGlow .55s ease-in-out infinite alternate; z-index: 6; outline: calc(var(--u) * 4) solid #fff36a; outline-offset: calc(var(--u) * 3); }
+@keyframes tutorGlow {
+  from { box-shadow: 0 0 0 calc(var(--u) * 5) #ffb020, 0 0 calc(var(--u) * 18) calc(var(--u) * 6) rgba(255, 210, 60, .9); outline-color: #fff36a; filter: brightness(1.15); }
+  to { box-shadow: 0 0 0 calc(var(--u) * 9) #ff8a00, 0 0 calc(var(--u) * 42) calc(var(--u) * 16) rgba(255, 230, 90, 1); outline-color: #ffffff; filter: brightness(1.45); }
+}
+#tutorPointer { position: fixed; z-index: 60; pointer-events: none; transform: translate(-50%, -100%); display: flex; flex-direction: column-reverse; align-items: center; animation: ptBounce .5s ease-in-out infinite alternate; }
+#tutorPointer.below { transform: translate(-50%, 0); flex-direction: column; animation-name: ptBounceDown; }
+#tutorPointer.below .pt-arrow { transform: rotate(180deg); }
+#tutorPointer[hidden] { display: none; }
+#tutorPointer .pt-arrow { font-size: calc(var(--u) * 30); line-height: 1; color: #ffe14a; text-shadow: 0 0 calc(var(--u) * 6) #ff8a00, 0 calc(var(--u) * 2) 0 #7a3a00; }
+#tutorPointer .pt-text { font-size: calc(var(--u) * 15); font-weight: 900; color: #3a1d00; background: #ffe14a; border: calc(var(--u) * 2) solid #fff; border-radius: 999px; padding: 0 calc(var(--u) * 10); box-shadow: 0 0 calc(var(--u) * 10) #ff8a00; }
+@keyframes ptBounce { to { margin-top: calc(var(--u) * -10); } }
+@keyframes ptBounceDown { to { margin-top: calc(var(--u) * 10); } }
 #tutorHint {
   position: absolute; left: 50%; top: calc(var(--u) * 150); transform: translateX(-50%); max-width: calc(var(--u) * 640); z-index: 5; pointer-events: none;
   padding: calc(var(--u) * 7) calc(var(--u) * 14); background: rgba(30, 12, 54, .92); border: calc(var(--u) * 2) solid var(--gold); border-radius: calc(var(--u) * 12);
   font-size: calc(var(--u) * 15); font-weight: 700; color: #fff; display: flex; gap: calc(var(--u) * 8); align-items: center;
 }
 #tutorHint .who { flex: none; padding: 0 calc(var(--u) * 8); background: #6d28d9; border-radius: calc(var(--u) * 6); font-size: calc(var(--u) * 12); }
-@media (prefers-reduced-motion: reduce) { .tutor-focus { animation: none; box-shadow: 0 0 0 calc(var(--u) * 4) #ffe39a; } }
+@media (prefers-reduced-motion: reduce) { .tutor-focus { animation: none; box-shadow: 0 0 0 calc(var(--u) * 7) #ff8a00, 0 0 calc(var(--u) * 30) #ffe14a; } #tutorPointer { animation: none; } }
 /* 章の切り替え（ステージ選択） */
 .chapTabs { display: flex; gap: calc(var(--u) * 6); margin-top: calc(var(--u) * 6); }
 .chapTab { padding: calc(var(--u) * 3) calc(var(--u) * 12); border-radius: 999px; border: calc(var(--u) * 2) solid var(--line); background: rgba(0,0,0,.35); color: var(--dim); font-weight: 800; font-size: calc(var(--u) * 12); }
@@ -440,3 +452,6 @@ body.portrait #rotate { display: flex; }
 .overlay.movie { background: #000; }
 .overlay.movie video { width: 100%; height: 100%; object-fit: contain; }
 #btnMovieSkip { position: absolute; right: calc(var(--u) * 16); bottom: calc(var(--u) * 16); }
+
+/* テストプレイ用の表示（敵の強さを下げているあいだだけ） */
+#testBadge { position: fixed; left: 50%; top: 0; transform: translateX(-50%); opacity: .8; z-index: 70; pointer-events: none; font-size: 9px; font-weight: 800; color: #fff; background: rgba(200, 30, 60, .85); padding: 0 8px; border-radius: 0 0 8px 8px; }

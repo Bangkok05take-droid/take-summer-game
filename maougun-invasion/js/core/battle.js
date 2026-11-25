@@ -35,7 +35,9 @@ export class Battle {
     this.stats = { summoned: 0, kills: 0, lost: 0, manaSpent: 0, spells: 0, heroesBeaten: 0 };
 
     const hw = config.baseHalfWidth;
-    this.base = { side: 'human', x: 110, hp: stage.baseHp, maxHp: stage.baseHp, halfWidth: hw };
+    const ep = (config && config.enemyPower) || 1; // テストプレイ用の敵の強さ（通常は1）
+    const baseHp = Math.max(1, Math.round(stage.baseHp * ep));
+    this.base = { side: 'human', x: 110, hp: baseHp, maxHp: baseHp, halfWidth: hw };
     this.shrine = { side: 'demon', x: stage.length - 110, hp: stage.shrineHp, maxHp: stage.shrineHp, halfWidth: hw };
 
     const m = mana || stage.mana;
@@ -231,7 +233,7 @@ export class Battle {
 
   spawnHuman(who) {
     const base = this.humanDefs[who];
-    const k = this.stage.enemyScale || 1;
+    const k = (this.stage.enemyScale || 1) * ((this.config && this.config.enemyPower) || 1);
     const def = { ...base, key: who, hp: Math.round(base.hp * k), atk: Math.round(base.atk * k) };
     return this.spawn('human', def, this.spawnX('human'));
   }

@@ -3,7 +3,8 @@
 import { createBattle, STEP } from './core/battle.js';
 import { createClock } from './core/clock.js';
 import { HUMANS } from './data/humans.js';
-import { STAGES, CONFIG } from './data/stages.js';
+import { STAGES, CONFIG, TEST_ENEMY_POWER } from './data/stages.js';
+import { startPointer } from './ui/pointer.js';
 import { STORY, CRYSTAL_EVENT, ULTIMATE_EVENT, FINAL_MARCH, ENDING } from './data/story.js';
 import { SKIN } from './data/skin.js';
 import {
@@ -228,7 +229,7 @@ function startStage(id, opts = {}) {
   app.forced = !!opts.forced;
   const st = STAGES[id];
   const seed = Number(params.get('seed')) || ((Date.now() % 100000) + 1);
-  const config = { ...CONFIG, spell: resolveSpell(CONFIG.spell, app.profile), furnace: resolveFurnace(CONFIG.furnace, app.profile) }; // 魔王の力（呪文の強化）を反映
+  const config = { ...CONFIG, spell: resolveSpell(CONFIG.spell, app.profile), furnace: resolveFurnace(CONFIG.furnace, app.profile), enemyPower: enemyPower() }; // 魔王の力（呪文の強化）を反映
   app.battle = createBattle({ stage: st, deck: buildDeck(app.profile), humanDefs: HUMANS, config, seed, mana: resolveMana(st.mana, app.profile) });
   app.resultShown = false;
   renderer.fx = [];
@@ -485,6 +486,10 @@ function frame(now) {
 }
 
 // テスト・不具合調査用（ゲームの進行には使わない）
+// テストプレイ用の敵の強さ。?full を付けると本番の強さ（自動テストもこちら）。?easy で自動テスト中も弱く
+function enemyPower() { try { const q = new URLSearchParams(location.search); if (q.has('easy')) return TEST_ENEMY_POWER; if (q.has('full') || navigator.webdriver) return 1; } catch { /* */ } return TEST_ENEMY_POWER; }
+startPointer();
+if (enemyPower() !== 1) { const t = document.createElement('div'); t.id = 'testBadge'; t.textContent = `テスト中：敵の強さ ${Math.round(enemyPower() * 100)}%`; document.body.appendChild(t); }
 window.__game = {
   app, clock, renderer, talk, SKIN,
   get battle() { return app.battle; },

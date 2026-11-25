@@ -256,6 +256,17 @@ export const HUMANS = {
       { id: 'wave', name: '光の槍', type: 'wave', every: 15, first: 6, windup: 1.1, recover: 0.4, reach: 240, mult: 1.4 },
     ],
   },
+  // ---- 第10章の追加キャラクター（2026-11-25・承認済みデザイン。個別の透過PNGが届くまで絵は既存の兵士の代用） ----
+  celestial_mage: {
+    name: '天空の魔導士', role: '後衛（光の魔法）', line: 'back',
+    note: '光の魔法を後ろから撃つ、天空の魔導士', counter: '木槌小鬼で後ろから倒すか、こうもりで一気に近づく',
+    hp: 340, atk: 28, range: 200, speed: 26, interval: 2.4, windup: 0.6, kb: 2, attack: 'single', projectile: 'orb', mana: 130, size: 1.0,
+  },
+  celestial_knight: {
+    name: '天空の守護騎士', role: '聖なる前衛',
+    note: '白い翼の騎士。聖なる大剣で前の魔物をまとめて斬る', counter: '岩男で受け止め、魔法使いと木槌小鬼で崩す',
+    hp: 820, atk: 38, range: 42, speed: 26, interval: 1.8, windup: 0.5, kb: 4, attack: 'area', guard: 0.15, noKbFromSmall: true, mana: 170, size: 1.2,
+  },
   holy_dragon: {
     name: '聖竜', role: '世界の守護者', hero: true, noKbFromSmall: true,
     note: '世界を守護する伝説の竜。聖なる息吹で前方の魔物をまとめてなぎ払い、光で気絶させる', counter: '岩男と森のお化けで持ちこたえ、最上位の魔物・呪文・幹部で一気に削る',
