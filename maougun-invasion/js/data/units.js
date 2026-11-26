@@ -119,8 +119,20 @@ export const BOSSES = {
     ],
   },
   // ---- 構想（ready: false）。数値は仮。能力（skills）と絵ができたら ready: true にする ----
-  trickster: { attackType: 'mid', target: 'front', role: '幹部・罠と身代わり', unique: true, ready: false, cost: 1300, needFurnace: 3, cooldown: 60, hp: 4500, atk: 120, range: 120, speed: 34, interval: 2.6, windup: 0.6, kb: 6, attack: 'single', size: 1.5, growth: GROWTH },
-  mist: { attackType: 'mid', target: 'front', role: '幹部・霧', unique: true, ready: false, cost: 1600, needFurnace: 4, cooldown: 60, hp: 7000, atk: 90, range: 100, speed: 28, interval: 2.8, windup: 0.7, kb: 6, attack: 'area', size: 1.6, growth: GROWTH },
+  // 2026-11-26：霧の幹部＝ヴェイル（大魔王の影の側近。ユーザーのデザイン 11618.png）。いちばん最後に加わる幹部（9-4 のボス戦の前）。
+  //   ふだんは影の刃で中距離から1体ずつ攻撃。
+  //   「幻惑の霧」：前方300の敵を霧で惑わし、6秒間 与えるダメージを半分に（12秒ごと）
+  //   「影の帳」：近くの味方が傷ついたら、まわり240の味方を影で包み、5秒間 受けるダメージを半分に（16秒ごと）
+  //   ※ 罠＝死神・落雷＝オルドに置き換わったので、構想の trickster・thunder は削除（2026-11-26）
+  mist: {
+    attackType: 'mid', target: 'front', role: '幹部・霧と影（敵の攻撃を弱め、味方を守る）', unique: true, ready: true, growth: GROWTH,
+    cost: 2200, needFurnace: 6, cooldown: 60, hp: 9000, atk: 180, range: 160, speed: 30, // 召喚費用は承認済みの上限 2200
+    interval: 2.2, windup: 0.5, kb: 7, attack: 'single', size: 1.5,
+    skills: [
+      { id: 'veil', name: '影の帳', type: 'veil', every: 16, first: 6, windup: 0.7, recover: 0.4, radius: 240, reach: 300, duration: 5, cut: 0.5 },
+      { id: 'fog', name: '幻惑の霧', type: 'weaken', every: 12, first: 2, windup: 0.8, recover: 0.4, reach: 300, duration: 6, factor: 0.5 },
+    ],
+  },
   // 2026-11-26：熔氷の岩魔（幹部2体目・ユーザーのデザイン 11594.png）。6-3 の初回クリアで仲間に。
   //   ふだんは前方の敵をまとめて炎で焼く（範囲）。特殊技「氷の息」：前方220の敵を2秒凍らせて止める（14秒ごと）
   elemental: {
@@ -129,7 +141,6 @@ export const BOSSES = {
     interval: 2.8, windup: 0.7, kb: 6, attack: 'area', size: 1.6,
     skills: [{ id: 'freeze', name: '氷の息', type: 'stun', every: 14, first: 5, windup: 0.9, recover: 0.5, reach: 220, duration: 2.0 }],
   },
-  thunder: { attackType: 'long', target: 'front', role: '幹部・落雷', unique: true, ready: false, cost: 2200, needFurnace: 6, cooldown: 60, hp: 6500, atk: 220, range: 140, speed: 30, interval: 3.2, windup: 0.9, kb: 6, attack: 'single', size: 1.6, growth: GROWTH },
 };
 export const BOSS_ORDER = Object.keys(BOSSES);
 

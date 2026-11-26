@@ -147,6 +147,9 @@ export class Renderer {
         }
         case 'bigMagic': if (byId(ev.id) && ufx(byId(ev.id).key, 'jackpot')) { this.shake = Math.max(this.shake, 4); break; } this.add({ kind: 'boom', x: ev.x, y: GROUND_Y - 10, r: ev.radius, life: 0.6 }); this.shake = Math.max(this.shake, 6); break;
         case 'stun': this.add({ kind: 'flashRing', x: ev.x, y: laneY(ev.lane) - 30, life: 0.4 }); break;
+        case 'weaken': this.add({ kind: 'num', x: ev.x, y: laneY(ev.lane) - 70, text: '幻惑', color: '#c9a7ff', life: 0.9, small: true }); break; // 幻惑の霧
+        case 'mist': this.add({ kind: 'ring', x: ev.x, y: GROUND_Y + 6, color: '#b48cff', life: 1.2, w: ev.w }); break;
+        case 'veil': this.add({ kind: 'num', x: ev.x, y: laneY(ev.lane) - 64, text: '影の帳', color: '#7fd7ff', life: 0.8, small: true }); break;
         case 'slow': this.add({ kind: 'num', x: ev.x, y: laneY(ev.lane) - 70, text: 'スロー', color: '#ffd76a', life: 0.9, small: true }); break; // 時の砂
         case 'reap': this.add({ kind: 'num', x: ev.x, y: laneY(ev.lane) - 74, text: '魂刈り！', color: '#7dffc0', life: 1.0, big: true }); this.add({ kind: 'flashRing', x: ev.x, y: laneY(ev.lane) - 30, life: 0.4 }); break;
         case 'skillStart': {

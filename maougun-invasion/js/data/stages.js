@@ -576,6 +576,7 @@ export const STAGES = {
       { trigger: { baseBelow: 0.6 }, hero: 'supreme_commander', wave: [{ who: 'supreme_commander', count: 1 }, { who: 'heavy', count: 1 }], gap: 0.8 },
       { trigger: { baseBelow: 0.3 }, wave: [{ who: 'guardian', count: 1 }, { who: 'magic_knight', count: 1 }, { who: 'paladin', count: 1 }, { who: 'rider', count: 2 }], gap: 0.5 },
     ],
+    joinBoss: 'mist', // 2026-11-26：最終ステージの前に、霧の幹部ヴェイルが戦場に出る（いちばん最後の幹部）
     reward: { stones: 1000 },
   },
   // ---------------- 第10章 天空・勇者の聖域（敵編成・ボス・報酬は仮。背景は5ステージとも同じ） ----------------

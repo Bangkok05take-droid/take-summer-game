@@ -374,7 +374,7 @@ test('編成：枠を超えて入れられない・外すと空く・未解放�
   removeFromFormation(p, 'mass');
   assert.ok(addToFormation(p, 'mallet').ok);
   assert.deepEqual(buildDeck(p).map((d) => d.key), ['vanguard', 'tank', 'ranged', 'fast', 'mallet']);
-  assert.equal(addToFormation(p, 'trickster').reason, 'locked', '準備中の幹部は編成できない');
+  assert.equal(addToFormation(p, 'mist').reason, 'locked', 'まだ加わっていない幹部は編成できない');
 });
 
 test('編成は保存され、版1のセーブは解放済みの魔物で編成が作られる', () => {
@@ -1179,4 +1179,34 @@ test('幹部・死神：回復役がいれば魂刈り（兵は一撃・強敵�
   const s1 = d.spawnHuman('swordsman'); s1.x = 860; s1.def = { ...s1.def, speed: 0 };
   const used3 = []; let slowed = false; run(d, 6, (bb) => { if (s1.slow > 0) slowed = true; for (const ev of bb.events) if (ev.type === 'skill' && ev.id === r3.id) used3.push(ev.skill); });
   assert.ok(!used3.includes('reap') && used3.includes('sand') && slowed, '時の砂で遅くする');
+});
+
+test('幹部・ヴェイル（霧）：9-4 のボス戦の前に加わる・幻惑の霧で敵の攻撃を半分・影の帳で味方を守る', async () => {
+  const pr = await import('../js/data/progress.js');
+  const { SKIN } = await import('../js/data/skin.js');
+  assert.equal(SKIN.names.mist, 'ヴェイル'); assert.ok(BOSSES.mist.ready && SKIN.sprites.mist);
+  assert.ok(!BOSSES.trickster && !BOSSES.thunder, '罠＝死神・落雷＝オルドに置き換え');
+  assert.equal(STAGES['9-4'].joinBoss, 'mist');
+  const order = STAGE_ORDER_ALL.filter((id) => STAGES[id].joinBoss).map((id) => STAGES[id].joinBoss);
+  assert.equal(order[order.length - 1], 'mist', 'いちばん最後に加わる幹部');
+  const p = profileFor('9-4'); assert.ok(pr.joinPending(p, '9-4')); pr.joinBoss(p, '9-4');
+  assert.ok(buildDeck(p).some((d) => d.key === 'mist'));
+  const b0 = makeBattle({ stageId: '9-4', profile: p });
+  for (let lv = 1; lv < BOSSES.mist.needFurnace; lv++) { b0.mana = 99999; b0.queue({ type: 'furnace' }); b0.step(); }
+  b0.mana = b0.manaMax; assert.ok(b0.canSummon('mist').ok, '9-4 で召喚できる');
+  // 幻惑の霧
+  const b = makeBattle({ stage: noEnemies(), deck: ['mist', 'tank'] });
+  const v = b.spawn('demon', b.deckDef('mist'), 1000); v.x = 1000;
+  const h = b.spawnHuman('swordsman'); h.x = 850; h.def = { ...h.def, speed: 0 };
+  let weak = false; run(b, 4, () => { if (h.weak > 0) weak = true; });
+  assert.ok(weak, '前の敵を惑わす');
+  const t = b.spawn('demon', b.deckDef('tank'), 900); t.x = 900; h.weak = 5; h.weakFactor = 0.5;
+  const hp0 = t.hp; b.damageUnit(t, 100, h); assert.equal(hp0 - t.hp, 50, '惑わされた敵のダメージは半分');
+  // 影の帳
+  const c = makeBattle({ stage: noEnemies(), deck: ['mist', 'tank'] });
+  const v2 = c.spawn('demon', c.deckDef('mist'), 1000); v2.x = 1000; v2.skillCd.fog = 99;
+  const ally = c.spawn('demon', c.deckDef('tank'), 950); ally.x = 950; ally.hp = ally.maxHp * 0.5;
+  const foe = c.spawnHuman('swordsman'); foe.x = 760; foe.def = { ...foe.def, speed: 0 };
+  let shielded = false; run(c, 9, () => { if (ally.shield > 0) shielded = true; });
+  assert.ok(shielded, '傷ついた味方を影で守る');
 });

@@ -258,6 +258,8 @@ export class Battle {
   updateEntity(e, dt) {
     const d = e.def;
     // 鈍足（死神「時の砂」）：時間の進みが遅くなる＝歩く・攻撃する速さが落ちる（2026-11-26）
+    if (e.weak > 0) e.weak -= dt;     // 幻惑の霧（ヴェイル）：与えるダメージが減る
+    if (e.shield > 0) e.shield -= dt; // 影の帳（ヴェイル）：受けるダメージが減る
     if (e.slow > 0) { e.slow -= dt; dt *= e.slowFactor || 0.5; }
     e.timer += dt;
     if (e.flash > 0) e.flash = Math.max(0, e.flash - dt);
@@ -445,6 +447,9 @@ export class Battle {
     // 魂刈り：攻撃範囲に回復役がいるときだけ。時の砂：回復役がいないときだけ（死神・2026-11-26）
     const healerAhead = () => this.targetsAhead(e, -12, s.reach).some((t) => !t.isBase && this.isHealerUnit(t.target));
     if (s.type === 'reap') return healerAhead();
+    // 幻惑の霧：前方に敵がいれば。影の帳：近くの味方が傷ついていて、前方に敵がいるとき（ヴェイル・2026-11-26）
+    if (s.type === 'weaken') return this.targetsAhead(e, -12, s.reach).some((t) => !t.isBase);
+    if (s.type === 'veil') return this.targetsAhead(e, -12, s.reach || 300).some((t) => !t.isBase) && this.entities.some((o) => o.side === e.side && o.state !== 'dead' && o.hp < o.maxHp * 0.85 && Math.abs(o.x - e.x) <= s.radius);
     if (s.type === 'slow') return !this.targetsAhead(e, -12, s.reach).some((t) => !t.isBase && this.isHealerUnit(t.target)) && this.targetsAhead(e, -12, s.reach).some((t) => !t.isBase);
     return this.targetsAhead(e, -12, s.trigger ?? s.reach).some((t) => !t.isBase); // trigger：この距離まで近づいてから使う
   }
@@ -470,6 +475,19 @@ export class Battle {
         if (t.isBase || t.target.state === 'dead') continue;
         t.target.stun = Math.max(t.target.stun, s.duration);
         this.events.push({ type: 'stun', id: t.target.id, x: t.target.x, lane: t.target.lane, duration: s.duration });
+      }
+    } else if (s.type === 'weaken') {
+      for (const t of this.targetsAhead(e, -12, s.reach)) {
+        if (t.isBase || t.target.state === 'dead') continue;
+        t.target.weak = Math.max(t.target.weak || 0, s.duration); t.target.weakFactor = s.factor;
+        this.events.push({ type: 'weaken', id: t.target.id, x: t.target.x, lane: t.target.lane });
+      }
+      this.events.push({ type: 'mist', x: e.x + e.dir * s.reach / 2, w: s.reach, side: e.side });
+    } else if (s.type === 'veil') {
+      for (const o of this.entities) {
+        if (o.side !== e.side || o.state === 'dead' || Math.abs(o.x - e.x) > s.radius) continue;
+        o.shield = Math.max(o.shield || 0, s.duration); o.shieldCut = s.cut;
+        this.events.push({ type: 'veil', id: o.id, x: o.x, lane: o.lane });
       }
     } else if (s.type === 'slow') {
       // 時の砂：前方の敵の動きを遅くする
@@ -520,6 +538,8 @@ export class Battle {
   damageUnit(o, dmg, src, forceKb = false) {
     if (o.state === 'dead') return;
     const cut = o.def.guard || 0; // 被ダメージの軽減率
+    if (src && src.weak > 0) dmg *= src.weakFactor || 0.5; // 霧に惑わされた相手の攻撃は弱い
+    if (o.shield > 0) dmg *= 1 - (o.shieldCut || 0.5);     // 影の帳で守られている
     dmg = Math.max(1, Math.round(dmg * (1 - cut)));
     o.hp -= dmg;
     o.flash = 0.12;
