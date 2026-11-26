@@ -706,3 +706,11 @@ export const ENDING = {
   ],
   END: { end: 'THE END' },
 };
+
+/* オープニングのスライド（2026-11-26 承認済み）。初めて「はじめる」を押したとき、既存のオープニング会話（STORY.opening）の前に1回だけ。
+ * タップで進む（自動では進まない）。右上の「スキップ」で会話へ。見た・スキップした記録は localStorage（maougunInvasion.openingSeen）に残す */
+export const OPENING_SLIDES = [
+  { src: 'assets/approved/opening/opening_01_battle.png', text: 'かつて、世界を恐怖に陥れた大魔王は、\nマスター・ヤナイたちとの壮絶な戦いに敗れた。' },
+  { src: 'assets/approved/opening/opening_02_seal.png', text: 'その強大な力は、\n肉体と魔力に分けられ、封印された。' },
+  { src: 'assets/approved/opening/opening_03_seven_days.png', text: 'それから、わずか七日後――。' },
+];

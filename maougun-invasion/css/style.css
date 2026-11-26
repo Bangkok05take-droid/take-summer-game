@@ -472,3 +472,15 @@ body.portrait #rotate { display: flex; }
 #scUnlock.join #unlockName { color: #ffd76a; font-size: calc(var(--u) * 30); text-shadow: 0 0 calc(var(--u) * 14) #ff7a2a; }
 #scUnlock.join #unlockEyebrow { color: #fff; font-weight: 900; letter-spacing: .1em; }
 @keyframes joinIn { from { transform: scale(.85); opacity: 0; } to { transform: none; opacity: 1; } }
+
+/* オープニングのスライド：画像は縦横比を保ったまま全体を表示（切り抜かない）・下に半透明の黒帯と白い文字 */
+#scSlides { background: #000; z-index: 30; cursor: pointer; }
+#slideImg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; opacity: 0; transition: opacity .5s ease; }
+#slideImg.on { opacity: 1; }
+#scSlides .slideBand { position: absolute; left: 0; right: 0; bottom: 0; padding: calc(var(--u) * 16) calc(var(--u) * 40) calc(var(--u) * 20); background: rgba(0, 0, 0, .6); text-align: center; }
+#slideText { margin: 0; color: #fff; font-size: calc(var(--u) * 24); line-height: 1.6; white-space: pre-line; font-weight: 700; text-shadow: 0 calc(var(--u) * 2) calc(var(--u) * 4) #000; opacity: 0; }
+#slideText.on { animation: slideTextIn 1.4s ease forwards; }
+@keyframes slideTextIn { from { opacity: 0; transform: translateY(calc(var(--u) * 6)); } to { opacity: 1; transform: none; } }
+#scSlides .slideNext { position: absolute; right: calc(var(--u) * 18); bottom: calc(var(--u) * 6); color: rgba(255, 255, 255, .7); font-size: calc(var(--u) * 12); }
+#btnSlideSkip { position: absolute; top: calc(var(--u) * 12); right: calc(var(--u) * 14); z-index: 2; }
+@media (prefers-reduced-motion: reduce) { #slideText.on { animation: none; opacity: 1; } #slideImg { transition: none; } }

@@ -6,7 +6,7 @@ import { HUMANS } from './data/humans.js';
 import { STAGES, CONFIG, TEST_ENEMY_POWER } from './data/stages.js';
 import { UNIT_ORDER, BOSSES } from './data/units.js';
 import { startPointer } from './ui/pointer.js';
-import { STORY, CRYSTAL_EVENT, ULTIMATE_EVENT, FINAL_MARCH, ENDING } from './data/story.js';
+import { STORY, CRYSTAL_EVENT, ULTIMATE_EVENT, FINAL_MARCH, ENDING, OPENING_SLIDES } from './data/story.js';
 import { SKIN } from './data/skin.js';
 import {
   loadProfile, saveProfile, resetProfile, buildDeck, resolveMana, applyResult, isStageOpen, nextStage,
@@ -79,7 +79,28 @@ function startNew() {
   save();
   playOpening(() => startStage('1-1'));
 }
+// オープニングのスライド（初めてだけ。見た・スキップした記録はセーブとは別に残すので、「はじめから」でも二度は出ない）
+const SLIDES_KEY = 'maougunInvasion.openingSeen';
+function slidesSeen() { try { return localStorage.getItem(SLIDES_KEY) === '1'; } catch { return false; } }
+function playSlides(done) {
+  for (const sl of OPENING_SLIDES) { const im = new Image(); im.src = sl.src; } // 先に読み込む
+  let i = -1;
+  const finish = () => { try { localStorage.setItem(SLIDES_KEY, '1'); } catch { /* 保存できない環境 */ } app.slideNext = null; $('scSlides').hidden = true; done(); };
+  const next = () => {
+    i++;
+    if (i >= OPENING_SLIDES.length) { finish(); return; }
+    const sl = OPENING_SLIDES[i]; const img = $('slideImg'); const tx = $('slideText');
+    img.classList.remove('on'); tx.classList.remove('on');
+    setTimeout(() => { img.src = sl.src; tx.textContent = sl.text; void tx.offsetWidth; img.classList.add('on'); tx.classList.add('on'); }, i === 0 ? 0 : 250);
+  };
+  app.slideNext = next; app.slideSkip = finish;
+  show(null); $('scSlides').hidden = false;
+  next();
+}
+$('scSlides').addEventListener('click', (e) => { if (e.target.id === 'btnSlideSkip') return; if (app.slideNext) app.slideNext(); });
+$('btnSlideSkip').addEventListener('click', () => { if (app.slideSkip) { const f = app.slideSkip; app.slideSkip = null; f(); } });
 function playOpening(done) {
+  if (!slidesSeen() && !app.profile.story.opening) { playSlides(() => playOpening(done)); return; }
   show(null);
   talk.play(STORY.opening.lines, 'shrine', () => { app.profile.story.opening = true; save(); done(); });
 }
@@ -482,6 +503,11 @@ canvas.addEventListener('wheel', (ev) => { const b = app.battle; if (!b || app.s
 // ---------- キーボード（PC） ----------
 const keysDown = new Set();
 window.addEventListener('keydown', (ev) => {
+  if (!$('scSlides').hidden) { // オープニングのスライド：Enter・スペースで次へ、Esc でスキップ
+    if ((ev.key === 'Enter' || ev.key === ' ') && app.slideNext) { app.slideNext(); ev.preventDefault(); }
+    else if (ev.key === 'Escape' && app.slideSkip) { const f = app.slideSkip; app.slideSkip = null; f(); }
+    return;
+  }
   if (talk.active) {
     if (ev.key === 'Enter' || ev.key === ' ') { talk.next(); ev.preventDefault(); }
     else if (ev.key === 'Escape') talk.finish();

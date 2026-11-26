@@ -44,7 +44,14 @@ try {
 
   // ---- オープニング（会話・スキップ） ----
   await page.tap('#btnNew');
-  check('オープニングの会話が始まる', await vis('#scTalk'));
+  // オープニングのスライド（初回だけ・タップで進む）
+  await page.waitForTimeout(300);
+  const slides = [];
+  for (let i = 0; i < 5 && await vis('#scSlides'); i++) { await page.waitForTimeout(500); slides.push({ src: (await page.locator('#slideImg').getAttribute('src')).split('/').pop(), text: await page.locator('#slideText').textContent() }); if (i === 0) await shot(page, '00_opening_slide'); await page.tap('#scSlides', { position: { x: 300, y: 200 } }); await page.waitForTimeout(150); }
+  check('オープニングのスライド3枚が順に出て、タップで進む', slides.length === 3 && slides.map((x) => x.src).join(',') === 'opening_01_battle.png,opening_02_seal.png,opening_03_seven_days.png' && slides[0].text.startsWith('かつて、世界を恐怖に陥れた大魔王は') && slides[1].text.includes('肉体と魔力に分けられ') && slides[2].text === 'それから、わずか七日後――。', JSON.stringify(slides));
+  const fit = await page.evaluate(() => { const r = document.getElementById('slideImg').getBoundingClientRect(); const g = document.getElementById('game').getBoundingClientRect(); return r.width <= g.width + 1 && r.height <= g.height + 1; });
+  check('スライドの画像は画面に収まる（切り抜かない）', fit);
+  check('スライドのあとにオープニングの会話が始まる', await vis('#scTalk') && !(await vis('#scSlides')));
   const t1 = await page.locator('#talkText').textContent();
   await page.tap('#talkBox');
   const t2 = await page.locator('#talkText').textContent();
@@ -270,7 +277,7 @@ try {
   const p4 = await ctx4.newPage();
   const e4 = []; p4.on('pageerror', (e) => e4.push(String(e)));
   await p4.goto(`http://localhost:${PORT}/?seed=4`); await p4.waitForFunction(() => window.__game);
-  await p4.tap('#btnNew'); await p4.tap('#btnSkip'); await p4.waitForTimeout(200);
+  await p4.tap('#btnNew'); await p4.waitForTimeout(150); if (await p4.locator('#scSlides').isVisible()) await p4.tap('#btnSlideSkip'); await p4.tap('#btnSkip'); await p4.waitForTimeout(200);
   const tt = () => p4.locator('#tutorText').textContent();
   const steps = [];
   steps.push(await tt()); await p4.tap('#tutor'); await p4.waitForTimeout(100);
@@ -522,6 +529,27 @@ try {
     await c10.close();
   }
 
+  // ---- オープニングのスライド：スキップ／二度目は出ない ----
+  {
+    const cs = await browser.newContext({ ...devices['iPhone 13 landscape'] });
+    const q = await cs.newPage(); const es = []; q.on('pageerror', (e) => es.push(String(e)));
+    await q.goto(`http://localhost:${PORT}/`); await q.waitForFunction(() => window.__game);
+    await q.tap('#btnNew'); await q.waitForTimeout(400);
+    const on = await q.locator('#scSlides').isVisible();
+    await q.tap('#btnSlideSkip'); await q.waitForTimeout(200);
+    const talkFirst = await q.locator('#talkText').textContent();
+    check('スライドのスキップで、既存のオープニング会話の最初へ', on && !(await q.locator('#scSlides').isVisible()) && talkFirst.startsWith('ここは封印の祠。'), talkFirst);
+    await q.tap('#btnSkip'); await q.waitForTimeout(200);
+    await q.reload(); await q.waitForFunction(() => window.__game); await q.waitForTimeout(150);
+    await q.tap('#btnContinue'); await q.waitForTimeout(200);
+    check('つづきからではスライドが出ない', !(await q.locator('#scSlides').isVisible()) && await q.evaluate(() => window.__game.app.screen === 'scSelect'));
+    await q.evaluate(() => window.__game.toTitle()); await q.waitForTimeout(100);
+    await q.tap('#btnNew'); await q.waitForTimeout(150); if (await q.locator('#btnResetYes').isVisible()) await q.tap('#btnResetYes'); await q.waitForTimeout(300);
+    check('一度見た（スキップした）あとは、はじめからでもスライドは出ない', !(await q.locator('#scSlides').isVisible()) && await q.locator('#scTalk').isVisible());
+    check('スライド：エラーなし', es.length === 0, es.join(' / '));
+    await cs.close();
+  }
+
   // ---- 縦持ち ----
   const ctx2 = await browser.newContext({ ...devices['iPhone 13'] });
   const p2 = await ctx2.newPage();
@@ -533,7 +561,8 @@ try {
   const ctx3 = await browser.newContext({ viewport: { width: 1280, height: 720 } });
   const p3 = await ctx3.newPage();
   await p3.goto(`http://localhost:${PORT}/?seed=2`); await p3.waitForFunction(() => window.__game);
-  await p3.click('#btnNew');
+  await p3.click('#btnNew'); await p3.waitForTimeout(150);
+  await p3.keyboard.press('Escape'); await p3.waitForTimeout(150); // オープニングのスライドを Esc でスキップ
   await p3.keyboard.press('Enter');
   await p3.keyboard.press('Escape'); await p3.waitForTimeout(150);
   check('PC：Enter で会話送り・Esc でスキップ', (await p3.evaluate(() => window.__game.app.screen)) === 'battle');
