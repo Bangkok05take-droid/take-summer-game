@@ -115,11 +115,13 @@ export const SKIN = {
   },
   // 会話の立ち絵（2026-11-24 ユーザー承認。大魔王は左枠・右向き、影の側近は右枠・左向き）。表情差分が無いときは _normal を使う
   portraits: {
-    lord_normal: 'assets/approved/talk/lord_normal.png',
-    // 2026-11-25：大魔王の表情差分（maougun_lord_dialogue_portraits.zip・通常顔からの表情加工。manifest のユーザー承認欄は「未」）
-    lord_happy: 'assets/approved/talk/lord_happy.png',
-    lord_angry: 'assets/approved/talk/lord_angry.png',
-    lord_sad: 'assets/approved/talk/lord_sad.png',
+    // 2026-11-26：大魔王（封印で弱った「おじいちゃん大魔王」・オリジナルデザイン・lord_expressions.zip・512×512）。
+    //   前の大魔王の絵は既存作品に似ていたため差し替え（古い画像は削除。ブラウザに残った古い画像が出ないようファイル名も変えた）
+    lord_normal: 'assets/approved/talk/lord2_normal.png',
+    lord_happy: 'assets/approved/talk/lord2_happy.png',
+    lord_angry: 'assets/approved/talk/lord2_angry.png',
+    lord_sad: 'assets/approved/talk/lord2_sad.png',
+    lord_surprised: 'assets/approved/talk/lord2_surprised.png',
     ord_normal: 'assets/approved/talk/ord_normal.png', // 竜人オルドの会話の顔（同じZIP・戦闘素材から胸元まで切り出し・左向き）
     lord_revived: 'assets/approved/talk/lord_revived.png', // 2026-11-25：完全復活後の大魔王（11551.png・全身。正方形の透明な余白を足しただけ）。エンディングの復活の場面から使う
     aide_normal: 'assets/approved/talk/aide_normal.png',
