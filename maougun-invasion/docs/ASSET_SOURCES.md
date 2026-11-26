@@ -64,6 +64,7 @@
 | 2026-11-25 | （チャットの画像 11581〜11586.png） | — | — | `assets/approved/units/mass_2.png`・`vanguard_2.png`・`tank_2.png`・`fast_2.png`・`ranged_2.png`・`area_2.png` | — | 加工なし（透過・左向き）。第2形態：ハードグミ・悪魔の騎士・鋼男・イーグル・弩ゴブリン・星炎の魔導士。表示は基本形の約1.12倍の背の高さ |
 | 2026-11-25 | （チャットの画像 11593.png・11591.png） | — | — | `assets/approved/units/mallet_2.png`（鉄槌鬼）・`healer_2.png`（花灯りの精霊） | — | 加工なし（透過・左向き）。第2形態。表示は基本形の約1.12倍の背の高さ |
 | 2026-11-26 | （チャットの画像 11594.png） | — | — | `assets/approved/units/elemental.png` | — | 加工なし（1254×1254・透過・左向き）。幹部・熔氷の岩魔（依頼時の名前「氷炎魔人」は既存作品に近いので変更）。表示の高さ 125 |
+| 2026-11-26 | （チャットの画像 1000021155.png） | — | — | `assets/approved/units/reaper.png` | — | 加工なし（1214×1295・透過・左向き）。幹部・死神。表示の高さ 120・少し浮かせる |
 | 2026-11-25 | （チャットの画像 11550.png・6体の一覧） | — | — | `assets/approved/humans/` の6枚（heavy_commander・elite_mage・mage_commander・royal_commander・celestial_commander・celestial_guardian）。maougun_assets_batch04.zip・docs/batch04/ | — | Claude Code が加工：背景（ほぼ白・ゆらぎ3以下）を端からつながる部分だけ透明に、足元の明るい灰色の影を除去、1体ずつに分けて 256／384 の枠に縮小して収めた（描き直し・色の変更なし）。重装兵団長の足の間にごく小さな影が残る |
 | 2026-11-25 | （チャットの画像 11462.png） | — | — | `assets/approved/talk/bg_shrine.png` | — | 加工なし。大魔王とヴェイルの会話シーン（封印の祠）の背景（1920×1080） |
 | 2026-11-25 | （チャットの画像 11528.png・5体を並べた1枚） | — | — | `assets/approved/humans/militia_captain.png`・`guard_captain.png`・`royal_knight.png`・`court_mage.png`・`royal_knight_commander.png` | — | 1枚の中の5体を、形（不透明部分のつながり）で1体ずつ切り出しただけ（色・形は変更なし。重なっていた斧と外套は形で分けた）。manifest なし・右向き |

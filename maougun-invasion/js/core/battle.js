@@ -257,6 +257,8 @@ export class Battle {
 
   updateEntity(e, dt) {
     const d = e.def;
+    // 鈍足（死神「時の砂」）：時間の進みが遅くなる＝歩く・攻撃する速さが落ちる（2026-11-26）
+    if (e.slow > 0) { e.slow -= dt; dt *= e.slowFactor || 0.5; }
     e.timer += dt;
     if (e.flash > 0) e.flash = Math.max(0, e.flash - dt);
     for (const k in e.skillCd) if (e.skillCd[k] > 0) e.skillCd[k] -= dt;
@@ -440,8 +442,14 @@ export class Battle {
   skillReady(e, s) {
     if (s.type === 'pierce') return true; // 貫通斬撃：敵がいなくても砦に届くので、たまったら使う
     if (s.type === 'heal') return this.entities.some((o) => o.side === e.side && o.state !== 'dead' && o.hp < o.maxHp * 0.8 && Math.abs(o.x - e.x) <= s.radius);
+    // 魂刈り：攻撃範囲に回復役がいるときだけ。時の砂：回復役がいないときだけ（死神・2026-11-26）
+    const healerAhead = () => this.targetsAhead(e, -12, s.reach).some((t) => !t.isBase && this.isHealerUnit(t.target));
+    if (s.type === 'reap') return healerAhead();
+    if (s.type === 'slow') return !this.targetsAhead(e, -12, s.reach).some((t) => !t.isBase && this.isHealerUnit(t.target)) && this.targetsAhead(e, -12, s.reach).some((t) => !t.isBase);
     return this.targetsAhead(e, -12, s.trigger ?? s.reach).some((t) => !t.isBase); // trigger：この距離まで近づいてから使う
   }
+
+  isHealerUnit(o) { return !!(o.def && (o.def.heal || (o.def.skills || []).some((k) => k.type === 'heal'))); }
 
   useSkill(e, s) {
     const ev = { type: 'skill', id: e.id, skill: s.id, side: e.side, x: e.x, dir: e.dir, reach: s.reach, name: s.name };
@@ -462,6 +470,22 @@ export class Battle {
         if (t.isBase || t.target.state === 'dead') continue;
         t.target.stun = Math.max(t.target.stun, s.duration);
         this.events.push({ type: 'stun', id: t.target.id, x: t.target.x, lane: t.target.lane, duration: s.duration });
+      }
+    } else if (s.type === 'slow') {
+      // 時の砂：前方の敵の動きを遅くする
+      for (const t of this.targetsAhead(e, -12, s.reach)) {
+        if (t.isBase || t.target.state === 'dead') continue;
+        t.target.slow = Math.max(t.target.slow || 0, s.duration); t.target.slowFactor = s.factor;
+        this.events.push({ type: 'slow', id: t.target.id, x: t.target.x, lane: t.target.lane, duration: s.duration });
+      }
+    } else if (s.type === 'reap') {
+      // 魂刈り：範囲の回復役だけをねらう。ふつうの兵は一撃、強敵（勇者・ボス）には大ダメージ
+      for (const t of this.targetsAhead(e, -12, s.reach)) {
+        if (t.isBase || t.target.state === 'dead' || !this.isHealerUnit(t.target)) continue;
+        const o = t.target;
+        const dmg = o.def.hero ? Math.round(e.def.atk * s.heroMult) : o.hp + 1;
+        this.events.push({ type: 'reap', id: o.id, x: o.x, lane: o.lane });
+        this.damageUnit(o, dmg, e, true);
       }
     } else if (s.type === 'heal') {
       for (const o of this.entities) {

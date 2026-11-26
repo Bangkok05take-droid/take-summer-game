@@ -21,7 +21,7 @@ export const SKIN = {
     // 2026-11-25：第2形態の正式名（ユーザー指定）。森のお化け・木槌小鬼はデザイン待ち
     mass_2: 'ハードグミ', vanguard_2: '悪魔の騎士', tank_2: '鋼男', fast_2: 'イーグル', ranged_2: '弩ゴブリン', area_2: '星炎の魔導士', healer_2: '花灯りの精霊', mallet_2: '鉄槌鬼',
     charger: 'ワニ将軍', // 2026-11-25：幹部1体目（ユーザーのデザイン）。内部キーは charger のまま
-    elemental: '熔氷の岩魔', // 2026-11-26：幹部2体目（依頼時の名前「氷炎魔人」は既存作品に近いので変更）
+    elemental: '熔氷の岩魔', reaper: '死神', // 2026-11-26：幹部3体目 // 2026-11-26：幹部2体目（依頼時の名前「氷炎魔人」は既存作品に近いので変更）
     trickster: '幹部・罠', thunder: '幹部・落雷', mist: '幹部・霧',
     lord: '大魔王', lordAwakened: '大魔王（真の姿）',
     ord: '竜人オルド', // 2026-11-25（依頼文での呼び方：バラン）
@@ -33,6 +33,8 @@ export const SKIN = {
   // エンディングのムービー（保留中・2026-11-25）。{ src: 'assets/approved/movie/…mp4', replaces: ['lines'] } を入れると、その段の代わりに動画を流す
   movies: { ending: null },
   sprites: {
+    // 2026-11-26：死神（1000021155.png・1214×1295・透過・左向き）
+    reaper: { src: 'assets/approved/units/reaper.png', frameW: 1214, frameH: 1295, frames: { walk: [0], windup: 0, attack: 0 }, footY: 1266, facing: 'left', scale: 0.1, hover: 8 },
     // 2026-11-26：熔氷の岩魔（11594.png・1254×1254・透過・左向き）
     elemental: { src: 'assets/approved/units/elemental.png', frameW: 1254, frameH: 1254, frames: { walk: [0], windup: 0, attack: 0 }, footY: 1200, facing: 'left', scale: 0.1 },
     // 2026-11-25：進化形（第2形態）鉄槌鬼・花灯りの精霊（ユーザー納品・透過・左向き）
@@ -366,7 +368,7 @@ export const SIZE_PX = { XS: 44, S: 64, M: 80, L: 100, XL: 110 }; // 2026-11-26�
 export const SIZE_CLASS = {
   // 魔王軍
   mass: ['XS', 0.9], fast: 'XS', ranged: 'S', mallet: 'S', healer: 'S', vanguard: 'M', area: 'M', tank: 'L',
-  charger: ['XL', 125], ord: ['XL', 132], elemental: ['XL', 125],
+  charger: ['XL', 125], ord: ['XL', 132], elemental: ['XL', 125], reaper: ['XL', 120],
   // 人間軍：中（2026-11-26：村人・弓兵・僧侶・魔導士系・神官系・兵器技師も小 → 中）
   militia: 'M', archer: 'M', priest: 'M', court_mage: 'M', mage: 'M', ice_mage: 'M', elite_mage: 'M', ancient_priest: 'M', high_priest: 'M', celestial_mage: 'M', engineer: 'M',
   // 人間軍：中
@@ -379,7 +381,7 @@ export const SIZE_CLASS = {
   take: 'XL', sai: 'XL', yanai: 'XL', holy_dragon: ['XL', 150], // 2026-11-26：たけ・サイ・ヤナイもボスと同じ 110
 };
 // 各画像の「絵の上端」（不透明部分の一番上・画像の上からの距離。Claude Code が画像から計測）
-const INK_TOP = {"elemental": 25, "mallet_2": 68, "healer_2": 38, "mass_2": 121, "vanguard_2": 58, "tank_2": 50, "fast_2": 67, "ranged_2": 90, "area_2": 69, "heavy_captain": 16, "elite_mage": 15, "mage_captain": 16, "royal_commander": 15, "sky_commander": 16, "sky_guardian": 15, "naval_soldier": 15, "harbor_captain": 15, "heavy": 15, "engineer": 58, "turret": 15, "commander": 29, "ancient_soldier": 15, "guardian": 14, "ancient_priest": 15, "ancient_king": 15, "paladin": 15, "high_priest": 14, "holy_captain": 15, "mage": 15, "ice_mage": 15, "magic_knight": 15, "archmage": 15, "royal_guard": 15, "royal_guard_cavalry": 15, "supreme_commander": 25, "sky_guard": 15, "celestial_mage": 15, "celestial_knight": 15, "holy_dragon": 165, "take": 14, "sai": 14, "yanai": 69, "militia_captain": 7, "captain": 7, "knight": 7, "court_mage": 7, "knight_commander": 6, "ord": 9, "charger": 66, "mallet": 21, "area": 64, "fast": 76, "mass": 241, "vanguard": 10, "tank": 48, "ranged": 49, "healer": 47, "archer": 8, "militia": 8, "priest": 8, "rider": 9, "shield": 8, "swordsman": 8, "king": 8};
+const INK_TOP = {"reaper": 31, "elemental": 25, "mallet_2": 68, "healer_2": 38, "mass_2": 121, "vanguard_2": 58, "tank_2": 50, "fast_2": 67, "ranged_2": 90, "area_2": 69, "heavy_captain": 16, "elite_mage": 15, "mage_captain": 16, "royal_commander": 15, "sky_commander": 16, "sky_guardian": 15, "naval_soldier": 15, "harbor_captain": 15, "heavy": 15, "engineer": 58, "turret": 15, "commander": 29, "ancient_soldier": 15, "guardian": 14, "ancient_priest": 15, "ancient_king": 15, "paladin": 15, "high_priest": 14, "holy_captain": 15, "mage": 15, "ice_mage": 15, "magic_knight": 15, "archmage": 15, "royal_guard": 15, "royal_guard_cavalry": 15, "supreme_commander": 25, "sky_guard": 15, "celestial_mage": 15, "celestial_knight": 15, "holy_dragon": 165, "take": 14, "sai": 14, "yanai": 69, "militia_captain": 7, "captain": 7, "knight": 7, "court_mage": 7, "knight_commander": 6, "ord": 9, "charger": 66, "mallet": 21, "area": 64, "fast": 76, "mass": 241, "vanguard": 10, "tank": 48, "ranged": 49, "healer": 47, "archer": 8, "militia": 8, "priest": 8, "rider": 9, "shield": 8, "swordsman": 8, "king": 8};
 export function displayHeight(key) {
   const evolved = /_2$/.test(key); const base = evolved ? key.slice(0, -2) : key;
   const c = SIZE_CLASS[base]; if (!c) return null;

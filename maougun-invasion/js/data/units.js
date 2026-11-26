@@ -107,6 +107,17 @@ export const BOSSES = {
     // 2026-11-25：「カミナリスラッシュ」：落雷を浴びて雷をため（1.1秒）、前方の敵すべてと敵の砦を貫く斬撃（各1回・攻撃力×2.5）
     skills: [{ id: 'thunder', name: 'カミナリスラッシュ', type: 'pierce', every: 12, first: 4, windup: 1.1, recover: 0.5, speed: 900, mult: 2.5 }],
   },
+  // 2026-11-26：死神（幹部3体目・ユーザーのデザイン）。6-3 の初回クリアで仲間に。ふだんは鎌で前方をまとめて斬る（範囲）。
+  //   範囲に回復役がいれば「魂刈り」（ふつうの兵は一撃・強敵には攻撃力×6）。いなければ「時の砂」（前方の敵を6秒間、半分の速さに）
+  reaper: {
+    attackType: 'melee', target: 'front', role: '幹部・時と魂（回復役を刈る・敵を遅くする）', unique: true, ready: true, growth: GROWTH,
+    cost: 2000, needFurnace: 5, cooldown: 60, hp: 6500, atk: 170, range: 60, speed: 32,
+    interval: 2.4, windup: 0.6, kb: 6, attack: 'area', size: 1.5,
+    skills: [
+      { id: 'reap', name: '魂刈り', type: 'reap', every: 10, first: 3, windup: 0.8, recover: 0.4, reach: 260, heroMult: 6 },
+      { id: 'sand', name: '時の砂', type: 'slow', every: 14, first: 4, windup: 0.8, recover: 0.4, reach: 280, duration: 6, factor: 0.5 },
+    ],
+  },
   // ---- 構想（ready: false）。数値は仮。能力（skills）と絵ができたら ready: true にする ----
   trickster: { attackType: 'mid', target: 'front', role: '幹部・罠と身代わり', unique: true, ready: false, cost: 1300, needFurnace: 3, cooldown: 60, hp: 4500, atk: 120, range: 120, speed: 34, interval: 2.6, windup: 0.6, kb: 6, attack: 'single', size: 1.5, growth: GROWTH },
   mist: { attackType: 'mid', target: 'front', role: '幹部・霧', unique: true, ready: false, cost: 1600, needFurnace: 4, cooldown: 60, hp: 7000, atk: 90, range: 100, speed: 28, interval: 2.8, windup: 0.7, kb: 6, attack: 'area', size: 1.6, growth: GROWTH },

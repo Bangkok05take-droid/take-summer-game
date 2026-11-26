@@ -278,11 +278,11 @@ test('多数のユニット（30対30＋勇者）でも1手が十分速い', () 
 });
 
 // ---------- 進行・セーブ ----------
-test('第1章は3ステージ。順に解放され、1-3 クリアで幹部・突進', () => {
+test('第1章は3ステージ。順に解放される（幹部は第3章の終わりから）', () => {
   const p = newProfile();
   assert.deepEqual(CHAPTER1.stages, ['1-1', '1-2', '1-3']);
   assert.ok(isStageOpen(p, '1-1')); assert.ok(!isStageOpen(p, '1-2'));
-  const order = { '1-1': null, '1-2': null, '1-3': 'charger' };
+  const order = { '1-1': null, '1-2': null, '1-3': null };
   for (const id of CHAPTER1.stages) {
     const r = applyResult(p, id, 'win', 200);
     assert.equal(r.unlocked, order[id], id);
@@ -294,7 +294,7 @@ test('第1章は3ステージ。順に解放され、1-3 クリアで幹部・�
   assert.ok(isStageOpen(p, '2-1') && !isStageOpen(p, '2-2'));
   assert.equal(p.loot.length, 3);
   assert.equal(lordLevel(p), 4);
-  assert.deepEqual(buildDeck(p).map((d) => d.key), ['mass', 'vanguard', 'tank', 'ranged', 'fast', 'area', 'charger'], '1-3 クリアで大魔王Lv4（増えた6枠目は控えから自動で埋まる）＋幹部・突進');
+  assert.deepEqual(buildDeck(p).map((d) => d.key), ['mass', 'vanguard', 'tank', 'ranged', 'fast', 'area'], '1-3 クリアで大魔王Lv4（増えた6枠目は控えから自動で埋まる）');
   const again = applyResult(p, '1-1', 'win', 150);
   assert.ok(!again.firstClear && again.stones < STAGES['1-1'].reward.stones && !again.unlocked);
 });
@@ -1114,23 +1114,57 @@ test('第2形態（確定）：Lv5で任意に進化・Lv−4に下がる・2.5�
   assert.equal(b.deck[0].hp, resolveUnit('vanguard', p).hp);
 });
 
-test('幹部・熔氷の岩魔：6-3 の初回クリアで仲間・範囲の炎・氷の息で凍らせる・古いセーブにも渡る', async () => {
+test('幹部の加入（2026-11-26 整理）：ワニ将軍は3-3・熔氷の岩魔は5-4・死神は6-3。古いセーブはそのまま／足りない分は渡す', async () => {
   const pr = await import('../js/data/progress.js');
   const { SKIN } = await import('../js/data/skin.js');
-  assert.equal(SKIN.names.elemental, '熔氷の岩魔'); assert.ok(BOSSES.elemental.ready && SKIN.sprites.elemental);
-  assert.equal(BOSSES.elemental.attack, 'area'); assert.equal(BOSSES.elemental.needFurnace, 5); assert.equal(BOSSES.elemental.cost, 1800);
-  const p = clearTo33(); pr.finishRuinEvent(p, 'reject');
-  for (const id of ['4-1', '4-2', '4-3', '5-1', '5-2', '5-3', '5-4', '6-1', '6-2']) applyResult(p, id, 'win', 100);
+  assert.equal(SKIN.names.elemental, '熔氷の岩魔'); assert.equal(SKIN.names.reaper, '死神');
+  const who = (id) => [].concat(STAGES[id].reward.unlock || []);
+  assert.deepEqual(who('1-3'), []); assert.deepEqual(who('3-3'), ['charger']); assert.deepEqual(who('5-4'), ['elemental']); assert.deepEqual(who('6-3'), ['reaper']);
+  const p = newProfile();
+  for (const id of ['1-1', '1-2', '1-3', '2-1', '2-2', '2-3', '3-1', '3-2']) applyResult(p, id, 'win', 100);
+  assert.ok(!p.units.charger.unlocked);
+  assert.ok(applyResult(p, '3-3', 'win', 100).unlockedAll.includes('charger'));
+  pr.finishRuinEvent(p, 'reject');
+  for (const id of ['4-1', '4-2', '4-3', '5-1', '5-2', '5-3']) applyResult(p, id, 'win', 100);
   assert.ok(!p.units.elemental.unlocked);
-  const r = applyResult(p, '6-3', 'win', 100);
-  assert.ok(p.units.elemental.unlocked && r.unlockedAll.includes('elemental'));
-  // 古いセーブ：6-3 クリアずみで未解放 → 読み込むと仲間に
-  const old = JSON.parse(JSON.stringify(p)); old.units.elemental.unlocked = false;
-  const st = memStore(); st.setItem(pr.SAVE_KEY, JSON.stringify(old)); assert.ok(loadProfile(st).units.elemental.unlocked);
-  // 氷の息：前方の敵を止める
+  assert.ok(applyResult(p, '5-4', 'win', 100).unlockedAll.includes('elemental'));
+  for (const id of ['6-1', '6-2']) applyResult(p, id, 'win', 100);
+  assert.ok(applyResult(p, '6-3', 'win', 100).unlockedAll.includes('reaper'));
+  // 古いセーブ：1-3 で仲間になったワニ将軍はそのまま。5-4・6-3 クリアずみなら熔氷の岩魔・死神を渡す
+  const old = JSON.parse(JSON.stringify(p)); old.units.elemental.unlocked = false; delete old.units.reaper;
+  const st = memStore(); st.setItem(pr.SAVE_KEY, JSON.stringify(old)); const q = loadProfile(st);
+  assert.ok(q.units.charger.unlocked && q.units.elemental.unlocked && q.units.reaper.unlocked);
+  const o2 = newProfile(); o2.units.charger.unlocked = true; applyResult(o2, '1-1', 'win', 100);
+  const st2 = memStore(); saveProfile(o2, st2); assert.ok(loadProfile(st2).units.charger.unlocked, '前の仕様で仲間になったワニ将軍は外さない');
+});
+
+test('幹部・熔氷の岩魔：範囲の炎・氷の息で凍らせる', () => {
+  assert.equal(BOSSES.elemental.attack, 'area'); assert.equal(BOSSES.elemental.needFurnace, 5); assert.equal(BOSSES.elemental.cost, 1800);
   const b = makeBattle({ stage: noEnemies(), deck: ['elemental'] });
   const m = b.spawn('demon', b.deckDef('elemental'), 1000); m.x = 1000;
   const h = b.spawnHuman('swordsman'); h.x = 880; h.def = { ...h.def, speed: 0 };
   let stunned = false; run(b, 8, () => { if (h.stun > 0) stunned = true; });
   assert.ok(stunned, '凍らせて止める');
+});
+
+test('幹部・死神：回復役がいれば魂刈り（兵は一撃・強敵に大ダメージ）、いなければ時の砂（遅くする）', () => {
+  assert.equal(BOSSES.reaper.attack, 'area');
+  // 回復役がいる → 魂刈り
+  const b = makeBattle({ stage: noEnemies(), deck: ['reaper'] });
+  const r = b.spawn('demon', b.deckDef('reaper'), 1000); r.x = 1000;
+  const pr = b.spawnHuman('priest'); pr.x = 820; pr.def = { ...pr.def, speed: 0 };
+  const sw = b.spawnHuman('swordsman'); sw.x = 900; sw.def = { ...sw.def, speed: 0 };
+  const used = []; run(b, 5, (bb) => { for (const ev of bb.events) if (ev.type === 'skill' && ev.id === r.id) used.push(ev.skill); });
+  assert.equal(used[0], 'reap'); assert.ok(pr.state === 'dead' || pr.hp <= 0, '回復役は一撃');
+  // 強敵の回復役（古代王）は大ダメージ
+  const c = makeBattle({ stage: noEnemies(), deck: ['reaper'] });
+  const r2 = c.spawn('demon', c.deckDef('reaper'), 1000); r2.x = 1000;
+  const k = c.spawnHuman('ancient_king'); k.x = 820; k.def = { ...k.def, speed: 0, skills: [] , heal: { every: 99, ratio: 0, radius: 1 } };
+  const hp0 = k.hp; run(c, 5); assert.ok(hp0 - k.hp >= c.deckDef('reaper').atk * 5, '強敵には大ダメージ');
+  // 回復役がいない → 時の砂
+  const d = makeBattle({ stage: noEnemies(), deck: ['reaper'] });
+  const r3 = d.spawn('demon', d.deckDef('reaper'), 1000); r3.x = 1000;
+  const s1 = d.spawnHuman('swordsman'); s1.x = 860; s1.def = { ...s1.def, speed: 0 };
+  const used3 = []; let slowed = false; run(d, 6, (bb) => { if (s1.slow > 0) slowed = true; for (const ev of bb.events) if (ev.type === 'skill' && ev.id === r3.id) used3.push(ev.skill); });
+  assert.ok(!used3.includes('reap') && used3.includes('sand') && slowed, '時の砂で遅くする');
 });

@@ -34,7 +34,7 @@ export const CONFIG = {
 /* 第1章はチュートリアル（2026-11-25）：1-1 ゲームの説明（負けない）／1-2 コツと対策のヒント／1-3 自分でやってみる。
  * tutorial：'guide'＝手順つきの説明（js/data/tutorial.js）／'hints'＝敵の登場などでヒント／'self'＝ヒントなし
  * 旧 1-4「村の門」・1-5「村の広場（勇者戦）」のデータは第2章（城下町）づくりの素材として下に残す（遊べない）。勇者たけ・サイは最後まで出さない */
-export const CHAPTER1 = { id: 1, name: 'はじまりの村を侵略せよ', stages: ['1-1', '1-2', '1-3'], unlockOnClear: 'charger' };
+export const CHAPTER1 = { id: 1, name: 'はじまりの村を侵略せよ', stages: ['1-1', '1-2', '1-3'] };
 // 第2章（2026-11-25）：城下町。旧 1-4「村の門」の敵構成をもとに、後衛（弓兵・僧侶）が多く、最後に強敵「警備隊長」
 export const CHAPTER2 = { id: 2, name: '城下町を制圧せよ', stages: ['2-1', '2-2', '2-3'] };
 // 第3章（2026-11-25）：地方王国の城。台本は承認済み。敵編成・ボス・報酬は仮（別途バトル設計）
@@ -121,7 +121,7 @@ export const STAGES = {
       { trigger: { baseBelow: 0.5 }, hero: 'militia_captain', wave: [{ who: 'militia_captain', count: 1 }, { who: 'militia', count: 2 }], gap: 0.8 }, // 2026-11-25：ボス・自警団長
       { trigger: { baseBelow: 0.3 }, wave: [{ who: 'shield', count: 1 }, { who: 'archer', count: 3 }, { who: 'rider', count: 3 }], gap: 0.6 },
     ],
-    reward: { stones: 250, unlock: 'charger' }, // 第1章クリア：幹部・突進（第2章で使う）
+    reward: { stones: 250 }, // 2026-11-26：ワニ将軍は第3章の終わり（3-3）に変更
   },
   '1-4': {
     id: '1-4', chapter: 2, reserve: true, name: '村の門', theme: 'gate', // 保留（第2章の素材）
@@ -266,7 +266,7 @@ export const STAGES = {
       { trigger: { baseBelow: 0.6 }, hero: 'knight_commander', wave: [{ who: 'knight_commander', count: 1 }, { who: 'knight', count: 2 }, { who: 'court_mage', count: 1 }] /* 2026-11-25：ボスを国王から王国騎士団長へ */, gap: 0.8 },
       { trigger: { baseBelow: 0.25 }, wave: [{ who: 'knight', count: 2 }, { who: 'rider', count: 3 }, { who: 'archer', count: 2 }], gap: 0.5 },
     ],
-    reward: { stones: 450 },
+    reward: { stones: 450, unlock: 'charger' }, // 2026-11-26：第3章の終わりで幹部・ワニ将軍が仲間に
   },
   // ---------------- 第4章 港町（敵編成・ボス・報酬は仮） ----------------
   '4-1': {
@@ -303,7 +303,7 @@ export const STAGES = {
   },
   '4-3': {
     id: '4-3', chapter: 4, name: '港町の最終決戦', theme: 'harbor', boss: true,
-    length: L(2500), shrineHp: 9500, baseHp: 7500, enemyScale: 1.3, mana: { ...MANA, start: 400 },
+    length: L(2500), shrineHp: 9500, baseHp: 7500, enemyScale: 1.28, /* 2026-11-26：7500・1.3 → 少し弱く */ mana: { ...MANA, start: 400 },
     spawns: [
       { who: 'swordsman', start: 2, every: 8, max: 2 },
       { who: 'naval_soldier', start: 4, every: 12, max: 1 }, // 2026-11-25：海兵
@@ -380,7 +380,7 @@ export const STAGES = {
       { trigger: { baseBelow: 0.6 }, hero: 'commander', wave: [{ who: 'commander', count: 1 }, { who: 'heavy', count: 1 }], gap: 0.8 },
       { trigger: { baseBelow: 0.25 }, wave: [{ who: 'heavy', count: 2 }, { who: 'rider', count: 3 }, { who: 'archer', count: 2 }], gap: 0.5 },
     ],
-    reward: { stones: 600 },
+    reward: { stones: 600, unlock: 'elemental' }, // 2026-11-26：第5章の終わりで幹部・熔氷の岩魔が仲間に
   },
   // ---------------- 第6章 砂漠の古代王国（敵編成・ボス・報酬は仮）。守護者（古代の石像兵）・古代王 ----------------
   '6-1': {
@@ -423,7 +423,7 @@ export const STAGES = {
       { trigger: { baseBelow: 0.6 }, hero: 'ancient_king', wave: [{ who: 'ancient_king', count: 1 }, { who: 'guardian', count: 1 }], gap: 0.8 },
       { trigger: { baseBelow: 0.25 }, wave: [{ who: 'guardian', count: 2 }, { who: 'rider', count: 3 }], gap: 0.5 },
     ],
-    reward: { stones: 650, unlock: 'elemental' }, // 2026-11-26：幹部・熔氷の岩魔が仲間に
+    reward: { stones: 650, unlock: 'reaper' }, // 2026-11-26：幹部・死神が仲間に（第6章の終わり）
   },
   // ---------------- 第7章 聖なる都（敵編成・ボス・報酬は仮） ----------------
   '7-1': {

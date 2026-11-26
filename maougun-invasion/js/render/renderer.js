@@ -147,6 +147,8 @@ export class Renderer {
         }
         case 'bigMagic': if (byId(ev.id) && ufx(byId(ev.id).key, 'jackpot')) { this.shake = Math.max(this.shake, 4); break; } this.add({ kind: 'boom', x: ev.x, y: GROUND_Y - 10, r: ev.radius, life: 0.6 }); this.shake = Math.max(this.shake, 6); break;
         case 'stun': this.add({ kind: 'flashRing', x: ev.x, y: laneY(ev.lane) - 30, life: 0.4 }); break;
+        case 'slow': this.add({ kind: 'num', x: ev.x, y: laneY(ev.lane) - 70, text: 'スロー', color: '#ffd76a', life: 0.9, small: true }); break; // 時の砂
+        case 'reap': this.add({ kind: 'num', x: ev.x, y: laneY(ev.lane) - 74, text: '魂刈り！', color: '#7dffc0', life: 1.0, big: true }); this.add({ kind: 'flashRing', x: ev.x, y: laneY(ev.lane) - 30, life: 0.4 }); break;
         case 'skillStart': {
           const e = byId(ev.id);
           if (e) this.add({ kind: 'warn', id: ev.id, text: ev.name, life: 1.0 });
@@ -474,6 +476,11 @@ export class Renderer {
     if (e.stun > 0 && e.state !== 'dead') {
       ctx.fillStyle = '#fff59a';
       for (let i = 0; i < 3; i++) { const t = this.time * 6 + i * 2.1; ctx.fillRect(x + Math.cos(t) * 12 - 2, top + 2 + Math.sin(t) * 3 - 2, 4, 4); }
+    }
+    // 鈍足（時の砂）：頭の上に小さな砂時計
+    if (e.slow > 0 && e.state !== 'dead') {
+      const sx = x + 14; const sy = top - 4;
+      ctx.fillStyle = '#ffd76a'; ctx.beginPath(); ctx.moveTo(sx - 4, sy - 6); ctx.lineTo(sx + 4, sy - 6); ctx.lineTo(sx, sy); ctx.lineTo(sx + 4, sy + 6); ctx.lineTo(sx - 4, sy + 6); ctx.lineTo(sx, sy); ctx.closePath(); ctx.fill();
     }
     // HPが減っているときだけ小さなバー（勇者は大きく）
     if (e.state !== 'dead' && (e.hp < e.maxHp || d.hero)) {
