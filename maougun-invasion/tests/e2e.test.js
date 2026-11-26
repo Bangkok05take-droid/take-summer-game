@@ -346,6 +346,33 @@ try {
     await c6.close();
   }
 
+  // ---- 壊滅した町の初戦：ワニ将軍が倒れると専用会話 → 提案から合流（2026-11-26）／再戦では起きない ----
+  {
+    const cr = await browser.newContext({ ...devices['iPhone 13 landscape'] });
+    const q = await cr.newPage(); const er = []; q.on('pageerror', (e) => er.push(String(e)));
+    await q.goto(`http://localhost:${PORT}/?seed=5`); await q.waitForFunction(() => window.__game);
+    await q.evaluate(async () => { const m = await import('./js/data/progress.js'); const g = window.__game; const pr = m.newProfile();
+      for (const id of ['1-1','1-2','1-3','2-1','2-2','2-3','3-1','3-2']) m.applyResult(pr, id, 'win', 100); m.joinBoss(pr, '3-3'); m.applyResult(pr, '3-3', 'win', 100);
+      Object.assign(pr.story, { opening: true, 'tip:recon': true, 'tip:form': true, 'tip:upgrade': true }); g.app.profile = pr; m.saveProfile(pr); g.startRuinEvent(); });
+    await q.waitForTimeout(200);
+    const readR = async () => { const o = []; for (let i = 0; i < 40 && await q.locator('#scTalk').isVisible(); i++) { o.push(await q.locator('#talkText').textContent()); await q.tap('#talkBox'); await q.waitForTimeout(25); } return o; };
+    await readR();
+    const can = await q.evaluate(() => { const b = window.__game.battle; b.queue({ type: 'furnace' }); b.step(); b.queue({ type: 'furnace' }); b.step(); b.queue({ type: 'summon', key: 'charger' }); b.step(); const ch = b.entities.find((e) => e.key === 'charger'); if (ch) b.damageUnit(ch, 1e9, null); return !!ch; });
+    await q.waitForSelector('#scTalk:not([hidden])', { timeout: 8000 });
+    const a = await readR();
+    await q.waitForSelector('#ovChoice:not([hidden])', { timeout: 3000 });
+    check('壊滅した町の初戦：初めから魔力が足りてワニ将軍を呼べる → 倒れると専用会話（10行）→「ひとつ、ご提案があります。」から合流（重複なし）', can && a[0] === '――ワニ将軍が倒れる。' && a[9] === '――魔王軍、敗北。' && a[10] === '大魔王様。ひとつ、ご提案があります。' && a.length === 15 && a.filter((x) => x === '――魔王軍、敗北。').length === 1, JSON.stringify(a));
+    await q.tap('#btnChoiceB'); await q.waitForTimeout(80); await readR();
+    const st = await q.evaluate(() => ({ ch: window.__game.app.profile.units.charger.unlocked, screen: window.__game.app.screen }));
+    check('専用敗北のあとも加入の選択へ進み、ワニ将軍は離脱しない', st.ch && st.screen === 'scSelect', JSON.stringify(st));
+    await q.reload(); await q.waitForFunction(() => window.__game); await q.tap('#btnContinue'); await q.waitForTimeout(150);
+    const re = await q.evaluate(() => { const g = window.__game; g.startStage('ex-1'); const b = g.battle; b.mana = 99999; b.manaMax = 99999; b.furnaceLv = 3; b.queue({ type: 'summon', key: 'charger' }); b.step(); const ch = b.entities.find((e) => e.key === 'charger'); b.damageUnit(ch, 1e9, null); for (let i = 0; i < 60; i++) b.step(); return { forced: g.app.forced, result: b.result, ch: g.app.profile.units.charger.unlocked }; });
+    await q.waitForTimeout(400);
+    check('再読み込み後の再戦：ワニ将軍が倒れても戦闘は続く（専用敗北は初戦だけ）', !re.forced && re.result === null && re.ch && !(await q.locator('#scTalk').isVisible()), JSON.stringify(re));
+    check('壊滅した町（ワニ将軍）：エラーなし', er.length === 0, er.join(' / '));
+    await cr.close();
+  }
+
   // ---- 第6章：6-3 の初回クリア → 大魔王の魔力回復 → 新機能の解放画面 → 続き → 戦利品／再クリアでは起きない ----
   {
     const c7 = await browser.newContext({ ...devices['iPhone 13 landscape'] });

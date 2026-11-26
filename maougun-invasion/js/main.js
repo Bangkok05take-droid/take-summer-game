@@ -4,7 +4,7 @@ import { createBattle, STEP } from './core/battle.js';
 import { createClock } from './core/clock.js';
 import { HUMANS } from './data/humans.js';
 import { STAGES, CONFIG, TEST_ENEMY_POWER } from './data/stages.js';
-import { UNIT_ORDER } from './data/units.js';
+import { UNIT_ORDER, BOSSES } from './data/units.js';
 import { startPointer } from './ui/pointer.js';
 import { STORY, CRYSTAL_EVENT, ULTIMATE_EVENT, FINAL_MARCH, ENDING } from './data/story.js';
 import { SKIN } from './data/skin.js';
@@ -221,10 +221,12 @@ function startRuinEvent() {
   show(null);
   talk.play(RUIN_EVENT.DISCOVER, 'ruin', () => startStage('ex-1', { forced: true }));
 }
-function ruinAfterDefeat() {
+// branch：'charger'＝ワニ将軍が倒された（専用会話のあと、提案から合流）／それ以外＝通常の敗北
+function ruinAfterDefeat(branch) {
   makeScene('ex-1'); renderer.camX = 0;
   show(null);
-  talk.play(RUIN_EVENT.AFTER_DEFEAT, 'ruin', () => {
+  const lines = branch === 'charger' ? [...RUIN_EVENT.CHARGER_DOWN, ...RUIN_EVENT.AFTER_DEFEAT.slice(RUIN_EVENT.PROPOSAL_FROM)] : RUIN_EVENT.AFTER_DEFEAT;
+  talk.play(lines, 'ruin', () => {
     $('btnChoiceA').textContent = RUIN_EVENT.CHOICES.recruit;
     $('btnChoiceB').textContent = RUIN_EVENT.CHOICES.reject;
     $('ovChoice').hidden = false;
@@ -240,6 +242,7 @@ $('btnChoiceA').addEventListener('click', () => ruinChoose('recruit'));
 $('btnChoiceB').addEventListener('click', () => ruinChoose('reject'));
 
 function startStage(id, opts = {}) {
+  app.ruinBranch = null;
   if (joinPending(app.profile, id)) { joinBoss(app.profile, id); save(); } // 演出をとおらずに始めたときも、幹部は使えるように
   app.stageId = id;
   app.forced = !!opts.forced;
@@ -259,20 +262,29 @@ function startStage(id, opts = {}) {
   const rec = app.profile.stages[id];
   tutor.start(app.battle, st.tutorial === 'guide' && !(rec && rec.cleared) ? 'guide' : st.tutorial === 'hints' ? 'hints' : null);
   app.forcedLines = opts.forced ? RUIN_EVENT.BATTLE_LINES.slice() : null;
+  // 初戦（20秒）でもワニ将軍を呼べるように：魔力炉の強化（Lv3まで）と召喚の分の魔力を最初から持たせる（2026-11-26）
+  if (opts.forced && app.profile.units.charger && app.profile.units.charger.unlocked) {
+    const b = app.battle; const need = BOSSES.charger.cost + CONFIG.furnace.costs[0] + CONFIG.furnace.costs[1];
+    b.manaMax = Math.max(b.manaMax, need); b.mana = Math.max(b.mana, need);
+  }
 }
 // 壊滅した町の初戦（強制敗北）：オルドはとても強く呪文も効かない。台本の秒数で吹き出しを出し、最後に敗北
 function tickForced(b) {
   if (!app.forced || b.result) return;
   for (const e of b.entities) if (e.key === 'ord' && e.side === 'human' && !e.forcedBoost) {
-    e.forcedBoost = true; e.spellImmune = true; e.maxHp = e.hp = 999999; e.def = { ...e.def, atk: e.def.atk * 3, speed: 40 };
+    e.forcedBoost = true; e.spellImmune = true; e.maxHp = e.hp = 999999; e.def = { ...e.def, atk: e.def.atk * 10, speed: 60 }; // 2026-11-26：×3→×10・速く（ワニ将軍を呼んでも30秒ほどで倒しきる）
   }
   b.base.hp = b.base.maxHp; // 初戦は拠点を壊せない
+  // 2026-11-26：召喚したワニ将軍が倒れたら、その場で戦闘を終える（専用会話へ）。初戦だけ
+  if (b.entities.some((e) => e.key === 'charger' && e.side === 'demon' && (e.state === 'dead' || e.hp <= 0))) { app.ruinBranch = 'charger'; b.finish('lose'); return; }
   const l = app.forcedLines[0];
   if (l && b.t >= l.at) {
     app.forcedLines.shift();
     $('tutorHintWho').textContent = SKIN.speakers[l.who]; $('tutorHintText').textContent = l.text; $('tutorHint').hidden = false;
   }
-  if (b.t >= RUIN_EVENT.BATTLE_END) { b.shrine.hp = 0; b.finish('lose'); }
+  // 終わりの秒数になってもワニ将軍が戦っていれば、倒れるまで少し待つ（最大30秒。専用会話を優先）
+  const chargerOut = b.entities.some((e) => e.key === 'charger' && e.side === 'demon' && e.state !== 'dead');
+  if (b.t >= RUIN_EVENT.BATTLE_END && !(chargerOut && b.t < RUIN_EVENT.BATTLE_END + 30)) { b.shrine.hp = 0; b.finish('lose'); }
 }
 
 function setPaused(p) {
@@ -296,8 +308,10 @@ function showResult() {
   app.resultShown = true;
   const b = app.battle;
   if (app.forced) { // 強制敗北：結果も記録もせず、イベントの続きへ
-    app.forced = false; $('tutorHint').hidden = true;
-    setTimeout(() => { app.battle = null; ruinAfterDefeat(); }, 1200);
+    // 通常の敗北と同時にワニ将軍が倒れていたら、ワニ将軍の専用会話を優先
+    const branch = app.ruinBranch || (b.entities.some((e) => e.key === 'charger' && e.side === 'demon' && (e.state === 'dead' || e.hp <= 0)) ? 'charger' : null);
+    app.forced = false; app.ruinBranch = null; $('tutorHint').hidden = true;
+    setTimeout(() => { app.battle = null; ruinAfterDefeat(branch); }, 1200);
     return;
   }
   const win = b.result === 'win';

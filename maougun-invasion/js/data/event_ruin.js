@@ -41,6 +41,21 @@ export const RUIN_EVENT = {
     { who: 'lord', text: 'わしの軍勢を壊滅させた奴をか！？', face: 'angry' },
     { who: 'aide', text: 'だからこそです。あの力は、必ず我々の役に立ちます。' },
   ],
+  // 2026-11-26（承認済み）：初戦でワニ将軍が倒されたときの専用会話。このあと AFTER_DEFEAT の「ひとつ、ご提案があります。」から続ける
+  //   驚きの表情は専用の絵が無いので、通常の顔で表示
+  CHARGER_DOWN: [
+    { who: 'narr', text: '――ワニ将軍が倒れる。' },
+    { who: 'lord', text: 'な、なんじゃと！？ ワニ将軍がやられたじゃと！？', face: 'surprised' },
+    { who: 'ord', text: '……これが魔王軍の幹部か。期待外れだな。' },
+    { who: 'lord', text: 'な、何をぉぉ！！', face: 'angry' },
+    { who: 'aide', text: '大魔王様……。ワニ将軍ですら歯が立たないとは……。' },
+    { who: 'lord', text: 'あやつ、いったいどれほどの力を持っておるのじゃ……。', face: 'sad' },
+    { who: 'ord', text: '貴様らでは、俺には勝てん。' },
+    { who: 'aide', text: '大魔王様。これ以上戦っても、兵を失うだけです。ここは一旦、戦闘を中止しましょう。' },
+    { who: 'lord', text: 'ぐぬぬぬ……！ わしが本来の姿であれば……！', face: 'angry' },
+    { who: 'narr', text: '――魔王軍、敗北。' },
+  ],
+  PROPOSAL_FROM: 3, // AFTER_DEFEAT のうち、専用会話のあとに続ける行（「ひとつ、ご提案があります。」）
   CHOICES: { recruit: '仲間に勧誘する', reject: '敵として排除する' },
   RECRUIT: [
     { who: 'aide', text: 'オルドよ。お前は人間を憎んでいるのか？' },
