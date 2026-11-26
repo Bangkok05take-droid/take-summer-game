@@ -574,7 +574,7 @@ test('第3章（地方王国の城）：3ステージ。台本どおりの順番
   const who = (id, k) => STORY[k][id].map((l) => l.who).join(',');
   assert.equal(who('3-1', 'before'), 'aide,lord,aide,lord,王国兵');
   assert.equal(who('3-2', 'before'), 'aide,王国騎士,lord,aide,lord');
-  assert.equal(who('3-3', 'before'), 'aide,lord,王国軍,lord'); // 2026-11-25 共通背景対応の修正
+  assert.equal(who('3-3', 'before'), 'aide,lord,王国軍,lord,aide,lord,lord,lord'); // 2026-11-26：幹部加入の場面を追加 // 2026-11-25 共通背景対応の修正
   assert.equal(STORY.before['3-2'][4].text, 'わしは本当に偉いのじゃ！！');
   assert.equal(STORY.after['3-3'].length, 15);
   assert.equal(STORY.after['3-3'][9].text, 'まったく……いつになったら、この祠から出られるんじゃ……。');
@@ -688,7 +688,7 @@ test('第5章（鉄鋼の要塞都市）：4ステージ。4-3 のあと開き�
   assert.equal(STORY.before['5-1'].map((l) => l.who).join(','), 'aide,lord,aide,lord,人間軍兵士');
   assert.equal(STORY.before['5-2'].map((l) => l.who).join(','), 'aide,lord,人間軍技師,lord');
   assert.equal(STORY.before['5-3'].map((l) => l.who).join(','), 'aide,重装兵団長,lord,aide,lord');
-  assert.equal(STORY.before['5-4'].map((l) => l.who).join(','), 'aide,要塞司令官,要塞司令官,lord,lord');
+  assert.equal(STORY.before['5-4'].map((l) => l.who).join(','), 'aide,要塞司令官,要塞司令官,lord,lord,lord,lord,lord');
   assert.equal(STORY.after['5-1'][0].who, 'lord', '5-1 の戦闘後は大魔王から');
   const a = STORY.after['5-4'];
   assert.equal(a.length, 18); assert.equal(a[13].text, 'それを早く言わんかぁぁ！！'); assert.equal(a[16].text, '――第5章クリア。'); assert.equal(a[17].text, '――魔王軍は新たな力を求め、砂漠の古代王国へと向かった。');
@@ -726,7 +726,7 @@ test('第6章（砂漠の古代王国）：3ステージ・台本どおり。6-3
   const { CHAPTER6 } = await import('../js/data/stages.js');
   assert.deepEqual(CHAPTER6.stages, ['6-1', '6-2', '6-3']);
   assert.equal(CHAPTER6.name, '砂漠の古代王国');
-  assert.equal(STORY.before['6-3'].map((l) => l.who).join(','), 'narr,narr,古代王,aide,lord,古代王,lord'); // 2026-11-25 修正
+  assert.equal(STORY.before['6-3'].map((l) => l.who).join(','), 'narr,narr,古代王,aide,lord,古代王,lord,lord,lord,lord'); // 2026-11-25 修正
   assert.equal(STORY.after['6-3'].length, 5);
   assert.equal(CRYSTAL_EVENT.LINES.length, 15); assert.equal(CRYSTAL_EVENT.LINES[10].text, 'なんでじゃぁぁぁ！！');
   assert.equal(CRYSTAL_EVENT.AFTER[3].text, '――第6章クリア。');
@@ -980,7 +980,7 @@ test('共通背景対応の修正（第1〜7章）：ステージ名・台詞の
   assert.equal(STORY.before['5-2'][0].text, '大魔王様、人間軍が新型兵器を投入してきました。');
   assert.equal(STORY.before['5-2'][1].text, 'ほう！ 今度はどんなおもちゃを持ち出してきたのじゃ？');
   assert.equal(STORY.after['5-2'][0].text, '新型兵器を破壊しました。しかし、魔王軍にもかなりの被害が出ております。');
-  assert.equal(STORY.before['5-4'][0].text, '大魔王様、鉄鋼都市が残された全戦力を投入してきました。');
+  assert.equal(STORY.before['5-4'][0].text, '大魔王様、要塞司令官が残された全戦力を投入してきました。');
   assert.deepEqual(T('6-1', 'after'), ['古代王国の第一防衛部隊を撃破しました。', '急げ急げ！ 久しぶりに楽しみになってきたわい！']);
   assert.equal(STORY.after['6-2'][2].text, '大魔王様、ピラミッドからさらに強大な魔力を感じます。');
   assert.deepEqual(T('6-3', 'before').slice(0, 2), ['――巨大なピラミッドが怪しく輝き始めた。', '――強大な魔力とともに、古代王が姿を現した。']);
@@ -1114,28 +1114,40 @@ test('第2形態（確定）：Lv5で任意に進化・Lv−4に下がる・2.5�
   assert.equal(b.deck[0].hp, resolveUnit('vanguard', p).hp);
 });
 
-test('幹部の加入（2026-11-26 整理）：ワニ将軍は3-3・熔氷の岩魔は5-4・死神は6-3。古いセーブはそのまま／足りない分は渡す', async () => {
+test('幹部の加入（ボス戦の前）：3-3 ワニ将軍・5-4 熔氷の岩魔・6-3 死神。その戦闘から召喚でき、負けても残る・古いセーブ', async () => {
   const pr = await import('../js/data/progress.js');
   const { SKIN } = await import('../js/data/skin.js');
   assert.equal(SKIN.names.elemental, '熔氷の岩魔'); assert.equal(SKIN.names.reaper, '死神');
-  const who = (id) => [].concat(STAGES[id].reward.unlock || []);
-  assert.deepEqual(who('1-3'), []); assert.deepEqual(who('3-3'), ['charger']); assert.deepEqual(who('5-4'), ['elemental']); assert.deepEqual(who('6-3'), ['reaper']);
+  assert.deepEqual(['3-3', '5-4', '6-3'].map((id) => STAGES[id].joinBoss), ['charger', 'elemental', 'reaper']);
+  for (const id of STAGE_ORDER_ALL) assert.ok(!['charger', 'elemental', 'reaper'].some((k) => [].concat(STAGES[id].reward.unlock || []).includes(k)), id + '：クリア報酬では解放しない');
   const p = newProfile();
   for (const id of ['1-1', '1-2', '1-3', '2-1', '2-2', '2-3', '3-1', '3-2']) applyResult(p, id, 'win', 100);
-  assert.ok(!p.units.charger.unlocked);
-  assert.ok(applyResult(p, '3-3', 'win', 100).unlockedAll.includes('charger'));
-  pr.finishRuinEvent(p, 'reject');
+  assert.ok(!p.units.charger.unlocked && pr.joinPending(p, '3-3'));
+  assert.equal(pr.joinBoss(p, '3-3'), 'charger'); assert.ok(!pr.joinPending(p, '3-3'));
+  assert.ok(buildDeck(p).some((d) => d.key === 'charger'), 'その戦闘の編成に入る');
+  applyResult(p, '3-3', 'lose', 100); assert.ok(p.units.charger.unlocked, '負けても残る');
+  assert.equal(pr.joinBoss(p, '3-3'), null, '2回目は演出なし');
+  applyResult(p, '3-3', 'win', 100); pr.finishRuinEvent(p, 'reject');
   for (const id of ['4-1', '4-2', '4-3', '5-1', '5-2', '5-3']) applyResult(p, id, 'win', 100);
-  assert.ok(!p.units.elemental.unlocked);
-  assert.ok(applyResult(p, '5-4', 'win', 100).unlockedAll.includes('elemental'));
+  pr.joinBoss(p, '5-4');
+  assert.ok(buildDeck(p).some((d) => d.key === 'elemental'));
+  applyResult(p, '5-4', 'win', 100);
   for (const id of ['6-1', '6-2']) applyResult(p, id, 'win', 100);
-  assert.ok(applyResult(p, '6-3', 'win', 100).unlockedAll.includes('reaper'));
-  // 古いセーブ：1-3 で仲間になったワニ将軍はそのまま。5-4・6-3 クリアずみなら熔氷の岩魔・死神を渡す
+  pr.joinBoss(p, '6-3');
+  assert.ok(buildDeck(p).some((d) => d.key === 'reaper'), '幹部枠がいっぱいでも入れ替えて編成に入る');
+  for (const [id, k] of [['3-3', 'charger'], ['5-4', 'elemental'], ['6-3', 'reaper']]) {
+    const q = profileFor(id); pr.joinBoss(q, id);
+    const b = makeBattle({ stageId: id, profile: q });
+    for (let lv = 1; lv < BOSSES[k].needFurnace; lv++) { b.mana = 99999; b.queue({ type: 'furnace' }); b.step(); }
+    assert.ok(b.manaMax >= BOSSES[k].cost, id + '：魔力炉を上げれば魔力の上限が召喚の魔力に届く（' + b.manaMax + '）');
+    b.mana = b.manaMax; assert.ok(b.canSummon(k).ok, id + '：' + k + ' を召喚できる');
+  }
+  applyResult(p, '6-3', 'win', 100);
   const old = JSON.parse(JSON.stringify(p)); old.units.elemental.unlocked = false; delete old.units.reaper;
   const st = memStore(); st.setItem(pr.SAVE_KEY, JSON.stringify(old)); const q = loadProfile(st);
-  assert.ok(q.units.charger.unlocked && q.units.elemental.unlocked && q.units.reaper.unlocked);
+  assert.ok(q.units.charger.unlocked && q.units.elemental.unlocked && q.units.reaper.unlocked, JSON.stringify([q.units.charger, q.units.elemental, q.units.reaper, Object.keys(q.stages).length]));
   const o2 = newProfile(); o2.units.charger.unlocked = true; applyResult(o2, '1-1', 'win', 100);
-  const st2 = memStore(); saveProfile(o2, st2); assert.ok(loadProfile(st2).units.charger.unlocked, '前の仕様で仲間になったワニ将軍は外さない');
+  const st2 = memStore(); saveProfile(o2, st2); assert.ok(loadProfile(st2).units.charger.unlocked);
 });
 
 test('幹部・熔氷の岩魔：範囲の炎・氷の息で凍らせる', () => {

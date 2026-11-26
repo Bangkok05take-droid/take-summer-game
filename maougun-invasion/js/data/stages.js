@@ -266,7 +266,8 @@ export const STAGES = {
       { trigger: { baseBelow: 0.6 }, hero: 'knight_commander', wave: [{ who: 'knight_commander', count: 1 }, { who: 'knight', count: 2 }, { who: 'court_mage', count: 1 }] /* 2026-11-25：ボスを国王から王国騎士団長へ */, gap: 0.8 },
       { trigger: { baseBelow: 0.25 }, wave: [{ who: 'knight', count: 2 }, { who: 'rider', count: 3 }, { who: 'archer', count: 2 }], gap: 0.5 },
     ],
-    reward: { stones: 450, unlock: 'charger' }, // 2026-11-26：第3章の終わりで幹部・ワニ将軍が仲間に
+    joinBoss: 'charger', // 2026-11-26：ボス戦の前に幹部・ワニ将軍が加わる（この戦闘から召喚できる）
+    reward: { stones: 450 },
   },
   // ---------------- 第4章 港町（敵編成・ボス・報酬は仮） ----------------
   '4-1': {
@@ -380,7 +381,8 @@ export const STAGES = {
       { trigger: { baseBelow: 0.6 }, hero: 'commander', wave: [{ who: 'commander', count: 1 }, { who: 'heavy', count: 1 }], gap: 0.8 },
       { trigger: { baseBelow: 0.25 }, wave: [{ who: 'heavy', count: 2 }, { who: 'rider', count: 3 }, { who: 'archer', count: 2 }], gap: 0.5 },
     ],
-    reward: { stones: 600, unlock: 'elemental' }, // 2026-11-26：第5章の終わりで幹部・熔氷の岩魔が仲間に
+    joinBoss: 'elemental', // 2026-11-26：ボス戦の前に幹部・熔氷の岩魔が加わる
+    reward: { stones: 600 },
   },
   // ---------------- 第6章 砂漠の古代王国（敵編成・ボス・報酬は仮）。守護者（古代の石像兵）・古代王 ----------------
   '6-1': {
@@ -423,7 +425,8 @@ export const STAGES = {
       { trigger: { baseBelow: 0.6 }, hero: 'ancient_king', wave: [{ who: 'ancient_king', count: 1 }, { who: 'guardian', count: 1 }], gap: 0.8 },
       { trigger: { baseBelow: 0.25 }, wave: [{ who: 'guardian', count: 2 }, { who: 'rider', count: 3 }], gap: 0.5 },
     ],
-    reward: { stones: 650, unlock: 'reaper' }, // 2026-11-26：幹部・死神が仲間に（第6章の終わり）
+    joinBoss: 'reaper', // 2026-11-26：ボス戦の前に幹部・死神が加わる
+    reward: { stones: 650 },
   },
   // ---------------- 第7章 聖なる都（敵編成・ボス・報酬は仮） ----------------
   '7-1': {

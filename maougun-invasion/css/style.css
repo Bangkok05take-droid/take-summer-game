@@ -466,3 +466,9 @@ body.portrait #rotate { display: flex; }
 .evoTable td { padding: 0 calc(var(--u) * 6); text-align: right; }
 .evoTable b { color: #9dff9a; }
 .evoNote { font-size: calc(var(--u) * 12.5); color: #ffd9a0; margin: calc(var(--u) * 6) 0; }
+
+/* 幹部の加入演出（ボス戦の前） */
+#scUnlock.join .panel.unlock { border-color: #ff9a3a; box-shadow: 0 0 calc(var(--u) * 40) rgba(255, 140, 60, .7); animation: joinIn .6s ease-out; }
+#scUnlock.join #unlockName { color: #ffd76a; font-size: calc(var(--u) * 30); text-shadow: 0 0 calc(var(--u) * 14) #ff7a2a; }
+#scUnlock.join #unlockEyebrow { color: #fff; font-weight: 900; letter-spacing: .1em; }
+@keyframes joinIn { from { transform: scale(.85); opacity: 0; } to { transform: none; opacity: 1; } }

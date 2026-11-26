@@ -106,6 +106,9 @@ export function migrate(p) {
   // 2026-11-26：6-3 をクリアずみの古いセーブには、あとから追加した幹部（熔氷の岩魔）を渡す
   for (const [id, st] of Object.entries(STAGES)) {
     for (const u of [].concat((st.reward && st.reward.unlock) || [])) if (u !== 'ord' && out.stages[id] && out.stages[id].cleared && out.units[u] && !out.units[u].unlocked) { out.units[u].unlocked = true; out.seen[u] = out.seen[u] || false; }
+    // ボス戦の前に加わる幹部（joinBoss）：そのステージに挑んだ・クリアしたセーブなら加入ずみにする
+    const jb = st.joinBoss; const tried = out.stages[id] && (out.stages[id].cleared || out.stages[id].losses);
+    if (jb && tried && out.units[jb] && !out.units[jb].unlocked) { out.units[jb].unlocked = true; out.story['join:' + jb] = true; }
   }
   if (!f) fillFormation(out); // 版1のセーブ：解放済みの魔物を空き枠へ（今までどおり出撃できるように）
   return out;
@@ -400,4 +403,17 @@ export function markConquest(p) {
   p.events = p.events || {};
   p.events.conquest = { done: true };
   return true;
+}
+
+// ---------- 幹部の加入（ボス戦の前・2026-11-26） ----------
+// そのステージに joinBoss があり、まだ仲間でなければ true（加入の演出を出す）
+export function joinPending(p, stageId) { const jb = STAGES[stageId] && STAGES[stageId].joinBoss; return !!(jb && p.units[jb] && !p.units[jb].unlocked); }
+// 加入させて、編成の幹部枠に必ず入れる（枠がいっぱいなら最後の幹部と入れ替え）。負けても加入は残る
+export function joinBoss(p, stageId) {
+  const jb = STAGES[stageId] && STAGES[stageId].joinBoss; if (!jb || !p.units[jb]) return null;
+  const first = !p.units[jb].unlocked;
+  p.units[jb].unlocked = true; p.seen[jb] = true; p.story['join:' + jb] = true;
+  const r = addToFormation(p, jb);
+  if (!r.ok && r.reason === 'full') { const f = normalizeFormation(p); f.bosses[f.bosses.length - 1] = jb; }
+  return first ? jb : null;
 }

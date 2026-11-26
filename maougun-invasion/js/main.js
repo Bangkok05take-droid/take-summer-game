@@ -11,7 +11,7 @@ import { SKIN } from './data/skin.js';
 import {
   loadProfile, saveProfile, resetProfile, buildDeck, resolveMana, applyResult, isStageOpen, nextStage,
   levelUpUnit, buyUpgrade, SAVE_KEY, resolveSpell, addToFormation, removeFromFormation, normalizeFormation,
-  ruinPending, finishRuinEvent, crystalPending, applyCrystal, ultimatePending, applyUltimate, resolveFurnace, finalPending, markFinal, conquestPending, markConquest, tryEvolve,
+  ruinPending, finishRuinEvent, crystalPending, applyCrystal, ultimatePending, applyUltimate, resolveFurnace, finalPending, markFinal, conquestPending, markConquest, joinPending, joinBoss, tryEvolve,
 } from './data/progress.js';
 import { Renderer, VIEW_W, VIEW_H, MINIMAP } from './render/renderer.js';
 import { Hud, reasonText } from './ui/hud.js';
@@ -121,8 +121,22 @@ function pickStage(id) {
     talk.play(lines, 'field', () => { app.profile.story[key] = true; save(); afterBriefing(id); });
   } else afterBriefing(id);
 }
-// 1-1（説明のステージ）は偵察と編成をとばして、すぐ戦闘へ
-function afterBriefing(id) { if (STAGES[id].tutorial === 'guide') startStage(id); else toRecon(id); }
+// 1-1（説明のステージ）は偵察と編成をとばして、すぐ戦闘へ。幹部が加わるステージは、先に加入の演出（初回だけ）
+function afterBriefing(id) {
+  if (joinPending(app.profile, id)) { showJoin(id, () => afterBriefing(id)); return; }
+  if (STAGES[id].tutorial === 'guide') startStage(id); else toRecon(id);
+}
+// 幹部の加入演出（2026-11-26）：幹部の絵と名前、「この戦闘から召喚可能！」。加入は記録され、負けても残る
+function showJoin(id, done) {
+  const key = joinBoss(app.profile, id); save();
+  if (!key) { done(); return; }
+  renderUnlock(key);
+  $('unlockEyebrow').textContent = 'この戦闘から召喚可能！';
+  $('unlockName').textContent = `${SKIN.names[key]} 解放！`;
+  $('scUnlock').classList.add('join');
+  show('scUnlock');
+  app.joinThen = () => { $('scUnlock').classList.remove('join'); done(); };
+}
 
 // ---------- 偵察報告 → 編成 → 出撃 ----------
 // 偵察報告は毎回（初回は上の会話のあとに1行、2回目以降は1行だけ）。スキップで編成へ
@@ -226,6 +240,7 @@ $('btnChoiceA').addEventListener('click', () => ruinChoose('recruit'));
 $('btnChoiceB').addEventListener('click', () => ruinChoose('reject'));
 
 function startStage(id, opts = {}) {
+  if (joinPending(app.profile, id)) { joinBoss(app.profile, id); save(); } // 演出をとおらずに始めたときも、幹部は使えるように
   app.stageId = id;
   app.forced = !!opts.forced;
   const st = STAGES[id];
@@ -404,7 +419,7 @@ $('btnLootNext').addEventListener('click', () => {
   app.unlockQueue = ((app.lastResult && app.lastResult.unlockedAll) || []).slice();
   nextUnlock();
 });
-$('btnUnlockNext').addEventListener('click', nextUnlock);
+$('btnUnlockNext').addEventListener('click', () => { const j = app.joinThen; if (j) { app.joinThen = null; j(); } else nextUnlock(); });
 
 // ---------- 画面の大きさ ----------
 function fit() {
