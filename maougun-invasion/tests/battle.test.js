@@ -1113,3 +1113,24 @@ test('第2形態（確定）：Lv5で任意に進化・Lv−4に下がる・2.5�
   const b = makeBattle({ stageId: '1-1', profile: p, deck: ['vanguard'] });
   assert.equal(b.deck[0].hp, resolveUnit('vanguard', p).hp);
 });
+
+test('幹部・熔氷の岩魔：6-3 の初回クリアで仲間・範囲の炎・氷の息で凍らせる・古いセーブにも渡る', async () => {
+  const pr = await import('../js/data/progress.js');
+  const { SKIN } = await import('../js/data/skin.js');
+  assert.equal(SKIN.names.elemental, '熔氷の岩魔'); assert.ok(BOSSES.elemental.ready && SKIN.sprites.elemental);
+  assert.equal(BOSSES.elemental.attack, 'area'); assert.equal(BOSSES.elemental.needFurnace, 5); assert.equal(BOSSES.elemental.cost, 1800);
+  const p = clearTo33(); pr.finishRuinEvent(p, 'reject');
+  for (const id of ['4-1', '4-2', '4-3', '5-1', '5-2', '5-3', '5-4', '6-1', '6-2']) applyResult(p, id, 'win', 100);
+  assert.ok(!p.units.elemental.unlocked);
+  const r = applyResult(p, '6-3', 'win', 100);
+  assert.ok(p.units.elemental.unlocked && r.unlockedAll.includes('elemental'));
+  // 古いセーブ：6-3 クリアずみで未解放 → 読み込むと仲間に
+  const old = JSON.parse(JSON.stringify(p)); old.units.elemental.unlocked = false;
+  const st = memStore(); st.setItem(pr.SAVE_KEY, JSON.stringify(old)); assert.ok(loadProfile(st).units.elemental.unlocked);
+  // 氷の息：前方の敵を止める
+  const b = makeBattle({ stage: noEnemies(), deck: ['elemental'] });
+  const m = b.spawn('demon', b.deckDef('elemental'), 1000); m.x = 1000;
+  const h = b.spawnHuman('swordsman'); h.x = 880; h.def = { ...h.def, speed: 0 };
+  let stunned = false; run(b, 8, () => { if (h.stun > 0) stunned = true; });
+  assert.ok(stunned, '凍らせて止める');
+});

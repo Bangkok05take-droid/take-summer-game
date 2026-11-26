@@ -110,7 +110,14 @@ export const BOSSES = {
   // ---- 構想（ready: false）。数値は仮。能力（skills）と絵ができたら ready: true にする ----
   trickster: { attackType: 'mid', target: 'front', role: '幹部・罠と身代わり', unique: true, ready: false, cost: 1300, needFurnace: 3, cooldown: 60, hp: 4500, atk: 120, range: 120, speed: 34, interval: 2.6, windup: 0.6, kb: 6, attack: 'single', size: 1.5, growth: GROWTH },
   mist: { attackType: 'mid', target: 'front', role: '幹部・霧', unique: true, ready: false, cost: 1600, needFurnace: 4, cooldown: 60, hp: 7000, atk: 90, range: 100, speed: 28, interval: 2.8, windup: 0.7, kb: 6, attack: 'area', size: 1.6, growth: GROWTH },
-  elemental: { attackType: 'mid', target: 'front', role: '幹部・炎と氷', unique: true, ready: false, cost: 1800, needFurnace: 5, cooldown: 60, hp: 5000, atk: 140, range: 160, speed: 28, interval: 3.0, windup: 0.8, kb: 6, attack: 'area', size: 1.5, growth: GROWTH },
+  // 2026-11-26：熔氷の岩魔（幹部2体目・ユーザーのデザイン 11594.png）。6-3 の初回クリアで仲間に。
+  //   ふだんは前方の敵をまとめて炎で焼く（範囲）。特殊技「氷の息」：前方220の敵を2秒凍らせて止める（14秒ごと）
+  elemental: {
+    attackType: 'mid', target: 'front', role: '幹部・炎と氷（範囲の炎・凍らせて止める）', unique: true, ready: true, growth: GROWTH,
+    cost: 1800, needFurnace: 5, cooldown: 60, hp: 8000, atk: 150, range: 120, speed: 28,
+    interval: 2.8, windup: 0.7, kb: 6, attack: 'area', size: 1.6,
+    skills: [{ id: 'freeze', name: '氷の息', type: 'stun', every: 14, first: 5, windup: 0.9, recover: 0.5, reach: 220, duration: 2.0 }],
+  },
   thunder: { attackType: 'long', target: 'front', role: '幹部・落雷', unique: true, ready: false, cost: 2200, needFurnace: 6, cooldown: 60, hp: 6500, atk: 220, range: 140, speed: 30, interval: 3.2, windup: 0.9, kb: 6, attack: 'single', size: 1.6, growth: GROWTH },
 };
 export const BOSS_ORDER = Object.keys(BOSSES);

@@ -423,7 +423,7 @@ export const STAGES = {
       { trigger: { baseBelow: 0.6 }, hero: 'ancient_king', wave: [{ who: 'ancient_king', count: 1 }, { who: 'guardian', count: 1 }], gap: 0.8 },
       { trigger: { baseBelow: 0.25 }, wave: [{ who: 'guardian', count: 2 }, { who: 'rider', count: 3 }], gap: 0.5 },
     ],
-    reward: { stones: 650 },
+    reward: { stones: 650, unlock: 'elemental' }, // 2026-11-26：幹部・熔氷の岩魔が仲間に
   },
   // ---------------- 第7章 聖なる都（敵編成・ボス・報酬は仮） ----------------
   '7-1': {

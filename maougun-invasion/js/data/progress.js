@@ -103,6 +103,10 @@ export function migrate(p) {
   const f = p.formation;
   out.formation = { units: Array.isArray(f && f.units) ? f.units.slice() : [], bosses: Array.isArray(f && f.bosses) ? f.bosses.slice() : [] };
   normalizeFormation(out);
+  // 2026-11-26：6-3 をクリアずみの古いセーブには、あとから追加した幹部（熔氷の岩魔）を渡す
+  for (const [id, st] of Object.entries(STAGES)) {
+    for (const u of [].concat((st.reward && st.reward.unlock) || [])) if (u !== 'ord' && out.stages[id] && out.stages[id].cleared && out.units[u] && !out.units[u].unlocked) { out.units[u].unlocked = true; out.seen[u] = out.seen[u] || false; }
+  }
   if (!f) fillFormation(out); // 版1のセーブ：解放済みの魔物を空き枠へ（今までどおり出撃できるように）
   return out;
 }
