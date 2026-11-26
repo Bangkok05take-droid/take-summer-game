@@ -996,7 +996,7 @@ test('第1〜3章の追加キャラクター（承認済みデザイン）：人
   for (const k of keys) { const s = SKIN.sprites[k]; assert.ok(s && /assets\/approved\/humans\//.test(s.src), k); assert.equal(s.facing, 'right', k); }
   // 2026-11-25：大中小＋特大のサイズ分類（skin.js の SIZE_CLASS）
   const { displayHeight, SIZE_PX } = await import('../js/data/skin.js');
-  assert.equal(displayHeight('knight'), SIZE_PX.M); assert.equal(displayHeight('swordsman'), SIZE_PX.M); assert.equal(displayHeight('court_mage'), SIZE_PX.S);
+  assert.equal(displayHeight('knight'), SIZE_PX.M); assert.equal(displayHeight('swordsman'), SIZE_PX.M); assert.equal(displayHeight('court_mage'), SIZE_PX.M); assert.ok(displayHeight('mass') < SIZE_PX.S && displayHeight('fast') === SIZE_PX.XS, 'グミ・こうもりはミニ');
   for (const k of ['militia_captain', 'captain', 'knight_commander']) assert.ok(displayHeight(k) >= SIZE_PX.XL, k + '：ボスは特大');
   assert.ok(displayHeight('holy_dragon') > displayHeight('captain') && displayHeight('mass_2') > displayHeight('mass'), '聖竜はさらに大きく・進化形は基本形より大きい');
   const used = (id) => STAGES[id].spawns.flatMap((x) => x.who ? [x.who] : x.wave.map((w) => w.who));

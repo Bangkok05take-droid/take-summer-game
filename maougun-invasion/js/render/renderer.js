@@ -278,7 +278,7 @@ export class Renderer {
     const art = baseArt(BASE_KIND[b.stage.theme] || 'tower');
     const ratio = s.hp / s.maxHp;
     const hit = this.baseShake && this.baseShake.human > 0 ? Math.sin(this.time * 80) * 2 : 0;
-    const w = art.w * BG_PIX; const h = art.h * BG_PIX;
+    const bs = SKIN.images.pixelBaseScale || 1; const w = art.w * BG_PIX * bs; const h = art.h * BG_PIX * bs; // 仮のドット絵の建物は大きすぎるので控えめに
     const x = s.x - w / 2 + hit; const y = GROUND_Y + 10 - h;
     ctx.drawImage(art.img, x, y, w, h);
     this.damageMarks(ctx, s.x, y, w, h, ratio, '#ff9a3a');
@@ -291,14 +291,14 @@ export class Renderer {
     const art = shrineArt();
     const ratio = s.hp / s.maxHp;
     const hit = this.baseShake && this.baseShake.demon > 0 ? Math.sin(this.time * 80) * 2 : 0;
-    const w = art.w * BG_PIX; const h = art.h * BG_PIX;
+    const bs = SKIN.images.pixelBaseScale || 1; const w = art.w * BG_PIX * bs; const h = art.h * BG_PIX * bs; // 仮のドット絵の建物は大きすぎるので控えめに
     const x = s.x - w / 2 + hit; const y = GROUND_Y + 12 - h;
     // 足元の魔法陣（祠の前）
     this.magicCircle(ctx, s.x - 30, GROUND_Y + 14, 120, 0.55 + Math.sin(this.time * 2) * 0.15);
     ctx.drawImage(art.img, x, y, w, h);
     // 渦
     const p = art.portal;
-    const px = x + (p.x + 1) * BG_PIX; const py = y + (p.y + 1) * BG_PIX; const pw = p.w * BG_PIX; const ph = p.h * BG_PIX;
+    const P = BG_PIX * bs; const px = x + (p.x + 1) * P; const py = y + (p.y + 1) * P; const pw = p.w * P; const ph = p.h * P;
     ctx.save();
     ctx.beginPath(); ctx.moveTo(px, py + ph); ctx.lineTo(px, py + 10); ctx.quadraticCurveTo(px + pw / 2, py - 26, px + pw, py + 10); ctx.lineTo(px + pw, py + ph); ctx.closePath(); ctx.clip();
     const cx = px + pw / 2; const cy = py + ph * 0.45;
@@ -321,7 +321,7 @@ export class Renderer {
     const img = getImage(src) || getImage(def.src);
     if (!img) return false;
     const ctx = this.ctx;
-    const k = def.width / img.naturalWidth; const w = def.width; const h = img.naturalHeight * k;
+    const bs = SKIN.images.baseScale || 1; const k = def.width * bs / img.naturalWidth; const w = def.width * bs; const h = img.naturalHeight * k;
     const hit = this.baseShake && this.baseShake[side] > 0 ? Math.sin(this.time * 80) * 2 : 0;
     const foot = (def.footY ?? img.naturalHeight) * k;
     ctx.imageSmoothingEnabled = true;

@@ -356,15 +356,15 @@ SKIN.ui = { ...(APPROVED.ui || {}) };
 
 /* ---------- 表示サイズの統一（2026-11-25 ユーザー依頼：大中小＋特大） ----------
  * 画面での背の高さ（論理ドット・画面は 960×540）。絵の倍率はここから自動で決める（絵そのものは変えない）。
- *   小 S＝軽い兵・後衛・小さな魔物／中 M＝ふつうの兵・前衛／大 L＝重装・騎兵・大型の魔物／特大 XL＝ボス・幹部（数字はその都度）
+ *   ミニ XS＝グミ・こうもり／小 S＝小さな魔物／中 M＝ふつうの兵・前衛／大 L＝重装・騎兵・大型の魔物／特大 XL＝ボス・幹部（数字はその都度）
  * 進化形は基本形と同じ分類で ×1.12。サイズを変えるときは SIZE_PX か SIZE_CLASS を直す */
-export const SIZE_PX = { S: 64, M: 80, L: 100, XL: 118 };
+export const SIZE_PX = { XS: 44, S: 64, M: 80, L: 100, XL: 118 }; // XS＝ミニ（2026-11-26：グミ・こうもり）
 export const SIZE_CLASS = {
   // 魔王軍
-  mass: ['S', 0.8], fast: 'S', ranged: 'S', mallet: 'S', healer: 'S', vanguard: 'M', area: 'M', tank: 'L',
+  mass: ['XS', 0.9], fast: 'XS', ranged: 'S', mallet: 'S', healer: 'S', vanguard: 'M', area: 'M', tank: 'L',
   charger: ['XL', 125], ord: ['XL', 132],
-  // 人間軍：小
-  militia: 'S', archer: 'S', priest: 'S', court_mage: 'S', mage: 'S', ice_mage: 'S', elite_mage: 'S', ancient_priest: 'S', high_priest: 'S', celestial_mage: 'S', engineer: 'S',
+  // 人間軍：中（2026-11-26：村人・弓兵・僧侶・魔導士系・神官系・兵器技師も小 → 中）
+  militia: 'M', archer: 'M', priest: 'M', court_mage: 'M', mage: 'M', ice_mage: 'M', elite_mage: 'M', ancient_priest: 'M', high_priest: 'M', celestial_mage: 'M', engineer: 'M',
   // 人間軍：中
   swordsman: 'M', shield: 'M', rider: 'M', knight: 'M', naval_soldier: 'M', ancient_soldier: 'M', paladin: 'M', magic_knight: 'M', royal_guard: 'M', sky_guard: 'M',
   // 人間軍：大
@@ -387,3 +387,8 @@ for (const [k, sp] of Object.entries(SKIN.sprites)) {
   const h = displayHeight(k); if (!h || INK_TOP[k] == null) continue;
   sp.scale = Math.round(h / Math.max(1, sp.footY - INK_TOP[k]) * 10000) / 10000;
 }
+
+// 拠点（人間軍の拠点・魔王軍の祠）の表示倍率（2026-11-26：キャラクターを大きくしたのに合わせて大きく）
+export const BASE_SCALE = 1.4;
+SKIN.images.baseScale = BASE_SCALE;
+SKIN.images.pixelBaseScale = 1.1; // 承認済みの絵が無い拠点（第2章以降の門・城の仮のドット絵）
