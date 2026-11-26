@@ -121,16 +121,17 @@ export const BOSSES = {
   // ---- 構想（ready: false）。数値は仮。能力（skills）と絵ができたら ready: true にする ----
   // 2026-11-26：霧の幹部＝ヴェイル（大魔王の影の側近。ユーザーのデザイン 11618.png）。いちばん最後に加わる幹部（9-4 のボス戦の前）。
   //   ふだんは影の刃で中距離から1体ずつ攻撃。
-  //   「幻惑の霧」：前方300の敵を霧で惑わし、6秒間 与えるダメージを半分に（12秒ごと）
-  //   「影の帳」：近くの味方が傷ついたら、まわり240の味方を影で包み、5秒間 受けるダメージを半分に（16秒ごと）
+  //   「幻惑の霧」：前方300の敵を霧で惑わす（6秒）。はじめの3秒は霧が濃く攻撃が当たる確率 1/3、あとの3秒は晴れてきて 2/3。一度使うと14秒たつまで使えない
+  //   「影の帳」：近くの味方が傷ついたら、まわり200の味方を影で包み、4秒間ダメージを受けない。一度使うと20秒たつまで使えない
+  //   （ユーザー案は「5秒・16秒ごと」。無敵は強いので、少し短く・間を長くした）
   //   ※ 罠＝死神・落雷＝オルドに置き換わったので、構想の trickster・thunder は削除（2026-11-26）
   mist: {
-    attackType: 'mid', target: 'front', role: '幹部・霧と影（敵の攻撃を弱め、味方を守る）', unique: true, ready: true, growth: GROWTH,
+    attackType: 'mid', target: 'front', role: '幹部・霧と影（敵の攻撃を外させ、味方を守る）', unique: true, ready: true, growth: GROWTH,
     cost: 2200, needFurnace: 6, cooldown: 60, hp: 9000, atk: 180, range: 160, speed: 30, // 召喚費用は承認済みの上限 2200
     interval: 2.2, windup: 0.5, kb: 7, attack: 'single', size: 1.5,
     skills: [
-      { id: 'veil', name: '影の帳', type: 'veil', every: 16, first: 6, windup: 0.7, recover: 0.4, radius: 240, reach: 300, duration: 5, cut: 0.5 },
-      { id: 'fog', name: '幻惑の霧', type: 'weaken', every: 12, first: 2, windup: 0.8, recover: 0.4, reach: 300, duration: 6, factor: 0.5 },
+      { id: 'veil', name: '影の帳', type: 'veil', every: 20, first: 6, windup: 0.7, recover: 0.4, radius: 200, reach: 300, duration: 4 },
+      { id: 'fog', name: '幻惑の霧', type: 'weaken', every: 14, first: 2, windup: 0.8, recover: 0.4, reach: 300, duration: 6, hitThick: 1 / 3, hitClear: 2 / 3 },
     ],
   },
   // 2026-11-26：熔氷の岩魔（幹部2体目・ユーザーのデザイン 11594.png）。6-3 の初回クリアで仲間に。

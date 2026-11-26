@@ -479,14 +479,14 @@ export class Battle {
     } else if (s.type === 'weaken') {
       for (const t of this.targetsAhead(e, -12, s.reach)) {
         if (t.isBase || t.target.state === 'dead') continue;
-        t.target.weak = Math.max(t.target.weak || 0, s.duration); t.target.weakFactor = s.factor;
+        t.target.weak = s.duration; t.target.weakTotal = s.duration; t.target.hitThick = s.hitThick; t.target.hitClear = s.hitClear;
         this.events.push({ type: 'weaken', id: t.target.id, x: t.target.x, lane: t.target.lane });
       }
       this.events.push({ type: 'mist', x: e.x + e.dir * s.reach / 2, w: s.reach, side: e.side });
     } else if (s.type === 'veil') {
       for (const o of this.entities) {
         if (o.side !== e.side || o.state === 'dead' || Math.abs(o.x - e.x) > s.radius) continue;
-        o.shield = Math.max(o.shield || 0, s.duration); o.shieldCut = s.cut;
+        o.shield = Math.max(o.shield || 0, s.duration);
         this.events.push({ type: 'veil', id: o.id, x: o.x, lane: o.lane });
       }
     } else if (s.type === 'slow') {
@@ -538,8 +538,13 @@ export class Battle {
   damageUnit(o, dmg, src, forceKb = false) {
     if (o.state === 'dead') return;
     const cut = o.def.guard || 0; // 被ダメージの軽減率
-    if (src && src.weak > 0) dmg *= src.weakFactor || 0.5; // 霧に惑わされた相手の攻撃は弱い
-    if (o.shield > 0) dmg *= 1 - (o.shieldCut || 0.5);     // 影の帳で守られている
+    // 影の帳（ヴェイル）：守られている間はダメージを受けない
+    if (o.shield > 0) { this.events.push({ type: 'blocked', id: o.id, x: o.x, side: o.side, lane: o.lane }); return; }
+    // 幻惑の霧（ヴェイル）：惑わされた相手の攻撃は当たりにくい。はじめは霧が濃く 1/3、晴れてくると 2/3 の確率で当たる
+    if (src && src.weak > 0) {
+      const thick = src.weak > (src.weakTotal || 6) / 2;
+      if (this.rng() >= (thick ? src.hitThick : src.hitClear)) { this.events.push({ type: 'miss', id: o.id, x: o.x, side: o.side, lane: o.lane }); return; }
+    }
     dmg = Math.max(1, Math.round(dmg * (1 - cut)));
     o.hp -= dmg;
     o.flash = 0.12;

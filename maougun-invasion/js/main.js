@@ -133,6 +133,11 @@ function showJoin(id, done) {
   renderUnlock(key);
   $('unlockEyebrow').textContent = 'この戦闘から召喚可能！';
   $('unlockName').textContent = `${SKIN.names[key]} 解放！`;
+  if (key === 'mist') { // 最後の幹部（承認済みの文言）
+    $('unlockEyebrow').textContent = 'FINAL OFFICER　最後の幹部モンスター';
+    $('unlockName').textContent = SKIN.names[key];
+    $('unlockRole').textContent = '魔王軍に参戦！ この戦闘から召喚可能！';
+  }
   $('scUnlock').classList.add('join');
   show('scUnlock');
   app.joinThen = () => { $('scUnlock').classList.remove('join'); done(); };

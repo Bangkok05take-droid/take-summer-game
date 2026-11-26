@@ -867,7 +867,7 @@ test('第9章（人間界の王都）：4ステージ・台本どおり・背景
   assert.ok(SKIN.images.stageBg.chapter9);
   assert.equal(STORY.before['9-1'].map((l) => l.who).join(','), 'aide,lord,aide,人間軍指揮官,lord');
   assert.equal(STORY.before['9-3'].map((l) => l.who).join(','), 'aide,王国軍指揮官,lord,aide,lord');
-  assert.equal(STORY.before['9-4'].map((l) => l.who).join(','), '人間軍総司令官,人間軍総司令官,lord,lord,lord');
+  assert.equal(STORY.before['9-4'].map((l) => l.who).join(','), '人間軍総司令官,人間軍総司令官,lord,lord,lord,aide,lord,aide,aide,lord,aide,lord,lord,aide');
   assert.ok(!Object.values(STORY.before).flat().some((l) => /最終決戦開始/.test(l.text)));
   assert.deepEqual(CHAPTER9.stages.map((id) => STORY.after[id].length), [4, 4, 4, 10]);
   assert.equal(STORY.after['9-4'][9].text, '空の上まで逃げおったのかぁぁ！！');
@@ -1194,19 +1194,23 @@ test('幹部・ヴェイル（霧）：9-4 のボス戦の前に加わる・幻�
   const b0 = makeBattle({ stageId: '9-4', profile: p });
   for (let lv = 1; lv < BOSSES.mist.needFurnace; lv++) { b0.mana = 99999; b0.queue({ type: 'furnace' }); b0.step(); }
   b0.mana = b0.manaMax; assert.ok(b0.canSummon('mist').ok, '9-4 で召喚できる');
-  // 幻惑の霧
+  // 幻惑の霧：当たる確率 1/3（霧が濃い）→ 2/3（晴れてくる）
   const b = makeBattle({ stage: noEnemies(), deck: ['mist', 'tank'] });
   const v = b.spawn('demon', b.deckDef('mist'), 1000); v.x = 1000;
   const h = b.spawnHuman('swordsman'); h.x = 850; h.def = { ...h.def, speed: 0 };
   let weak = false; run(b, 4, () => { if (h.weak > 0) weak = true; });
   assert.ok(weak, '前の敵を惑わす');
-  const t = b.spawn('demon', b.deckDef('tank'), 900); t.x = 900; h.weak = 5; h.weakFactor = 0.5;
-  const hp0 = t.hp; b.damageUnit(t, 100, h); assert.equal(hp0 - t.hp, 50, '惑わされた敵のダメージは半分');
-  // 影の帳
+  const t = b.spawn('demon', b.deckDef('tank'), 900); t.x = 900; t.maxHp = t.hp = 1e9;
+  const rate = (left) => { let hit = 0; for (let i = 0; i < 3000; i++) { h.weak = left; h.weakTotal = 6; h.hitThick = 1 / 3; h.hitClear = 2 / 3; const hp0 = t.hp; b.damageUnit(t, 10, h); if (t.hp < hp0) hit++; } return hit / 3000; };
+  const r1 = rate(5); const r2 = rate(2);
+  assert.ok(Math.abs(r1 - 1 / 3) < 0.05 && Math.abs(r2 - 2 / 3) < 0.05, `当たる確率 ${r1.toFixed(2)} → ${r2.toFixed(2)}`);
+  // 影の帳：守られている間はダメージを受けない
   const c = makeBattle({ stage: noEnemies(), deck: ['mist', 'tank'] });
   const v2 = c.spawn('demon', c.deckDef('mist'), 1000); v2.x = 1000; v2.skillCd.fog = 99;
   const ally = c.spawn('demon', c.deckDef('tank'), 950); ally.x = 950; ally.hp = ally.maxHp * 0.5;
   const foe = c.spawnHuman('swordsman'); foe.x = 760; foe.def = { ...foe.def, speed: 0 };
-  let shielded = false; run(c, 9, () => { if (ally.shield > 0) shielded = true; });
+  let shielded = false; run(c, 9, () => { if (ally.shield > 0 && !shielded) { shielded = true; const hp0 = ally.hp; c.damageUnit(ally, 500, foe); assert.equal(ally.hp, hp0, '無効'); } });
   assert.ok(shielded, '傷ついた味方を影で守る');
+  const { STORY } = await import('../js/data/story.js'); const bf = STORY.before['9-4'];
+  assert.equal(bf.length, 14); assert.equal(bf[5].text, '大魔王様。いよいよ人間界を制圧する最後の戦いとなりました。'); assert.equal(bf[13].text, '仰せのままに。');
 });
