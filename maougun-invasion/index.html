@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#140a1f">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <title>魔王軍の世界侵略（仮）</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='18' r='12' fill='%238b5cf6'/%3E%3Cpath d='M8 10 L11 2 L14 9 M24 10 L21 2 L18 9' fill='%238b5cf6'/%3E%3Ccircle cx='12' cy='17' r='2.5' fill='%23fff'/%3E%3Ccircle cx='20' cy='17' r='2.5' fill='%23fff'/%3E%3C/svg%3E">
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="assets/approved/units/mass.png">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="game" aria-label="魔王軍の世界侵略">
+    <canvas id="field"></canvas>
+
+    <!-- ===== 戦闘画面 ===== -->
+    <div id="battleUi" hidden>
+      <div id="top">
+        <button id="btnPause" class="round" type="button" aria-label="一時停止">Ⅱ</button>
+        <div class="stageTag"><span id="tagChap"></span><b id="tagStage"></b></div>
+        <div class="manabox"><span class="ico" aria-hidden="true"></span><span class="lbl">魔力</span><span class="num" id="manaNum">0</span><span class="max" id="manaMax">/1000</span><div class="bar"><i id="manaBar"></i></div></div>
+        <div class="speed" role="group" aria-label="速度">
+          <button id="btnX1" type="button" class="on">×1</button><button id="btnX2" type="button">×2</button>
+        </div>
+      </div>
+      <div class="hpbox base"><span class="lbl">人間軍の拠点</span><span class="num" id="baseNum"></span><div class="bar"><i id="baseBar"></i></div></div>
+      <div class="hpbox shrine"><span class="lbl">魔王軍の祠</span><span class="num" id="shrineNum"></span><div class="bar"><i id="shrineBar"></i></div></div>
+      <div id="cap"><span id="capNum">0</span>/<span id="capMax">30</span>体</div>
+
+      <div id="bottom">
+        <button id="btnFurnace" class="furnace" type="button">
+          <span class="t">魔力炉</span><span class="lv" id="furnaceLv">Lv1</span><span class="cost" id="furnaceCost">150</span>
+        </button>
+        <div id="slots"></div>
+        <button id="btnSpell" class="spell" type="button" aria-label="魔王の呪文">
+          <i class="fill" id="spellFill"></i><span class="t">魔王の<br>呪文</span><span class="lv" id="spellPct">0%</span>
+        </button>
+      </div>
+      <div id="toast" role="status" aria-live="polite"></div>
+      <!-- チュートリアル（第1章）：1-1 の手順つき説明／1-2 のヒント -->
+      <div id="tutor" hidden>
+        <div class="tutorBox"><canvas id="tutorFace" width="120" height="120"></canvas><div><span class="who" id="tutorWho"></span><p id="tutorText"></p><span class="tnext" id="tutorNext"></span></div>
+          <button type="button" class="tskip" id="btnTutorSkip">説明をとばす</button></div>
+      </div>
+      <div id="tutorHint" hidden role="status" aria-live="polite"><span class="who" id="tutorHintWho"></span><span id="tutorHintText"></span></div>
+    </div>
+
+    <!-- ===== タイトル ===== -->
+    <section id="scTitle" class="screen" hidden>
+      <div class="titleWrap">
+        <p class="sub">― 封印の大魔王と側近 ―</p>
+        <h1 class="logo">魔王軍の<br>世界侵略<small>（仮）</small></h1>
+        <div class="menu">
+          <button class="big" id="btnContinue" type="button">つづきから</button>
+          <button class="big" id="btnNew" type="button">はじめから</button>
+          <button class="small" id="btnFull" type="button">全画面にする</button>
+          <button class="small" id="btnReset" type="button">データリセット</button>
+        </div>
+        <p class="note">スマホは横向きで遊んでください。試作版：絵はすべてコードで描いた仮のドット絵です。</p>
+      </div>
+    </section>
+
+    <!-- ===== 第1章 ステージ選択 ===== -->
+    <section id="scSelect" class="screen" hidden>
+      <header class="selHead">
+        <div><p class="eyebrow" id="selChap">第1章</p><h2 id="selChapName">はじまりの村を侵略せよ</h2><div class="chapTabs" id="chapTabs"></div></div>
+        <div class="selInfo">
+          <span class="pill stone">魔界石 <b id="selStones">0</b></span>
+          <span class="pill">大魔王 Lv<b id="selLord">1</b></span>
+        </div>
+      </header>
+      <div id="stageMap"></div>
+      <footer class="selFoot">
+        <button class="small" id="btnToTitle" type="button">タイトルへ</button>
+        <button class="small" id="btnReplayOpening" type="button">オープニングを見る</button>
+        <button class="big" id="btnUpgrade" type="button">魔王軍を強化</button>
+      </footer>
+    </section>
+
+    <!-- ===== 偵察報告（ステージ選択 → 偵察 → 編成 → 出撃） ===== -->
+    <section id="scRecon" class="screen" hidden>
+      <header class="selHead">
+        <div><p class="eyebrow">偵察報告</p><h2 id="reconTitle"></h2></div>
+        <button class="small" id="btnReconSkip" type="button">スキップ ≫</button>
+      </header>
+      <div class="reconMsg"><canvas id="reconFace" width="160" height="160"></canvas><div><span class="who" id="reconWho"></span><p id="reconText"></p></div></div>
+      <ul class="enemyList" id="reconEnemies"></ul>
+      <footer class="selFoot"><button class="small" id="btnReconBack" type="button">もどる</button><button class="big" id="btnReconNext" type="button">編成へ</button></footer>
+    </section>
+
+    <!-- ===== 編成 ===== -->
+    <section id="scForm" class="screen" hidden>
+      <header class="selHead">
+        <div><p class="eyebrow">出撃の編成</p><h2 id="formTitle"></h2></div>
+        <div class="selInfo"><span class="pill">大魔王 Lv<b id="formLord">1</b></span><button class="small" id="btnEnemyInfo" type="button">敵軍情報</button></div>
+      </header>
+      <div class="formRow">
+        <div class="formGroup"><h3>通常モンスター <b id="formUnitCount"></b></h3><div class="formSlots" id="formUnits"></div></div>
+        <div class="formGroup boss"><h3>幹部 <b id="formBossCount"></b></h3><div class="formSlots" id="formBosses"></div></div>
+      </div>
+      <div class="formPool"><h3>控え<span>タップで編成に入れる／編成の魔物をタップで外す</span></h3><div class="poolList" id="formPool"></div></div>
+      <footer class="selFoot"><button class="small" id="btnFormBack" type="button">もどる</button><span class="formHint" id="formHint" role="status"></span><button class="big" id="btnSortie" type="button">出撃！</button></footer>
+    </section>
+
+    <!-- ===== 会話 ===== -->
+    <section id="scTalk" class="screen talk" hidden>
+      <div class="talkBg" id="talkBg"></div>
+      <canvas class="portrait left" id="ptLeft" width="480" height="480"></canvas>
+      <canvas class="portrait right" id="ptRight" width="480" height="480"></canvas>
+      <button class="skip" id="btnSkip" type="button">スキップ ≫</button>
+      <div class="talkBox" id="talkBox">
+        <span class="who" id="talkWho"></span>
+        <p id="talkText"></p>
+        <span class="next" aria-hidden="true">▼</span>
+      </div>
+    </section>
+
+    <!-- ===== 結果 ===== -->
+    <section id="scResult" class="screen" hidden>
+      <div class="panel">
+        <h2 id="resTitle"></h2>
+        <p id="resText"></p>
+        <div class="resStones" id="resStones"></div>
+        <ul class="resGains" id="resGains"></ul>
+        <dl id="resStats"></dl>
+        <div class="row" id="resButtons"></div>
+      </div>
+    </section>
+
+    <!-- ===== ユニット解放 ===== -->
+    <section id="scUnlock" class="screen" hidden>
+      <div class="panel unlock">
+        <p class="eyebrow" id="unlockEyebrow">新しい魔物が仲間になった！</p>
+        <canvas id="unlockArt" width="240" height="200"></canvas>
+        <h3 id="unlockName"></h3>
+        <p id="unlockRole"></p>
+        <dl id="unlockStats"></dl>
+        <div class="row"><button class="big" id="btnUnlockNext" type="button">つぎへ</button></div>
+      </div>
+    </section>
+
+    <!-- ===== 強化 ===== -->
+    <section id="scUpgrade" class="screen" hidden>
+      <header class="selHead">
+        <div><p class="eyebrow">魔王軍を強化</p><h2>魔界石で魔物と大魔王を強くする</h2></div>
+        <div class="selInfo"><span class="pill stone">魔界石 <b id="upStones">0</b></span></div>
+      </header>
+      <div class="upGrid">
+        <div class="upCol"><h3>魔物</h3><ul id="upUnits"></ul></div>
+        <div class="upCol"><h3>大魔王の力</h3><ul id="upGlobal"></ul></div>
+      </div>
+      <footer class="selFoot"><button class="big" id="btnUpBack" type="button">もどる</button></footer>
+    </section>
+
+    <!-- ===== 敵軍情報（編成画面から） ===== -->
+    <div id="ovEnemy" class="overlay" hidden>
+      <div class="panel wide">
+        <h2 id="ovEnemyTitle">敵軍情報</h2>
+        <ul class="enemyList" id="ovEnemyList"></ul>
+        <div class="row"><button class="big" id="btnEnemyClose" type="button">とじる</button></div>
+      </div>
+    </div>
+
+    <!-- ===== 一時停止・確認 ===== -->
+    <!-- 画面の手順つき説明（編成・強化） -->
+    <div id="stutor" hidden>
+      <div class="tutorBox"><canvas id="stutorFace" width="120" height="120"></canvas><div><span class="who" id="stutorWho"></span><p id="stutorText"></p><span class="tnext" id="stutorNext"></span></div>
+        <button type="button" class="tskip" id="btnSTutorSkip">説明をとばす</button></div>
+    </div>
+
+    <!-- 特殊イベントの選択肢 -->
+    <div id="ovChoice" class="overlay" hidden>
+      <div class="panel">
+        <p class="eyebrow">どうする？</p>
+        <div class="row choiceRow"><button class="big" id="btnChoiceA" type="button"></button><button class="big sub" id="btnChoiceB" type="button"></button></div>
+      </div>
+    </div>
+
+    <!-- 新機能の解放画面（大魔王の魔力回復など） -->
+    <div id="ovFeature" class="overlay" hidden>
+      <div class="panel feature">
+        <p class="eyebrow">新機能解放</p>
+        <h2 id="featTitle"></h2>
+        <p id="featText"></p>
+        <ul class="gains" id="featItems"></ul>
+        <div class="row"><button class="big" id="btnFeatNext" type="button">つぎへ</button></div>
+      </div>
+    </div>
+
+    <!-- 最終章解放演出（9-4 の初回クリア）。背景は承認済み天空背景（SKIN.images.finalBg・未着のあいだは夜空の色） -->
+    <div id="ovFinal" class="overlay final" hidden>
+      <div class="finalCard">
+        <p class="finEyebrow" id="finEyebrow"></p>
+        <p class="finChapter" id="finChapter"></p>
+        <h2 class="finName" id="finName"></h2>
+        <p class="finText" id="finText"></p>
+        <p class="finEnd" id="finEnd" hidden></p>
+        <div class="row"><button class="big" id="btnFinalNext" type="button">つぎへ</button></div>
+      </div>
+    </div>
+
+    <!-- エンディングのムービー（保留中。SKIN.movies.ending に動画を入れたときだけ使う） -->
+    <div id="ovMovie" class="overlay movie" hidden>
+      <video id="movieVideo" playsinline></video>
+      <button class="small" id="btnMovieSkip" type="button">スキップ ≫</button>
+    </div>
+
+    <!-- 進化の確認（強化画面から） -->
+    <div id="ovEvolve" class="overlay" hidden>
+      <div class="panel evolve">
+        <p class="eyebrow">進化</p>
+        <h2 id="evoTitle"></h2>
+        <div class="evoArt"><canvas id="evoFrom" width="110" height="92"></canvas><span>▶</span><canvas id="evoTo" width="130" height="108"></canvas></div>
+        <table class="evoTable" id="evoTable"></table>
+        <p class="evoNote">進化するとレベルが「今のレベル−4」に下がります（それでも今より強くなります）。魔界石 <b id="evoCost"></b> を使います。<span id="evoBack">元の姿には戻せません。</span></p>
+        <div class="row"><button class="big" id="btnEvoYes" type="button">進化する</button><button class="big sub" id="btnEvoNo" type="button">やめる</button></div>
+      </div>
+    </div>
+
+    <!-- オープニングのスライド（初回だけ） -->
+    <section id="scSlides" class="screen" hidden>
+      <img id="slideImg" alt="">
+      <div class="slideBand"><p id="slideText"></p><span class="slideNext">タップで次へ ▼</span></div>
+      <button class="small" id="btnSlideSkip" type="button">スキップ ≫</button>
+    </section>
+
+    <div id="ovPause" class="overlay" hidden>
+      <div class="panel">
+        <h2>一時停止</h2>
+        <div class="row">
+          <button class="big" id="btnResume" type="button">つづける</button>
+          <button class="big sub" id="btnRetryP" type="button">やりなおす</button>
+          <button class="big sub" id="btnQuit" type="button">ステージ選択へ</button>
+        </div>
+      </div>
+    </div>
+    <div id="ovConfirm" class="overlay" hidden>
+      <div class="panel">
+        <h2>データをリセットしますか？</h2>
+        <p>クリアしたステージ・解放した魔物・魔界石・強化がすべて消えます。元には戻せません。</p>
+        <div class="row">
+          <button class="big danger" id="btnResetYes" type="button">リセットする</button>
+          <button class="big sub" id="btnResetNo" type="button">やめる</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="rotate">
+    <div class="phone"></div>
+    <p>スマホを<b>横向き</b>にしてください</p>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
