@@ -160,18 +160,44 @@ export const EVOLVE_FORM2 = { stat: 2.5, cost: { mass: 1.2, vanguard: 1.4, tank:
 const form2 = (key, ready) => { const b = UNITS[key]; return { ...b, tier: 2, evolvesTo: null, ready, baseKey: key, hp: Math.round(b.hp * EVOLVE_FORM2.stat), atk: Math.round(b.atk * EVOLVE_FORM2.stat), cost: Math.round(b.cost * EVOLVE_FORM2.cost[key] / 10) * 10 }; };
 export const EVOLUTIONS = {
   mass_2: form2('mass', true), vanguard_2: form2('vanguard', true), tank_2: form2('tank', true), ranged_2: form2('ranged', true),
-  fast_2: form2('fast', true), area_2: form2('area', true), healer_2: form2('healer', true),
-  mallet_2: { ...form2('mallet', true), evolvesTo: ['mallet_3a', 'mallet_3b'] }, // 第3形態（下の2つ）は保留・使わない
-  mallet_3a: { // 第3形態A：超巨大木槌の一撃特化
-    role: '後衛狙撃（一撃）', attackType: 'sniper', target: 'backline', line: 'back', tier: 3, evolvesTo: null, growth: GROWTH, ready: false,
-    cost: 620, cooldown: 20, hp: 240, atk: 560, range: 400, speed: 28, interval: 4.6, windup: 1.9, kb: 5, attack: 'single', projectile: 'hammer', size: 1.0,
-  },
-  mallet_3b: { // 第3形態B：複数の木槌を連続投擲
-    role: '後衛狙撃（連投）', attackType: 'sniper', target: 'backline', line: 'back', tier: 3, evolvesTo: null, growth: GROWTH, ready: false,
-    cost: 620, cooldown: 20, hp: 240, atk: 170, range: 380, speed: 30, interval: 4.2, windup: 1.4, kb: 2, attack: 'single', projectile: 'hammer', size: 1.0,
-    hits: 3, hitGap: 0.3,
-  },
+  fast_2: form2('fast', true), area_2: form2('area', true), healer_2: form2('healer', true), mallet_2: form2('mallet', true),
 };
+// 第2形態の次は第3形態A／B（最終進化・分岐）
+for (const k of ['mass', 'vanguard', 'tank', 'ranged', 'fast', 'area', 'healer', 'mallet']) EVOLUTIONS[k + '_2'].evolvesTo = [k + '_3a', k + '_3b'];
+
+/* 第3形態（最終進化・2026-11-26 承認。docs/FINAL_EVOLUTION.md）。A＝純粋強化（第2形態の1.6倍）、B＝特殊能力（1.3倍＋能力）。
+ * 召喚の魔力は個別。能力の数値は仮（プレイテストで調整） */
+const form3 = (base, variant, cost, over = {}) => {
+  const f2 = EVOLUTIONS[base + '_2']; const k = variant === 'a' ? 1.6 : 1.3;
+  return { ...f2, tier: 3, evolvesTo: null, ready: true, variant, hp: Math.round(f2.hp * k), atk: Math.round(f2.atk * k), cost, ...over };
+};
+const F2 = (k) => EVOLUTIONS[k + '_2'];
+Object.assign(EVOLUTIONS, {
+  // グミ：A ギガグミ（大きく硬い・安いまま）／B ポイズングミ（毒）
+  mass_3a: form3('mass', 'a', 80, { hp: Math.round(F2('mass').hp * 2.2), atk: Math.round(F2('mass').atk * 1.3), size: 1.2 }),
+  mass_3b: form3('mass', 'b', 70, { poison: { duration: 5, ratio: 0.3 } }),
+  // 闇の騎士：A 冥獄騎士（攻撃も速い）／B 吸魂騎士（与えたダメージの25%を回復）
+  vanguard_3a: form3('vanguard', 'a', 250, { interval: Math.round(F2('vanguard').interval * 0.85 * 100) / 100 }),
+  vanguard_3b: form3('vanguard', 'b', 240, { lifesteal: 0.25 }),
+  // 岩男：A 黒鋼巨人（ダメージ軽減30%）／B 棘晶巨人（反撃：近接30%・遠距離15%）
+  tank_3a: form3('tank', 'a', 720, { guard: 0.3 }),
+  tank_3b: form3('tank', 'b', 660, { thorns: { melee: 0.3, ranged: 0.15 } }),
+  // 弓ゴブリン：A 剛弩（射程も伸びる）／B 爆弩（当たった敵のまわり半径70に60%）
+  ranged_3a: form3('ranged', 'a', 310, { range: Math.round(F2('ranged').range * 1.15) }),
+  ranged_3b: form3('ranged', 'b', 330, { splash: { radius: 70, ratio: 0.6 } }),
+  // こうもり：A テンペスト（速い）／B サンダー（急降下で1秒気絶・8秒に1回）
+  fast_3a: form3('fast', 'a', 150, { speed: Math.round(F2('fast').speed * 1.2), interval: Math.round(F2('fast').interval * 0.85 * 100) / 100 }),
+  fast_3b: form3('fast', 'b', 160, { stunHit: { duration: 1, every: 8 } }),
+  // 魔法使い：A 獄炎（範囲も広い）／B 氷獄（当たった敵を3秒、7割の速さに）
+  area_3a: form3('area', 'a', 540, { range: Math.round(F2('area').range * 1.15) }),
+  area_3b: form3('area', 'b', 520, { slowHit: { duration: 3, factor: 0.7 } }),
+  // 森のお化け：A 生命樹（回復を強く・広く・速く）／B 守護樹（回復はそのまま＋仲間1体に最大HPの20%の盾・12秒ごと）
+  healer_3a: form3('healer', 'a', 400, { heal: { every: 3.5, ratio: 0.24, radius: 220 } }),
+  healer_3b: form3('healer', 'b', 380, { skills: [{ id: 'barrier', name: '守護の盾', type: 'barrier', every: 12, first: 4, windup: 0.5, recover: 0.3, radius: 220, ratio: 0.2, duration: 10 }] }),
+  // 木槌小鬼：A 破城槌鬼（一撃が重い）／B 連槌鬼（木槌3本を別々の後衛へ・1本は破城槌鬼の約40%）
+  mallet_3a: form3('mallet', 'a', 760),
+  mallet_3b: form3('mallet', 'b', 720, { multi: 3, atk: Math.round(F2('mallet').atk * 1.6 * 0.4) }),
+});
 
 export const ALL_DEMONS = { ...UNITS, ...BOSSES, ...EVOLUTIONS };
 // 2026-11-25：通常モンスターは8体。プチデビル（special）は外した（データは残す）

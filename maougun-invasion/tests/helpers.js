@@ -16,6 +16,8 @@ export function profileFor(stageId, upgraded = false, over = {}) {
   if (p.stages['8-4'] && p.stages['8-4'].cleared) applyUltimate(p); // 第8章のあとは究極進化ずみ
   // 第7章からは「半分くらい進化させた」想定（バランス確認の基準・2026-11-25）：闇の騎士・弓ゴブリン・魔法使いを第2形態Lv1に
   if (p.stages['6-3'] && p.stages['6-3'].cleared && !over.noEvolve) for (const k of ['vanguard', 'ranged', 'area']) evolveUnit(p, k, k + '_2');
+  // 8-4 のあとは「最終進化 2〜3体」の想定（2026-11-27）：闇の騎士A・弓ゴブリンB・魔法使いA
+  if (p.stages['8-4'] && p.stages['8-4'].cleared && !over.noEvolve) for (const t of ['vanguard_3a', 'ranged_3b', 'area_3a']) evolveUnit(p, t.split('_')[0], t);
   p.stones = 0;
   if (upgraded) {
     const plan = { '1-1': [], '1-2': ['vanguard'], '1-3': ['vanguard', 'area'], '1-4': ['vanguard', 'area', 'vanguard'], '1-5': ['vanguard', 'area', 'vanguard', 'tank', 'area'] };

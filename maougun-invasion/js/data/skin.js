@@ -17,7 +17,8 @@ export const SKIN = {
     fast: 'こうもり', area: '魔法使い', healer: '森のお化け',
     special: 'プチデビル', // 2026-11-24：既存作品名と重なる旧名から変更
     mallet: '木槌小鬼', // 2026-11-24 追加の後衛狙撃型（仮称）。正式名はビジュアル制作室で確定
-    mallet_3a: '木槌小鬼（一撃）', mallet_3b: '木槌小鬼（連投）', // 進化形（仮称）
+    // 2026-11-27：最終進化16体（maougun_final_evolutions.zip・manifest の名前）
+    mass_3a: 'ギガグミ', mass_3b: 'ポイズングミ', vanguard_3a: '冥獄騎士', vanguard_3b: '吸魂騎士', tank_3a: '黒鋼巨人', tank_3b: '棘晶巨人', ranged_3a: '剛弩ゴブリン', ranged_3b: '爆弩ゴブリン', fast_3a: 'テンペストイーグル', fast_3b: 'サンダーイーグル', area_3a: '獄炎魔導師', area_3b: '氷獄魔導師', healer_3a: '生命樹の精霊', healer_3b: '守護樹の精霊', mallet_3a: '破城槌鬼', mallet_3b: '連槌鬼',
     // 2026-11-25：第2形態の正式名（ユーザー指定）。森のお化け・木槌小鬼はデザイン待ち
     mass_2: 'ハードグミ', vanguard_2: '悪魔の騎士', tank_2: '鋼男', fast_2: 'イーグル', ranged_2: '弩ゴブリン', area_2: '星炎の魔導士', healer_2: '花灯りの精霊', mallet_2: '鉄槌鬼',
     charger: 'ワニ将軍', // 2026-11-25：幹部1体目（ユーザーのデザイン）。内部キーは charger のまま
@@ -33,6 +34,23 @@ export const SKIN = {
   // エンディングのムービー（保留中・2026-11-25）。{ src: 'assets/approved/movie/…mp4', replaces: ['lines'] } を入れると、その段の代わりに動画を流す
   movies: { ending: null },
   sprites: {
+    // 2026-11-27：最終進化16体（maougun_final_evolutions.zip・透過・左向き・静止画）。倍率は下の SIZE_CLASS から自動
+    mass_3a: { src: 'assets/approved/units/mass_3a.png', frameW: 1536, frameH: 1024, frames: { walk: [0], windup: 0, attack: 0 }, footY: 898, facing: 'left', scale: 0.05 },
+    mass_3b: { src: 'assets/approved/units/mass_3b.png', frameW: 1536, frameH: 1024, frames: { walk: [0], windup: 0, attack: 0 }, footY: 898, facing: 'left', scale: 0.05 },
+    vanguard_3a: { src: 'assets/approved/units/vanguard_3a.png', frameW: 1295, frameH: 1215, frames: { walk: [0], windup: 0, attack: 0 }, footY: 1143, facing: 'left', scale: 0.05 },
+    vanguard_3b: { src: 'assets/approved/units/vanguard_3b.png', frameW: 1295, frameH: 1215, frames: { walk: [0], windup: 0, attack: 0 }, footY: 1143, facing: 'left', scale: 0.05 },
+    tank_3a: { src: 'assets/approved/units/tank_3a.png', frameW: 1312, frameH: 1199, frames: { walk: [0], windup: 0, attack: 0 }, footY: 1116, facing: 'left', scale: 0.05 },
+    tank_3b: { src: 'assets/approved/units/tank_3b.png', frameW: 1312, frameH: 1199, frames: { walk: [0], windup: 0, attack: 0 }, footY: 1116, facing: 'left', scale: 0.05 },
+    ranged_3a: { src: 'assets/approved/units/ranged_3a.png', frameW: 1254, frameH: 1254, frames: { walk: [0], windup: 0, attack: 0 }, footY: 1182, facing: 'left', scale: 0.05 },
+    ranged_3b: { src: 'assets/approved/units/ranged_3b.png', frameW: 1254, frameH: 1254, frames: { walk: [0], windup: 0, attack: 0 }, footY: 1182, facing: 'left', scale: 0.05 },
+    fast_3a: { src: 'assets/approved/units/fast_3a.png', frameW: 1536, frameH: 1024, frames: { walk: [0], windup: 0, attack: 0 }, footY: 884, facing: 'left', scale: 0.05, hover: 25 },
+    fast_3b: { src: 'assets/approved/units/fast_3b.png', frameW: 1536, frameH: 1024, frames: { walk: [0], windup: 0, attack: 0 }, footY: 970, facing: 'left', scale: 0.05, hover: 25 },
+    area_3a: { src: 'assets/approved/units/area_3a.png', frameW: 1312, frameH: 1199, frames: { walk: [0], windup: 0, attack: 0 }, footY: 1127, facing: 'left', scale: 0.05 },
+    area_3b: { src: 'assets/approved/units/area_3b.png', frameW: 1312, frameH: 1199, frames: { walk: [0], windup: 0, attack: 0 }, footY: 1127, facing: 'left', scale: 0.05 },
+    healer_3a: { src: 'assets/approved/units/healer_3a.png', frameW: 1254, frameH: 1254, frames: { walk: [0], windup: 0, attack: 0 }, footY: 1207, facing: 'left', scale: 0.05 },
+    healer_3b: { src: 'assets/approved/units/healer_3b.png', frameW: 1254, frameH: 1254, frames: { walk: [0], windup: 0, attack: 0 }, footY: 1206, facing: 'left', scale: 0.05 },
+    mallet_3a: { src: 'assets/approved/units/mallet_3a.png', frameW: 1312, frameH: 1199, frames: { walk: [0], windup: 0, attack: 0 }, footY: 1176, facing: 'left', scale: 0.05 },
+    mallet_3b: { src: 'assets/approved/units/mallet_3b.png', frameW: 1312, frameH: 1199, frames: { walk: [0], windup: 0, attack: 0 }, footY: 1177, facing: 'left', scale: 0.05 },
     // 2026-11-26：ヴェイル（霧の幹部・11618.png・1199×1312・透過）。顔が左を向いているので左向き
     mist: { src: 'assets/approved/units/mist.png', frameW: 1199, frameH: 1312, frames: { walk: [0], windup: 0, attack: 0 }, footY: 1261, facing: 'left', scale: 0.1 },
     // 2026-11-26：死神（1000021155.png・1214×1295・透過・左向き）
@@ -385,13 +403,14 @@ export const SIZE_CLASS = {
   take: 'XL', sai: 'XL', yanai: 'XL', holy_dragon: ['XL', 150], // 2026-11-26：たけ・サイ・ヤナイもボスと同じ 110
 };
 // 各画像の「絵の上端」（不透明部分の一番上・画像の上からの距離。Claude Code が画像から計測）
-const INK_TOP = {"mist": 72, "reaper": 31, "elemental": 25, "mallet_2": 68, "healer_2": 38, "mass_2": 121, "vanguard_2": 58, "tank_2": 50, "fast_2": 67, "ranged_2": 90, "area_2": 69, "heavy_captain": 16, "elite_mage": 15, "mage_captain": 16, "royal_commander": 15, "sky_commander": 16, "sky_guardian": 15, "naval_soldier": 15, "harbor_captain": 15, "heavy": 15, "engineer": 58, "turret": 15, "commander": 29, "ancient_soldier": 15, "guardian": 14, "ancient_priest": 15, "ancient_king": 15, "paladin": 15, "high_priest": 14, "holy_captain": 15, "mage": 15, "ice_mage": 15, "magic_knight": 15, "archmage": 15, "royal_guard": 15, "royal_guard_cavalry": 15, "supreme_commander": 25, "sky_guard": 15, "celestial_mage": 15, "celestial_knight": 15, "holy_dragon": 165, "take": 14, "sai": 14, "yanai": 69, "militia_captain": 7, "captain": 7, "knight": 7, "court_mage": 7, "knight_commander": 6, "ord": 9, "charger": 66, "mallet": 21, "area": 64, "fast": 76, "mass": 241, "vanguard": 10, "tank": 48, "ranged": 49, "healer": 47, "archer": 8, "militia": 8, "priest": 8, "rider": 9, "shield": 8, "swordsman": 8, "king": 8};
+const INK_TOP = {"mass_3a": 73, "mass_3b": 19, "vanguard_3a": 16, "vanguard_3b": 16, "tank_3a": 13, "tank_3b": 13, "ranged_3a": 138, "ranged_3b": 16, "fast_3a": 13, "fast_3b": 13, "area_3a": 13, "area_3b": 17, "healer_3a": 13, "healer_3b": 52, "mallet_3a": 13, "mallet_3b": 13, "mist": 72, "reaper": 31, "elemental": 25, "mallet_2": 68, "healer_2": 38, "mass_2": 121, "vanguard_2": 58, "tank_2": 50, "fast_2": 67, "ranged_2": 90, "area_2": 69, "heavy_captain": 16, "elite_mage": 15, "mage_captain": 16, "royal_commander": 15, "sky_commander": 16, "sky_guardian": 15, "naval_soldier": 15, "harbor_captain": 15, "heavy": 15, "engineer": 58, "turret": 15, "commander": 29, "ancient_soldier": 15, "guardian": 14, "ancient_priest": 15, "ancient_king": 15, "paladin": 15, "high_priest": 14, "holy_captain": 15, "mage": 15, "ice_mage": 15, "magic_knight": 15, "archmage": 15, "royal_guard": 15, "royal_guard_cavalry": 15, "supreme_commander": 25, "sky_guard": 15, "celestial_mage": 15, "celestial_knight": 15, "holy_dragon": 165, "take": 14, "sai": 14, "yanai": 69, "militia_captain": 7, "captain": 7, "knight": 7, "court_mage": 7, "knight_commander": 6, "ord": 9, "charger": 66, "mallet": 21, "area": 64, "fast": 76, "mass": 241, "vanguard": 10, "tank": 48, "ranged": 49, "healer": 47, "archer": 8, "militia": 8, "priest": 8, "rider": 9, "shield": 8, "swordsman": 8, "king": 8};
 export function displayHeight(key) {
-  const evolved = /_2$/.test(key); const base = evolved ? key.slice(0, -2) : key;
+  const m = /_(2|3a|3b)$/.exec(key); const evolved = !!m; const base = m ? key.slice(0, -m[0].length) : key;
+  if (key === 'mass_3a') return SIZE_PX.L * 0.75; // ギガグミ：大（横に広い形なので背は低め）
   const c = SIZE_CLASS[base]; if (!c) return null;
   const [cls, v] = Array.isArray(c) ? c : [c];
   const h = cls === 'XL' && v ? v : SIZE_PX[cls] * (v && cls !== 'XL' ? v : 1);
-  return evolved ? h * 1.12 : h;
+  return !m ? h : m[1] === '2' ? h * 1.12 : h * 1.25; // 第2形態 ×1.12・第3形態 ×1.25
 }
 for (const [k, sp] of Object.entries(SKIN.sprites)) {
   const h = displayHeight(k); if (!h || INK_TOP[k] == null) continue;

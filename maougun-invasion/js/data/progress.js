@@ -176,7 +176,7 @@ export function applyResult(p, stageId, result, time) {
   if (stageId === 'ex-1' && result === 'win' && p.events && p.events.ruin) p.events.ruin.rematches = (p.events.ruin.rematches || 0) + 1;
   if (result === 'win') {
     out.firstClear = !rec.cleared;
-    out.stones = out.firstClear ? stage.reward.stones : Math.round(stage.reward.stones * 0.4);
+    out.stones = out.firstClear ? stage.reward.stones : Math.round(stage.reward.stones * (conquestDone(p) ? 0.6 : 0.4)); // 世界征服のあとは60%（2026-11-26）
     rec.cleared = true;
     rec.clears++;
     rec.bestTime = rec.bestTime == null ? time : Math.min(rec.bestTime, time);
@@ -364,7 +364,7 @@ export function resolveFurnace(furnace, p) {
 // ---------- 進化 ----------
 // 進化できる段階の上限：魔力結晶の前は進化なし（1）、魔力結晶のあとは上位（2）、究極進化のあとは最上位（3）まで
 export function evolveTierCap(p) { return ultimateDone(p) ? 3 : crystalDone(p) ? 2 : 1; }
-export const EVOLVE_NEED = { level: 5, stones: (tier) => (tier >= 3 ? 1200 : 800) }; // 2026-11-25 企画回答 Ver.1（仮の数値）：基本形Lv5以上＋魔界石800。第3形態は保留
+export const EVOLVE_NEED = { level: 5, stones: (tier) => (tier >= 3 ? 1500 : 800) }; // 2026-11-26：最終進化は1500（承認） // 2026-11-25 企画回答 Ver.1（仮の数値）：基本形Lv5以上＋魔界石800。第3形態は保留
 export const EVOLVED_LEVEL_COST = 1.5; // 進化形のレベル上げは基本形の1.5倍（仮）
 // そのモンスターの今のレベル上げ費用（進化形は高い）
 export function levelCostFor(p, key) { const u = p.units[key]; const c = unitLevelCost(u.level); return u && u.form > 0 ? Math.round(c * EVOLVED_LEVEL_COST / 10) * 10 : c; }
@@ -416,4 +416,20 @@ export function joinBoss(p, stageId) {
   const r = addToFormation(p, jb);
   if (!r.ok && r.reason === 'full') { const f = normalizeFormation(p); f.bosses[f.bosses.length - 1] = jb; }
   return first ? jb : null;
+}
+
+// ---------- 最終進化の分岐の入れかえ（2026-11-26 承認）：魔界石600で A⇔B。レベルはそのまま・何度でも ----------
+export const BRANCH_SWITCH_COST = 600;
+export function branchSwitchTarget(p, key) {
+  const u = p.units[key]; const fk = u && u.formKey;
+  if (!fk || !/_3[ab]$/.test(fk)) return null;
+  const to = fk.endsWith('a') ? fk.slice(0, -1) + 'b' : fk.slice(0, -1) + 'a';
+  return EVOLUTIONS[to] && EVOLUTIONS[to].ready !== false ? to : null;
+}
+export function switchBranch(p, key) {
+  const to = branchSwitchTarget(p, key);
+  if (!to) return { ok: false, reason: 'invalid' };
+  if (p.stones < BRANCH_SWITCH_COST) return { ok: false, reason: 'stones', need: BRANCH_SWITCH_COST - p.stones };
+  p.stones -= BRANCH_SWITCH_COST; p.units[key].formKey = to;
+  return { ok: true, to, cost: BRANCH_SWITCH_COST };
 }

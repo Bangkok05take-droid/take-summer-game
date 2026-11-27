@@ -1,0 +1,17 @@
+﻿filename,lineage,variant,provisional_name,width_px,height_px,facing,design_status
+mass_3a.png,mass,A,ギガグミ,1536,1024,left,approved
+mass_3b.png,mass,B,ポイズングミ,1536,1024,left,approved
+vanguard_3a.png,vanguard,A,冥獄騎士,1295,1215,left,approved
+vanguard_3b.png,vanguard,B,吸魂騎士,1295,1215,left,approved
+tank_3a.png,tank,A,黒鋼巨人,1312,1199,left,approved
+tank_3b.png,tank,B,棘晶巨人,1312,1199,left,approved
+ranged_3a.png,ranged,A,剛弩ゴブリン,1254,1254,left,approved
+ranged_3b.png,ranged,B,爆弩ゴブリン,1254,1254,left,approved
+fast_3a.png,fast,A,テンペストイーグル,1536,1024,left,approved
+fast_3b.png,fast,B,サンダーイーグル,1536,1024,left,approved
+area_3a.png,area,A,獄炎魔導師,1312,1199,left,approved
+area_3b.png,area,B,氷獄魔導師,1312,1199,left,approved
+healer_3a.png,healer,A,生命樹の精霊,1254,1254,left,approved
+healer_3b.png,healer,B,守護樹の精霊,1254,1254,left,approved
+mallet_3a.png,mallet,A,破城槌鬼,1312,1199,left,approved
+mallet_3b.png,mallet,B,連槌鬼,1312,1199,left,approved

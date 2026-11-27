@@ -258,6 +258,14 @@ export class Battle {
   updateEntity(e, dt) {
     const d = e.def;
     // 鈍足（死神「時の砂」）：時間の進みが遅くなる＝歩く・攻撃する速さが落ちる（2026-11-26）
+    if (e.stunImmune > 0) e.stunImmune -= dt;
+    if (e.wasStunned && !(e.stun > 0)) { e.wasStunned = false; e.stunImmune = 3; }
+    if (e.poison > 0 && e.state !== 'dead') { // 毒：毎秒ダメージ
+      e.poison -= dt; e.poisonAcc += e.poisonDps * dt;
+      if (e.poisonAcc >= 1) { const d0 = Math.floor(e.poisonAcc); e.poisonAcc -= d0; this.poisonTick(e, d0); if (e.state === 'dead') return; }
+    }
+    if (e.barrierT > 0) { e.barrierT -= dt; if (e.barrierT <= 0) e.barrier = 0; }
+    if (e.stunHitCd > 0) e.stunHitCd -= dt;
     if (e.weak > 0) e.weak -= dt;     // 幻惑の霧（ヴェイル）：与えるダメージが減る
     if (e.shield > 0) e.shield -= dt; // 影の帳（ヴェイル）：受けるダメージが減る
     if (e.slow > 0) { e.slow -= dt; dt *= e.slowFactor || 0.5; }
@@ -343,6 +351,14 @@ export class Battle {
 
   healUnit(o, amt, src = null) {
     const before = o.hp;
+    // 回復の上限（2026-11-26 承認）：1体が回復できるのは1秒あたり最大HPの6%まで（4秒分までためておける）。敵味方とも
+    const cap = this.config.healCap ?? 0.06;
+    if (cap) {
+      const now = this.t; const max = o.maxHp * cap * 4;
+      if (o.healBank == null) { o.healBank = max; o.healAt = now; }
+      o.healBank = Math.min(max, o.healBank + (now - o.healAt) * o.maxHp * cap); o.healAt = now;
+      amt = Math.min(amt, o.healBank); o.healBank -= Math.max(0, Math.min(amt, o.maxHp - o.hp));
+    }
     o.hp = Math.min(o.maxHp, o.hp + amt);
     this.events.push({ type: 'heal', id: o.id, x: o.x, amount: Math.round(o.hp - before), side: o.side, lane: o.lane, src: src ? src.id : null, srcKey: src ? src.key : null });
   }
@@ -394,6 +410,11 @@ export class Battle {
       // 最初の相手を中心に、半径 radius の全員
       const cx = list[0].target.x;
       hits = this.targetsAhead(e, -12, d.range + 10 + radius).filter((h) => Math.abs(h.target.x - cx) <= radius || h.isBase && Math.abs(h.dist - list[0].dist) <= radius);
+    } else if (d.multi && d.target === 'backline') {
+      // 連槌鬼：木槌を multi 本。別々の敵の後衛へ（近い順）。足りなければ同じ相手へ重ねる。後衛がいなければ拠点へ
+      const units = list.filter((h) => !h.isBase);
+      if (!units.length) hits = [list[0]];
+      else { hits = []; for (let i = 0; i < d.multi; i++) hits.push(units[i % units.length]); }
     } else hits = area ? list : [list[0]];
 
     // flight [最短, 最長]：飛び道具が届くまでの秒数（距離で決まる）。ダメージは届いた瞬間に入る（2026-11-25）
@@ -413,7 +434,15 @@ export class Battle {
   applyHits(hits, dmg, e) {
     for (const h of hits) {
       if (h.isBase) this.damageBase(h.target, dmg, e);
-      else this.damageUnit(h.target, dmg, e, e.def.blowAway); // 届く前に倒れていたら damageUnit が何もしない
+      else {
+        this.damageUnit(h.target, dmg, e, e.def.blowAway); // 届く前に倒れていたら damageUnit が何もしない
+        // 爆発矢（爆弩ゴブリン）：当たった相手のまわりにも
+        const sp = e.def.splash;
+        if (sp) {
+          this.events.push({ type: 'blast', x: h.target.x, lane: h.target.lane, radius: sp.radius, side: e.side });
+          for (const o of this.entities) if (o !== h.target && o.side !== e.side && o.state !== 'dead' && Math.abs(o.x - h.target.x) <= sp.radius) this.damageUnit(o, Math.round(dmg * sp.ratio), e);
+        }
+      }
     }
   }
 
@@ -448,12 +477,31 @@ export class Battle {
     const healerAhead = () => this.targetsAhead(e, -12, s.reach).some((t) => !t.isBase && this.isHealerUnit(t.target));
     if (s.type === 'reap') return healerAhead();
     // 幻惑の霧：前方に敵がいれば。影の帳：近くの味方が傷ついていて、前方に敵がいるとき（ヴェイル・2026-11-26）
+    if (s.type === 'barrier') return this.targetsAhead(e, -12, 300).some((t) => !t.isBase) && this.entities.some((o) => o.side === e.side && o.state !== 'dead' && o.hp < o.maxHp * 0.9 && Math.abs(o.x - e.x) <= s.radius);
     if (s.type === 'weaken') return this.targetsAhead(e, -12, s.reach).some((t) => !t.isBase);
     if (s.type === 'veil') return this.targetsAhead(e, -12, s.reach || 300).some((t) => !t.isBase) && this.entities.some((o) => o.side === e.side && o.state !== 'dead' && o.hp < o.maxHp * 0.85 && Math.abs(o.x - e.x) <= s.radius);
     if (s.type === 'slow') return !this.targetsAhead(e, -12, s.reach).some((t) => !t.isBase && this.isHealerUnit(t.target)) && this.targetsAhead(e, -12, s.reach).some((t) => !t.isBase);
     return this.targetsAhead(e, -12, s.trigger ?? s.reach).some((t) => !t.isBase); // trigger：この距離まで近づいてから使う
   }
 
+  // 状態異常（2026-11-26 承認）：同じ種類は重ならない（強い・長いほうだけ）。ボス・勇者は時間が半分。気絶が解けたあと3秒はふたたび気絶しない
+  applyStun(o, dur) {
+    if (!o || o.state === 'dead' || o.stunImmune > 0) return false;
+    if (o.def.hero) dur /= 2;
+    o.stun = Math.max(o.stun || 0, dur); o.wasStunned = true;
+    return true;
+  }
+  applySlow(o, dur, factor) {
+    if (!o || o.state === 'dead') return;
+    if (o.def.hero) dur /= 2;
+    if (o.slow > 0 && (o.slowFactor ?? 1) < factor) { return; } // もっと強い鈍足がかかっている
+    if (o.slow > 0 && (o.slowFactor ?? 1) === factor) o.slow = Math.max(o.slow, dur); else { o.slow = dur; o.slowFactor = factor; }
+  }
+  applyPoison(o, dur, dps) {
+    if (!o || o.state === 'dead') return;
+    if (o.def.hero) dur /= 2;
+    o.poison = dur; o.poisonDps = Math.max(dps, o.poison > 0 ? o.poisonDps || 0 : 0); o.poisonAcc = o.poisonAcc || 0;
+  }
   isHealerUnit(o) { return !!(o.def && (o.def.heal || (o.def.skills || []).some((k) => k.type === 'heal'))); }
 
   useSkill(e, s) {
@@ -473,8 +521,7 @@ export class Battle {
     } else if (s.type === 'stun') {
       for (const t of this.targetsAhead(e, -12, s.reach)) {
         if (t.isBase || t.target.state === 'dead') continue;
-        t.target.stun = Math.max(t.target.stun, s.duration);
-        this.events.push({ type: 'stun', id: t.target.id, x: t.target.x, lane: t.target.lane, duration: s.duration });
+        if (this.applyStun(t.target, s.duration)) this.events.push({ type: 'stun', id: t.target.id, x: t.target.x, lane: t.target.lane, duration: s.duration });
       }
     } else if (s.type === 'weaken') {
       for (const t of this.targetsAhead(e, -12, s.reach)) {
@@ -483,6 +530,11 @@ export class Battle {
         this.events.push({ type: 'weaken', id: t.target.id, x: t.target.x, lane: t.target.lane });
       }
       this.events.push({ type: 'mist', x: e.x + e.dir * s.reach / 2, w: s.reach, side: e.side });
+    } else if (s.type === 'barrier') {
+      // 守護樹の精霊：いちばん傷ついた仲間1体に、最大HPの ratio 分の盾
+      let best = null;
+      for (const o of this.entities) if (o.side === e.side && o.state !== 'dead' && Math.abs(o.x - e.x) <= s.radius && (!best || o.hp / o.maxHp < best.hp / best.maxHp)) best = o;
+      if (best) { best.barrier = Math.round(best.maxHp * s.ratio); best.barrierT = s.duration; this.events.push({ type: 'barrier', id: best.id, x: best.x, lane: best.lane }); }
     } else if (s.type === 'veil') {
       for (const o of this.entities) {
         if (o.side !== e.side || o.state === 'dead' || Math.abs(o.x - e.x) > s.radius) continue;
@@ -493,7 +545,7 @@ export class Battle {
       // 時の砂：前方の敵の動きを遅くする
       for (const t of this.targetsAhead(e, -12, s.reach)) {
         if (t.isBase || t.target.state === 'dead') continue;
-        t.target.slow = Math.max(t.target.slow || 0, s.duration); t.target.slowFactor = s.factor;
+        this.applySlow(t.target, s.duration, s.factor);
         this.events.push({ type: 'slow', id: t.target.id, x: t.target.x, lane: t.target.lane, duration: s.duration });
       }
     } else if (s.type === 'reap') {
@@ -535,6 +587,10 @@ export class Battle {
     this.events.push({ type: 'baseHit', side: b.side, dmg, x: b.x });
   }
 
+  poisonTick(o, dmg) {
+    o.hp -= dmg; this.events.push({ type: 'hit', id: o.id, x: o.x, dmg, side: o.side, lane: o.lane, poison: true });
+    if (o.hp <= 0) this.kill(o);
+  }
   damageUnit(o, dmg, src, forceKb = false) {
     if (o.state === 'dead') return;
     const cut = o.def.guard || 0; // 被ダメージの軽減率
@@ -545,8 +601,19 @@ export class Battle {
       const thick = src.weak > (src.weakTotal || 6) / 2;
       if (this.rng() >= (thick ? src.hitThick : src.hitClear)) { this.events.push({ type: 'miss', id: o.id, x: o.x, side: o.side, lane: o.lane }); return; }
     }
-    dmg = Math.max(1, Math.round(dmg * (1 - cut)));
+    dmg = Math.max(1, Math.round(dmg * (1 - Math.min(0.6, cut)))); // 軽減は最大60%
+    // 盾（守護樹の精霊）：盾の分を先に減らす
+    if (o.barrier > 0) { const a = Math.min(o.barrier, dmg); o.barrier -= a; dmg -= a; this.events.push({ type: 'barrierHit', id: o.id, x: o.x, side: o.side, lane: o.lane }); if (dmg <= 0) return; }
     o.hp -= dmg;
+    if (src && src.def && src.state !== 'dead') {
+      const sd = src.def;
+      if (sd.lifesteal) this.healUnit(src, Math.round(dmg * sd.lifesteal), src);                // 吸魂
+      if (sd.poison) this.applyPoison(o, sd.poison.duration, sd.atk * sd.poison.ratio);       // 毒
+      if (sd.slowHit) this.applySlow(o, sd.slowHit.duration, sd.slowHit.factor);              // 氷獄
+      if (sd.stunHit && !(src.stunHitCd > 0) && o.hp > 0) { if (this.applyStun(o, sd.stunHit.duration)) { src.stunHitCd = sd.stunHit.every; this.events.push({ type: 'stun', id: o.id, x: o.x, lane: o.lane, duration: sd.stunHit.duration }); } } // 雷の急降下
+      // 反撃（棘晶巨人）：近くから殴られたら30%、遠くからは15%を返す
+      if (o.def.thorns && o.side !== src.side) { const near = (sd.range || 0) <= 60; const back = Math.round(dmg * (near ? o.def.thorns.melee : o.def.thorns.ranged)); if (back > 0) { src.hp -= back; this.events.push({ type: 'hit', id: src.id, x: src.x, dmg: back, side: src.side, lane: src.lane, thorns: true }); if (src.hp <= 0) this.kill(src); } }
+    }
     o.flash = 0.12;
     this.events.push({ type: 'hit', id: o.id, x: o.x, dmg, side: o.side, lane: o.lane });
     if (o.hp <= 0) { this.kill(o); return; }

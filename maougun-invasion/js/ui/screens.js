@@ -8,7 +8,7 @@ import { LOOT } from '../data/story.js';
 import {
   UPGRADES, UPGRADE_GROUPS, unitLevelCost, levelCostFor, MAX_UNIT_LEVEL, resolveUnit, isStageOpen, nextStage, lordLevel,
   slotsFor, slotUnlockLv, normalizeFormation, canForm, MAX_UNIT_SLOTS, MAX_BOSS_SLOTS, SLOTS,
-  crystalDone, evolutionChoices, evolveTierCap, EVOLVE_NEED,
+  crystalDone, evolutionChoices, evolveTierCap, EVOLVE_NEED, branchSwitchTarget, BRANCH_SWITCH_COST,
 } from '../data/progress.js';
 import { Renderer } from '../render/renderer.js';
 import { drawPortrait } from '../render/shapes.js';
@@ -195,7 +195,7 @@ export function renderUnlock(key) {
 }
 
 // ---------- 強化 ----------
-export function renderUpgrade(p, onUnit, onGlobal, onEvolve = null) {
+export function renderUpgrade(p, onUnit, onGlobal, onEvolve = null, onBranch) {
   $('upStones').textContent = p.stones;
   const ul = $('upUnits'); ul.innerHTML = '';
   for (const k of UNIT_ORDER) {
@@ -217,7 +217,15 @@ export function renderUpgrade(p, onUnit, onGlobal, onEvolve = null) {
       if (crystalDone(p)) {
         const ev = document.createElement('div'); ev.className = 'evo';
         const ch = evolutionChoices(p, k).filter((t) => EVOLUTIONS[t].tier <= evolveTierCap(p));
-        if (!ch.length) ev.textContent = now.tier >= evolveTierCap(p) && now.tier > 1 ? (now.tier >= 3 ? '進化：最上位まで進化ずみ' : '進化：上位まで進化ずみ') : '進化：進化先は準備中';
+        if (!ch.length && now.tier < 3) ev.textContent = now.tier === 2 && evolveTierCap(p) < 3 ? '最終進化：8-4 のあとに解放' : '進化：進化先は準備中';
+        // 最終進化ずみ：分岐の入れかえ（魔界石600・レベルはそのまま）
+        const sw = branchSwitchTarget(p, k);
+        if (sw) {
+          const b3 = document.createElement('button'); b3.type = 'button'; b3.dataset.branch = sw;
+          b3.textContent = `分岐を入れかえ：${SKIN.names[sw] || sw} ${BRANCH_SWITCH_COST}`; b3.disabled = p.stones < BRANCH_SWITCH_COST;
+          if (onBranch) b3.addEventListener('click', () => onBranch(k));
+          ev.appendChild(b3);
+        }
         for (const t of ch) {
           const b2 = document.createElement('button'); b2.type = 'button'; b2.dataset.evolve = t;
           const cost = EVOLVE_NEED.stones(EVOLUTIONS[t].tier);
@@ -355,5 +363,6 @@ export function renderEvolveConfirm(p, key, toKey) {
   $('evoTable').innerHTML = [['レベル', `Lv${now.level}`, `Lv${after.level}`], ['HP', now.hp, after.hp], ['攻撃', now.atk, after.atk], ['召喚の魔力', now.cost, after.cost]]
     .map(([k, a, b]) => `<tr><th>${k}</th><td>${a}</td><td>→</td><td><b>${b}</b></td></tr>`).join('');
   $('evoCost').textContent = EVOLVE_NEED.stones(EVOLUTIONS[toKey].tier);
+  $('evoBack').textContent = EVOLUTIONS[toKey].tier >= 3 ? `最終進化の分岐（A／B）は、あとで魔界石${BRANCH_SWITCH_COST}で入れかえられます。` : '元の姿には戻せません。';
   Renderer.thumb($('evoFrom'), now.skin, UNITS[key].size); Renderer.thumb($('evoTo'), toKey, UNITS[key].size);
 }

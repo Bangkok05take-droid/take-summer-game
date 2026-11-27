@@ -1214,3 +1214,59 @@ test('幹部・ヴェイル（霧）：9-4 のボス戦の前に加わる・幻�
   const { STORY } = await import('../js/data/story.js'); const bf = STORY.before['9-4'];
   assert.equal(bf.length, 14); assert.equal(bf[5].text, '大魔王様。いよいよ人間界を制圧する最後の戦いとなりました。'); assert.equal(bf[13].text, '仰せのままに。');
 });
+
+test('最終進化（第3形態）：8-4 のあと・第2形態Lv5・1500・Lv−4・A／B・分岐の入れかえ600（レベルそのまま）・名前と絵', async () => {
+  const pr = await import('../js/data/progress.js');
+  const { SKIN } = await import('../js/data/skin.js');
+  const keys = ['mass', 'vanguard', 'tank', 'ranged', 'fast', 'area', 'healer', 'mallet'];
+  for (const k of keys) for (const v of ['a', 'b']) { const t = `${k}_3${v}`; assert.ok(EVOLUTIONS[t] && EVOLUTIONS[t].tier === 3 && SKIN.names[t] && SKIN.sprites[t] && SKIN.sprites[t].facing === 'left', t); }
+  assert.deepEqual(keys.map((k) => [EVOLUTIONS[k + '_3a'].cost, EVOLUTIONS[k + '_3b'].cost]), [[80, 70], [250, 240], [720, 660], [310, 330], [150, 160], [540, 520], [400, 380], [760, 720]]);
+  assert.equal(SKIN.names.mass_3a, 'ギガグミ'); assert.equal(SKIN.names.mallet_3b, '連槌鬼');
+  const p = newProfile(); p.stones = 99999; pr.applyCrystal(p);
+  p.units.tank.level = 5; pr.tryEvolve(p, 'tank', 'tank_2'); p.units.tank.level = 9;
+  assert.equal(pr.tryEvolve(p, 'tank', 'tank_3a').reason, 'tier', '8-4 の前はできない');
+  pr.applyUltimate(p);
+  const s0 = p.stones; const r = pr.tryEvolve(p, 'tank', 'tank_3a');
+  assert.ok(r.ok && s0 - p.stones === 1500 && p.units.tank.level === 5, 'Lv9 → 第3形態Lv5');
+  const a = resolveUnit('tank', p); assert.equal(a.skin, 'tank_3a'); assert.ok(a.hp > resolveUnit('tank', { ...p, units: { ...p.units, tank: { ...p.units.tank, formKey: 'tank_2', form: 1 } } }).hp * 1.5);
+  const s1 = p.stones; assert.ok(pr.switchBranch(p, 'tank').ok); assert.equal(p.units.tank.formKey, 'tank_3b'); assert.equal(s1 - p.stones, 600); assert.equal(p.units.tank.level, 5, 'レベルはそのまま');
+  assert.ok(pr.switchBranch(p, 'tank').ok && p.units.tank.formKey === 'tank_3a', '何度でも入れかえ');
+  const st = memStore(); saveProfile(p, st); assert.equal(loadProfile(st).units.tank.formKey, 'tank_3a');
+  // クリア後の再クリア報酬は60%
+  const q = newProfile(); applyResult(q, '1-1', 'win', 1); const b0 = q.stones; applyResult(q, '1-1', 'win', 1); const r40 = q.stones - b0;
+  pr.markConquest(q); const b1 = q.stones; applyResult(q, '1-1', 'win', 1); assert.ok(q.stones - b1 > r40, '世界征服のあとは多くもらえる');
+});
+
+test('最終進化の特殊能力：毒・吸魂・反撃・爆発矢・雷の気絶・氷獄の鈍足・盾・連槌・回復の上限・ボス耐性', () => {
+  const mk = (key, formKey) => { const p = newProfile(); p.units[key].formKey = formKey; p.units[key].form = 2; return resolveUnit(key, p); };
+  const b = makeBattle({ stage: noEnemies(), deck: ['mass'] });
+  const at = (def, x) => { const e = b.spawn('demon', def, x); e.x = x; return e; };
+  const foe = (k, x) => { const h = b.spawnHuman(k); h.x = x; h.def = { ...h.def, speed: 0 }; h.maxHp = h.hp = 1e6; return h; };
+  // 毒：重ならず、時間がたつとHPが減る
+  const pg = at(mk('mass', 'mass_3b'), 900); const h1 = foe('swordsman', 880);
+  b.damageUnit(h1, 10, pg); b.damageUnit(h1, 10, pg); const hp1 = h1.hp; run(b, 2); assert.ok(h1.poison > 0 && h1.hp < hp1, '毒');
+  // 吸魂
+  const vs = at(mk('vanguard', 'vanguard_3b'), 900); vs.hp = vs.maxHp / 2; const v0 = vs.hp; b.damageUnit(foe('swordsman', 880), 400, vs); assert.ok(vs.hp > v0, '吸魂');
+  // 反撃：近接は30%
+  const th = at(mk('tank', 'tank_3b'), 900); const sw = b.spawnHuman('swordsman'); sw.x = 870; const sh = sw.hp; b.damageUnit(th, 100, sw); assert.equal(sh - sw.hp, 30, '反撃30%');
+  // 爆発矢：まわりにも
+  const bx = makeBattle({ stage: noEnemies(), deck: ['ranged'] }); const g = bx.spawn('demon', mk('ranged', 'ranged_3b'), 900); g.x = 900;
+  const t1 = bx.spawnHuman('swordsman'); t1.x = 800; t1.maxHp = t1.hp = 1e6; const t2 = bx.spawnHuman('swordsman'); t2.x = 760; t2.maxHp = t2.hp = 1e6;
+  bx.applyHits([{ target: t1, isBase: false, dist: 100 }], 100, g); assert.equal(1e6 - t2.hp, 60, '爆発 60%');
+  // 雷の気絶（8秒に1回）・ボスは半分・解けたあと3秒は気絶しない
+  const ea = at(mk('fast', 'fast_3b'), 900); const hero = foe('captain', 880);
+  b.damageUnit(hero, 10, ea); assert.equal(hero.stun, 0.5, 'ボスは半分'); hero.stun = 0; b.damageUnit(hero, 10, ea); assert.equal(hero.stun, 0, '8秒に1回');
+  run(b, 0.1); ea.stunHitCd = 0; b.damageUnit(hero, 10, ea); assert.equal(hero.stun, 0, '解けたあと3秒は気絶しない');
+  // 氷獄の鈍足（7割・3秒）と時の砂（半分）は強いほうが残る
+  const ic = at(mk('area', 'area_3b'), 900); const h2 = foe('swordsman', 860); h2.slow = 5; h2.slowFactor = 0.5; b.damageUnit(h2, 10, ic); assert.equal(h2.slowFactor, 0.5, '強いほうが残る');
+  const h3 = foe('swordsman', 850); b.damageUnit(h3, 10, ic); assert.equal(h3.slowFactor, 0.7);
+  // 盾
+  const ally = at(UNITS.tank && resolveUnit('tank', newProfile()), 950); ally.barrier = 100; ally.barrierT = 5; const ah = ally.hp; b.damageUnit(ally, 150, null); assert.equal(ah - ally.hp, Math.round(50 * (1 - (ally.def.guard || 0))) || 50);
+  // 連槌鬼：別々の後衛へ3本
+  const bm = makeBattle({ stage: noEnemies(), deck: ['mallet'] }); const rm = bm.spawn('demon', mk('mallet', 'mallet_3b'), 900); rm.x = 900;
+  const ps = ['priest', 'archer'].map((k, i) => { const h = bm.spawnHuman(k); h.x = 750 - i * 40; h.maxHp = h.hp = 1e6; h.def = { ...h.def, speed: 0 }; return h; });
+  bm.resolveAttack(rm); run(bm, 1); assert.ok(ps.every((h) => h.hp < 1e6), '2体の後衛どちらにも当たる');
+  // 回復の上限：1秒に最大HPの6%まで（4秒分ためられる）
+  const hc = makeBattle({ stage: noEnemies(), deck: ['tank'] }); const u = hc.spawn('demon', hc.deckDef('tank'), 900); u.hp = 1;
+  hc.healUnit(u, u.maxHp, null); assert.ok(Math.abs((u.hp - 1) - u.maxHp * 0.24) < 2, '一度に回復できるのは24%まで');
+});

@@ -11,7 +11,7 @@ import { SKIN } from './data/skin.js';
 import {
   loadProfile, saveProfile, resetProfile, buildDeck, resolveMana, applyResult, isStageOpen, nextStage,
   levelUpUnit, buyUpgrade, SAVE_KEY, resolveSpell, addToFormation, removeFromFormation, normalizeFormation,
-  ruinPending, finishRuinEvent, crystalPending, applyCrystal, ultimatePending, applyUltimate, resolveFurnace, finalPending, markFinal, conquestPending, markConquest, joinPending, joinBoss, tryEvolve,
+  ruinPending, finishRuinEvent, crystalPending, applyCrystal, ultimatePending, applyUltimate, resolveFurnace, finalPending, markFinal, conquestPending, markConquest, joinPending, joinBoss, switchBranch, tryEvolve,
 } from './data/progress.js';
 import { Renderer, VIEW_W, VIEW_H, MINIMAP } from './render/renderer.js';
 import { Hud, reasonText } from './ui/hud.js';
@@ -209,7 +209,7 @@ $('btnUpgrade').addEventListener('click', toUpgrade);
 
 // ---------- 強化 ----------
 function toUpgrade() {
-  const redraw = () => renderUpgrade(app.profile, (k) => { if (levelUpUnit(app.profile, k).ok) { save(); redraw(); } }, (id) => { if (buyUpgrade(app.profile, id).ok) { save(); redraw(); } }, (k, t) => { renderEvolveConfirm(app.profile, k, t); $('ovEvolve').hidden = false; app.evolving = { k, t, redraw }; });
+  const redraw = () => renderUpgrade(app.profile, (k) => { if (levelUpUnit(app.profile, k).ok) { save(); redraw(); } }, (id) => { if (buyUpgrade(app.profile, id).ok) { save(); redraw(); } }, (k, t) => { renderEvolveConfirm(app.profile, k, t); $('ovEvolve').hidden = false; app.evolving = { k, t, redraw }; }, (k) => { if (switchBranch(app.profile, k).ok) { save(); redraw(); } });
   redraw();
   show('scUpgrade');
 }

@@ -63,6 +63,7 @@
 | 2026-11-25 | maougun_lord_dialogue_portraits.zip（manifest・プレビュー同梱。docs/lord_portraits/ に写し） | — | — | `assets/approved/talk/lord_happy.png`・`lord_angry.png`・`lord_sad.png`・`ord_normal.png`（元 ordo.png） | — | 加工なし（1254×1254・RGBA）。manifest のユーザー承認欄は「未」。大魔王の表情差分（通常顔からの表情加工）と竜人オルドの会話の顔（戦闘素材から胸元まで切り出し） |
 | 2026-11-26 | lord_expressions.zip（確認用プレビューは docs/lord_expressions/） | — | — | `assets/approved/talk/lord2_normal.png`・`lord2_happy.png`・`lord2_angry.png`・`lord2_sad.png`・`lord2_surprised.png` | — | 加工なし（512×512・RGBA）。封印で弱った「おじいちゃん大魔王」（オリジナル）。前の大魔王の会話画像（lord_normal・happy・angry・sad）は既存作品に似ていたため削除 |
 | 2026-11-26 | （チャットの画像 1000021161・1000021162・1000021160.png） | — | — | `assets/approved/opening/opening_01_battle.png`・`opening_02_seal.png`・`opening_03_seven_days.png` | — | 加工なし（1672×941）。オープニングのスライド |
+| 2026-11-27 | maougun_final_evolutions.zip（manifest・プレビューは docs/final_evolutions/） | — | — | `assets/approved/units/` の16枚（mass_3a〜mallet_3b） | — | 加工なし（透過・左向き）。最終進化。表示は基本形の1.25倍（ギガグミは「大」） |
 | 2026-11-25 | （チャットの画像 11581〜11586.png） | — | — | `assets/approved/units/mass_2.png`・`vanguard_2.png`・`tank_2.png`・`fast_2.png`・`ranged_2.png`・`area_2.png` | — | 加工なし（透過・左向き）。第2形態：ハードグミ・悪魔の騎士・鋼男・イーグル・弩ゴブリン・星炎の魔導士。表示は基本形の約1.12倍の背の高さ |
 | 2026-11-25 | （チャットの画像 11593.png・11591.png） | — | — | `assets/approved/units/mallet_2.png`（鉄槌鬼）・`healer_2.png`（花灯りの精霊） | — | 加工なし（透過・左向き）。第2形態。表示は基本形の約1.12倍の背の高さ |
 | 2026-11-26 | （チャットの画像 11594.png） | — | — | `assets/approved/units/elemental.png` | — | 加工なし（1254×1254・透過・左向き）。幹部・熔氷の岩魔（依頼時の名前「氷炎魔人」は既存作品に近いので変更）。表示の高さ 125 |
