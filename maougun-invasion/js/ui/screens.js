@@ -4,7 +4,6 @@ import { STAGES, CHAPTER1, CHAPTERS, CHAPTER_EX } from '../data/stages.js';
 import { UNITS, BOSSES, UNIT_ORDER, BOSS_ORDER, ATTACK_TYPES, EVOLUTIONS, ALL_DEMONS } from '../data/units.js';
 import { HUMANS } from '../data/humans.js';
 import { enemiesOf, reconLine } from '../data/recon.js';
-import { LOOT } from '../data/story.js';
 import {
   UPGRADES, UPGRADE_GROUPS, unitLevelCost, levelCostFor, MAX_UNIT_LEVEL, resolveUnit, isStageOpen, nextStage, lordLevel,
   slotsFor, slotUnlockLv, normalizeFormation, canForm, MAX_UNIT_SLOTS, MAX_BOSS_SLOTS, SLOTS,
@@ -38,8 +37,6 @@ export function renderSelect(p, onPick, ch = CHAPTER1, onChapter = null) {
   }
   $('selStones').textContent = p.stones;
   $('selLord').textContent = lordLevel(p);
-  $('selLoot').textContent = p.loot.filter((id) => ch.stages.includes(id)).length;
-  $('selLootMax').textContent = ch.stages.length;
   const map = $('stageMap');
   map.innerHTML = '';
   const ns = 'http://www.w3.org/2000/svg';
@@ -154,29 +151,17 @@ export class TalkPlayer {
 }
 
 // ---------- 戦利品 ----------
-export function renderLoot(stageId, res, firstClear) {
-  // 手がかりが決まっていないステージ（第3章など）は、魔界石だけの表示にする
-  const loot = LOOT[stageId];
-  const showLoot = firstClear && !!loot;
-  const c = $('lootIcon').getContext('2d');
-  c.clearRect(0, 0, 96, 96);
-  const icon = getImage(SKIN.ui && SKIN.ui['loot_' + stageId]); // 承認済みのアイコンがあればそれを
-  if (icon && showLoot) c.drawImage(icon, 0, 0, 96, 96);
-  else {
-  // 巻いた古い地図（仮の絵）
-  c.fillStyle = '#e8d4a0'; c.strokeStyle = '#7a5a2a'; c.lineWidth = 3;
-  c.beginPath(); c.moveTo(14, 22); c.lineTo(82, 16); c.lineTo(86, 76); c.lineTo(16, 82); c.closePath(); c.fill(); c.stroke();
-  c.strokeStyle = '#b0452a'; c.lineWidth = 2; c.setLineDash([4, 3]);
-  c.beginPath(); c.moveTo(26, 66); c.quadraticCurveTo(44, 30, 70, 40); c.stroke(); c.setLineDash([]);
-  c.strokeStyle = '#b0452a'; c.lineWidth = 3; c.beginPath(); c.moveTo(64, 34); c.lineTo(76, 46); c.moveTo(76, 34); c.lineTo(64, 46); c.stroke();
-  }
-  $('lootName').textContent = showLoot ? loot.name : '戦利品の魔界石';
-  $('lootDesc').textContent = showLoot ? loot.desc : firstClear ? '制圧した場所から、魔界石を回収した。' : 'すでに制圧した場所から、魔界石を回収した。';
-  const gains = [`魔界石 <b>+${res.stones}</b>`];
-  if (firstClear) gains.push('封印がゆるみ、大魔王の魔力が戻った：最大魔力 <b>+60</b>・魔力回復 <b>+1.5/秒</b>');
-  if (res.slotsUp) gains.push(`支配力が戻った：編成枠が <b>通常${res.slotsUp.units}＋幹部${res.slotsUp.bosses}</b> に！`);
-  for (const u of res.unlockedAll || (res.unlocked ? [res.unlocked] : [])) gains.push(`新しい${BOSSES[u] ? '幹部' : '魔物'}：<b>${SKIN.names[u]}</b>`);
-  $('lootGains').innerHTML = gains.map((g) => `<li>${g}</li>`).join('');
+// 戦闘結果の報酬（2026-11-27：戦利品の画面を廃止して結果画面に統合）。魔界石を大きく、起きたことだけを目立つように
+export function renderRewards(stageId, res, win, p) {
+  $('resStones').innerHTML = `<span>獲得した魔界石</span><b>+${res.stones}</b>`;
+  const g = [];
+  if (win && res.firstClear) g.push(['mana', '大魔王の魔力が戻った', '最大魔力 +60・魔力回復 +1.5/秒']);
+  if (res.slotsUp) g.push(['slot', '支配力が戻った', `編成枠が 通常${res.slotsUp.units}＋幹部${res.slotsUp.bosses} に！`]);
+  for (const u of res.unlockedAll || []) g.push(['ally', `新しい${BOSSES[u] ? '幹部' : '仲間'}`, SKIN.names[u] || u]);
+  if (win && res.firstClear && stageId === '6-3') g.push(['evo', '進化の解放', '上位モンスター進化が解放される！']);
+  if (win && res.firstClear && stageId === '8-4') g.push(['evo', '進化の解放', '最上位モンスター進化が解放される！']);
+  $('resGains').innerHTML = g.map(([c, h, t]) => `<li class="gain-${c}"><b>${h}</b><span>${t}</span></li>`).join('');
+  $('resGains').hidden = !g.length;
 }
 
 // ---------- ユニット解放 ----------

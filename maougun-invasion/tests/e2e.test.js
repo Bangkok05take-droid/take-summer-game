@@ -146,21 +146,19 @@ try {
   const hp1 = await ev(() => window.__game.battle.entities.filter((e) => e.side === 'human' && e.state !== 'dead').reduce((a, e) => a + e.hp, 0));
   check('魔王の呪文で人間軍にダメージ', hp1 < hp0, `${hp0} → ${hp1}`);
 
-  // ---- 勝利 → 報告 → 戦利品 → 解放 → 選択 ----
+  // ---- 勝利 → 報告 → ステージ選択 → 解放 → 選択 ----
   const winStage = async () => {
     await ev(() => { const b = window.__game.battle; b.damageBase(b.base, b.base.hp); });
     await page.waitForSelector('#scResult:not([hidden])', { timeout: 3000 });
   };
   await winStage();
   check('拠点を壊すと勝利画面', (await page.locator('#resTitle').textContent()).includes('侵略成功'));
+  check('勝利画面に報酬（魔界石を大きく・大魔王の魔力の回復）が出る（戦利品の画面は廃止）', (await page.locator('#resStones b').textContent()).startsWith('+') && (await page.locator('#resGains').textContent()).includes('大魔王の魔力が戻った') && !(await page.locator('#scLoot').count()));
   await shot(page, '04_result');
   await page.tap('#btnReport');
   check('勝利後に側近の報告（会話）', await vis('#scTalk'));
   await shot(page, '05_report');
   await page.tap('#btnSkip');
-  check('戦利品の画面', await vis('#scLoot') && (await page.locator('#lootName').textContent()).length > 0);
-  await shot(page, '06_loot');
-  await page.tap('#btnLootNext');
   check('1-1 では新しい魔物の解放は無い（全員最初から）', !(await vis('#scUnlock')));
   check('ステージ選択に戻り、1-2 が解放される', await vis('#scSelect') && !(await page.locator('.node[data-stage="1-2"]').isDisabled()) && await page.locator('.node[data-stage="1-3"]').isDisabled());
   await shot(page, '08_select');
@@ -223,7 +221,7 @@ try {
     await winStage();
     await page.tap('#btnReport');
     if (await vis('#scTalk')) await page.tap('#btnSkip');
-    await page.tap('#btnLootNext');
+    await page.waitForTimeout(80);
     const names = [];
     while (await vis('#scUnlock')) { names.push(await page.locator('#unlockName').textContent()); await page.tap('#btnUnlockNext'); await page.waitForTimeout(50); }
     const unl = names.join('＋') || null;
@@ -322,7 +320,7 @@ try {
   await p5.waitForSelector('#scResult:not([hidden])', { timeout: 3000 });
   await p5.tap('#btnReport'); await p5.waitForTimeout(150);
   const t33 = await readTalk();
-  check('3-3 勝利後：15行・「まったく……」→「――第3章クリア。」→ 伏線 の順', t33.length === 15 && t33[9].endsWith('まったく……いつになったら、この祠から出られるんじゃ……。') && t33[10] === '：――第3章クリア。' && t33[14] === '：――竜人オルドとの遭遇へ続く。', JSON.stringify(t33.slice(8)));
+  check('3-3 勝利後：15行・「まったく……」→「――第3章クリア。」→ 伏線 の順（そのまま壊滅した町のイベントへ続く）', t33.length >= 15 && t33[15] === '：――王国の城を制圧した魔王軍は、港町へ向かっていた。しかし、その途中で異様な光景を目にする。' && t33[9].endsWith('まったく……いつになったら、この祠から出られるんじゃ……。') && t33[10] === '：――第3章クリア。' && t33[14] === '：――竜人オルドとの遭遇へ続く。', JSON.stringify(t33.slice(8)));
   check('第3章でエラーが無い', e5.length === 0, e5.join(' / '));
   await ctx5.close();
 
@@ -380,7 +378,7 @@ try {
     await cr.close();
   }
 
-  // ---- 第6章：6-3 の初回クリア → 大魔王の魔力回復 → 新機能の解放画面 → 続き → 戦利品／再クリアでは起きない ----
+  // ---- 第6章：6-3 の初回クリア → 大魔王の魔力回復 → 新機能の解放画面 → 続き → ステージ選択／再クリアでは起きない ----
   {
     const c7 = await browser.newContext({ ...devices['iPhone 13 landscape'] });
     const p7 = await c7.newPage(); const e7 = []; p7.on('pageerror', (e) => e7.push(String(e)));
@@ -393,9 +391,9 @@ try {
     const feat = await p7.locator('#ovFeature').isVisible() && (await p7.locator('#featTitle').textContent()) === '上位モンスター進化';
     await p7.tap('#btnFeatNext'); await p7.waitForTimeout(80);
     const b7 = await read7();
-    const st7 = await p7.evaluate(() => ({ crystal: window.__game.app.profile.events.crystal, saved: JSON.parse(localStorage.getItem('maougunInvasion.save')).events.crystal, loot: !document.getElementById('scLoot').hidden }));
-    check('6-3 初回：勝利後の会話（5行）→ 魔力回復（15行・発光と振動）→ 新機能の解放画面 → 続き（4行）→ 戦利品', a7.o.length === 20 && a7.o[4] === 'おおおお！ でかしたぞ、ヴェイル！！' && a7.o[19] === 'ふっふっふ……。人間どもよ、ここからが本当の恐怖の始まりじゃ！' && a7.fx >= 2 && feat && b7.o.length === 4 && b7.o[3] === '――第6章クリア。' && st7.crystal.done && st7.saved.done && st7.loot, JSON.stringify({ a: a7.o.length, fx: a7.fx, feat, b: b7.o.length, st7 }));
-    await p7.tap('#btnLootNext'); await p7.waitForTimeout(100);
+    const st7 = await p7.evaluate(() => ({ crystal: window.__game.app.profile.events.crystal, saved: JSON.parse(localStorage.getItem('maougunInvasion.save')).events.crystal, loot: window.__game.app.screen === 'scSelect' || window.__game.app.screen === 'scUnlock' }));
+    check('6-3 初回：勝利後の会話（5行）→ 魔力回復（15行・発光と振動）→ 新機能の解放画面 → 続き（4行）→ ステージ選択', a7.o.length === 20 && a7.o[4] === 'おおおお！ でかしたぞ、ヴェイル！！' && a7.o[19] === 'ふっふっふ……。人間どもよ、ここからが本当の恐怖の始まりじゃ！' && a7.fx >= 2 && feat && b7.o.length === 4 && b7.o[3] === '――第6章クリア。' && st7.crystal.done && st7.saved.done && st7.loot, JSON.stringify({ a: a7.o.length, fx: a7.fx, feat, b: b7.o.length, st7 }));
+    await p7.waitForTimeout(100);
     if (await p7.locator('#scUnlock').isVisible()) await p7.tap('#btnUnlockNext');
     await p7.tap('#btnUpgrade'); await p7.waitForTimeout(100);
     check('魔力回復のあと、強化画面に進化の欄が出る（進化先はデザイン待ち）', (await p7.locator('#upUnits .evo').count()) >= 8);
@@ -403,12 +401,12 @@ try {
     await p7.evaluate(() => window.__game.startStage('6-3'));
     await win7();
     const again7 = await p7.locator('#scTalk').isVisible();
-    check('6-3 の再クリアでは魔力回復のイベントが起きない（会話なしで戦利品へ）', !again7 && await p7.locator('#scLoot').isVisible() && !(await p7.locator('#ovFeature').isVisible()));
+    check('6-3 の再クリアでは魔力回復のイベントが起きない（会話なしでステージ選択へ）', !again7 && await p7.evaluate(() => window.__game.app.screen === 'scSelect') && !(await p7.locator('#ovFeature').isVisible()));
     check('第6章：エラーなし', e7.length === 0, e7.join(' / '));
     await c7.close();
   }
 
-  // ---- 第8章：章タブ・会話 → 8-4 の初回クリア → 究極進化 → 解放画面 → 第9章への進軍 → 戦利品／再読み込み／再クリアでは起きない ----
+  // ---- 第8章：章タブ・会話 → 8-4 の初回クリア → 究極進化 → 解放画面 → 第9章への進軍 → ステージ選択／再読み込み／再クリアでは起きない ----
   {
     const c8 = await browser.newContext({ ...devices['iPhone 13 landscape'] });
     const p8 = await c8.newPage(); const e8 = []; p8.on('pageerror', (e) => e8.push(String(e)));
@@ -434,8 +432,8 @@ try {
     const feat8 = await p8.locator('#ovFeature').isVisible() && (await p8.locator('#featTitle').textContent()) === '最上位モンスター進化' && (await p8.locator('#featItems').textContent()).includes('魔力炉のさらなる強化');
     await p8.tap('#btnFeatNext'); await p8.waitForTimeout(80);
     const b8 = await read8();
-    const st8 = await p8.evaluate(() => ({ ev: window.__game.app.profile.events.ultimate, saved: JSON.parse(localStorage.getItem('maougunInvasion.save')).events.ultimate, loot: !document.getElementById('scLoot').hidden }));
-    check('8-4 初回：勝利後の会話（4行）→ 究極進化（10行・発光と振動）→ 解放画面 → 第9章への進軍（11行）→ 戦利品', a8.o.length === 14 && a8.o[3] === 'よし！ 早速試すのじゃ！' && a8.o[4] === '――ヴェイルは魔導装置の技術を封印の祠の魔力炉に応用した。' && a8.o[13] === 'よし！ 最強の魔王軍を作り上げるのじゃ！' && a8.fx >= 2 && feat8 && b8.o.length === 11 && b8.o[9] === '――第8章クリア。' && b8.o[10] === '――魔王軍と人間軍の全面戦争が始まろうとしていた。' && st8.ev.done && st8.saved.done && st8.loot, JSON.stringify({ a: a8.o.length, fx: a8.fx, feat8, b: b8.o.length, st8 }));
+    const st8 = await p8.evaluate(() => ({ ev: window.__game.app.profile.events.ultimate, saved: JSON.parse(localStorage.getItem('maougunInvasion.save')).events.ultimate, loot: window.__game.app.screen === 'scSelect' || window.__game.app.screen === 'scUnlock' }));
+    check('8-4 初回：勝利後の会話（4行）→ 究極進化（10行・発光と振動）→ 解放画面 → 第9章への進軍（11行）→ ステージ選択', a8.o.length === 14 && a8.o[3] === 'よし！ 早速試すのじゃ！' && a8.o[4] === '――ヴェイルは魔導装置の技術を封印の祠の魔力炉に応用した。' && a8.o[13] === 'よし！ 最強の魔王軍を作り上げるのじゃ！' && a8.fx >= 2 && feat8 && b8.o.length === 11 && b8.o[9] === '――第8章クリア。' && b8.o[10] === '――魔王軍と人間軍の全面戦争が始まろうとしていた。' && st8.ev.done && st8.saved.done && st8.loot, JSON.stringify({ a: a8.o.length, fx: a8.fx, feat8, b: b8.o.length, st8 }));
     await p8.reload(); await p8.waitForFunction(() => window.__game); await p8.tap('#btnContinue'); await p8.waitForTimeout(150);
     const rl = await p8.evaluate(async () => { const m = await import('./js/data/progress.js'); const p = window.__game.app.profile; return { done: m.ultimateDone(p), cap: m.evolveTierCap(p) }; });
     check('再読み込み後も究極進化（最上位進化・魔力炉の強化）が残る', rl.done && rl.cap === 3, JSON.stringify(rl));
@@ -444,12 +442,12 @@ try {
     const fz = await p8.evaluate(() => window.__game.battle.config.furnace.costs.length);
     check('究極進化のあと：戦闘の魔力炉が1段多く上がる', fz === 8, String(fz));
     await win8();
-    check('8-4 の再クリアでは究極進化が起きない（会話なしで戦利品へ）', !(await p8.locator('#scTalk').isVisible()) && await p8.locator('#scLoot').isVisible() && !(await p8.locator('#ovFeature').isVisible()));
+    check('8-4 の再クリアでは究極進化が起きない（会話なしでステージ選択へ）', !(await p8.locator('#scTalk').isVisible()) && await p8.evaluate(() => window.__game.app.screen === 'scSelect') && !(await p8.locator('#ovFeature').isVisible()));
     check('第8章：エラーなし', e8.length === 0, e8.join(' / '));
     await c8.close();
   }
 
-  // ---- 第9章：9-4 の初回クリア → 勝利後の会話 → 最終章への進軍 → 最終章解放演出 → 戦利品／再読み込み／再クリアでは起きない ----
+  // ---- 第9章：9-4 の初回クリア → 勝利後の会話 → 最終章への進軍 → 最終章解放演出 → ステージ選択／再読み込み／再クリアでは起きない ----
   {
     const c9 = await browser.newContext({ ...devices['iPhone 13 landscape'] });
     const p9 = await c9.newPage(); const e9 = []; p9.on('pageerror', (e) => e9.push(String(e)));
@@ -470,18 +468,18 @@ try {
     const a9 = await read9();
     const fin = await p9.evaluate(() => ({ vis: !document.getElementById('ovFinal').hidden, t: ['finEyebrow', 'finChapter', 'finName', 'finText'].map((i) => document.getElementById(i).textContent) }));
     await p9.waitForTimeout(1500); await p9.tap('#btnFinalNext'); await p9.waitForTimeout(100);
-    const st9 = await p9.evaluate(() => ({ ev: window.__game.app.profile.events.final, saved: JSON.parse(localStorage.getItem('maougunInvasion.save')).events.final, loot: !document.getElementById('scLoot').hidden }));
-    check('9-4 初回：勝利後の会話（10行）→ 最終章への進軍（9行）→ 最終章解放演出 → 戦利品', a9.length === 19 && a9[9] === '空の上まで逃げおったのかぁぁ！！' && a9[18] === '――第9章クリア。' && fin.vis && fin.t.join('/') === 'FINAL CHAPTER/第10章/天空・勇者の聖域/魔王軍、最後の戦いへ。' && st9.ev.done && st9.saved.done && st9.loot, JSON.stringify({ a: a9.length, fin, st9 }));
+    const st9 = await p9.evaluate(() => ({ ev: window.__game.app.profile.events.final, saved: JSON.parse(localStorage.getItem('maougunInvasion.save')).events.final, loot: window.__game.app.screen === 'scSelect' || window.__game.app.screen === 'scUnlock' }));
+    check('9-4 初回：勝利後の会話（10行）→ 最終章への進軍（9行）→ 最終章解放演出 → ステージ選択', a9.length === 19 && a9[9] === '空の上まで逃げおったのかぁぁ！！' && a9[18] === '――第9章クリア。' && fin.vis && fin.t.join('/') === 'FINAL CHAPTER/第10章/天空・勇者の聖域/魔王軍、最後の戦いへ。' && st9.ev.done && st9.saved.done && st9.loot, JSON.stringify({ a: a9.length, fin, st9 }));
     await p9.reload(); await p9.waitForFunction(() => window.__game); await p9.tap('#btnContinue'); await p9.waitForTimeout(150);
     check('再読み込み後も第9章クリア・演出済みが残る', await p9.evaluate(() => { const p = window.__game.app.profile; return p.events.final.done && p.stages['9-4'].cleared; }));
     await p9.evaluate(() => { window.__game.startStage('9-4'); });
     await win9();
-    check('9-4 の再クリアでは進軍の会話と演出が起きない', !(await p9.locator('#scTalk').isVisible()) && !(await p9.locator('#ovFinal').isVisible()) && await p9.locator('#scLoot').isVisible());
+    check('9-4 の再クリアでは進軍の会話と演出が起きない', !(await p9.locator('#scTalk').isVisible()) && !(await p9.locator('#ovFinal').isVisible()) && await p9.evaluate(() => window.__game.app.screen === 'scSelect'));
     check('第9章：エラーなし', e9.length === 0, e9.join(' / '));
     await c9.close();
   }
 
-  // ---- 第10章：会話 → 10-5（たけ・サイ・ヤナイ）→ エンディング → 世界征服達成 → おまけ会話 → THE END → 戦利品／再読み込み／再クリア／ムービーの差し込み口 ----
+  // ---- 第10章：会話 → 10-5（たけ・サイ・ヤナイ）→ エンディング → 世界征服達成 → おまけ会話 → THE END → ステージ選択／再読み込み／再クリア／ムービーの差し込み口 ----
   {
     const c10 = await browser.newContext({ ...devices['iPhone 13 landscape'] });
     const q = await c10.newPage(); const e10 = []; q.on('pageerror', (e) => e10.push(String(e)));
@@ -511,14 +509,14 @@ try {
     const ep = await readQ();
     const t2 = await q.evaluate(() => ({ vis: !document.getElementById('ovFinal').hidden, t: document.getElementById('finEnd').textContent, name: document.getElementById('finName').hidden }));
     await q.waitForTimeout(1500); await q.tap('#btnFinalNext'); await q.waitForTimeout(100);
-    const loot = await q.locator('#scLoot').isVisible();
-    check('10-5 初回：大魔王復活（14行・演出つき）→ 世界征服達成画面（セーブ）→ おまけ会話（13行）→ THE END → 戦利品', en.o.length === 14 && en.o[0] === 'まさか……ここまで力を取り戻すとは……。' && en.fx >= 3 && t1.vis && t1.t.join('/') === 'WORLD CONQUEST COMPLETE/世界征服達成/魔王軍の世界侵略/全10章クリア/THE END' && t1.saved && t1.saved.done && ep.o.length === 13 && ep.o[12] === '――そして、大魔王の退屈な日々が再び始まるのであった。' && t2.vis && t2.t === 'THE END' && t2.name && loot, JSON.stringify({ en: en.o.length, fx: en.fx, t1, ep: ep.o.length, t2, loot }));
+    const loot = await q.evaluate(() => window.__game.app.screen === 'scSelect');
+    check('10-5 初回：大魔王復活（14行・演出つき）→ 世界征服達成画面（セーブ）→ おまけ会話（13行）→ THE END → ステージ選択', en.o.length === 14 && en.o[0] === 'まさか……ここまで力を取り戻すとは……。' && en.fx >= 3 && t1.vis && t1.t.join('/') === 'WORLD CONQUEST COMPLETE/世界征服達成/魔王軍の世界侵略/全10章クリア/THE END' && t1.saved && t1.saved.done && ep.o.length === 13 && ep.o[12] === '――そして、大魔王の退屈な日々が再び始まるのであった。' && t2.vis && t2.t === 'THE END' && t2.name && loot, JSON.stringify({ en: en.o.length, fx: en.fx, t1, ep: ep.o.length, t2, loot }));
     await q.reload(); await q.waitForFunction(() => window.__game); await q.tap('#btnContinue'); await q.waitForTimeout(150);
     check('再読み込み後も世界征服達成が残る', await q.evaluate(async () => { const m = await import('./js/data/progress.js'); return m.conquestDone(window.__game.app.profile) && m.nextStage(window.__game.app.profile) === null; }));
     const st0 = await q.evaluate(() => window.__game.app.profile.stones);
     await q.evaluate(() => window.__game.startStage('10-5')); await winQ();
     const st1 = await q.evaluate(() => window.__game.app.profile.stones);
-    check('10-5 の再クリアではエンディングが起きず、初回報酬も重ならない', !(await q.locator('#scTalk').isVisible()) && !(await q.locator('#ovFinal').isVisible()) && await q.locator('#scLoot').isVisible() && st1 - st0 < 2000, JSON.stringify({ st0, st1 }));
+    check('10-5 の再クリアではエンディングが起きず、初回報酬も重ならない', !(await q.locator('#scTalk').isVisible()) && !(await q.locator('#ovFinal').isVisible()) && await q.evaluate(() => window.__game.app.screen === 'scSelect') && st1 - st0 < 2000, JSON.stringify({ st0, st1 }));
     // ムービーの差し込み口：動画が読めないときは、その段をとばして続きへ
     await q.evaluate(() => { const g = window.__game; g.SKIN.movies.ending = { src: 'assets/none/ending.mp4', replaces: ['lines'] }; g.app.profile.events.conquest = null; g.startStage('10-5'); });
     await winQ(); await q.waitForTimeout(400);

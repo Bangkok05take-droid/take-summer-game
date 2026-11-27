@@ -15,7 +15,7 @@ import {
 } from './data/progress.js';
 import { Renderer, VIEW_W, VIEW_H, MINIMAP } from './render/renderer.js';
 import { Hud, reasonText } from './ui/hud.js';
-import { TalkPlayer, renderSelect, renderLoot, renderUnlock, renderUpgrade, renderRecon, renderEnemyInfo, renderFormation, renderEvolveConfirm } from './ui/screens.js';
+import { TalkPlayer, renderSelect, renderRewards, renderUnlock, renderUpgrade, renderRecon, renderEnemyInfo, renderFormation, renderEvolveConfirm } from './ui/screens.js';
 import { applyUiSkin } from './ui/uiskin.js';
 import { Tutor } from './ui/tutorial.js';
 import { RUIN_EVENT } from './data/event_ruin.js';
@@ -42,7 +42,7 @@ const app = {
   lastResult: null,
 };
 
-const SCREENS = ['scTitle', 'scSelect', 'scRecon', 'scForm', 'scResult', 'scLoot', 'scUnlock', 'scUpgrade'];
+const SCREENS = ['scTitle', 'scSelect', 'scRecon', 'scForm', 'scResult', 'scUnlock', 'scUpgrade'];
 function show(id) {
   for (const s of SCREENS) $(s).hidden = s !== id;
   $('battleUi').hidden = id !== 'battle';
@@ -106,6 +106,26 @@ function playOpening(done) {
   const lines = app.slidesJustShown ? STORY.opening.lines.filter((l, i) => !(i === 0 && l.who === 'narr')) : STORY.opening.lines;
   app.slidesJustShown = false;
   talk.play(lines, 'shrine', () => { app.profile.story.opening = true; save(); done(); });
+}
+// ===== 全画面（スマホ横向き） =====
+function isFull() { return !!(document.fullscreenElement || document.webkitFullscreenElement); }
+function goFull() {
+  const el = document.documentElement;
+  const req = el.requestFullscreen || el.webkitRequestFullscreen;
+  if (!req || isFull()) return;
+  try {
+    const p = req.call(el, { navigationUI: 'hide' });
+    const lock = () => { try { screen.orientation && screen.orientation.lock && screen.orientation.lock('landscape').catch(() => {}); } catch (e) {} };
+    if (p && p.then) p.then(lock).catch(() => {}); else lock();
+  } catch (e) {}
+}
+const canFull = !!(document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen);
+const standalone = matchMedia('(display-mode: fullscreen), (display-mode: standalone)').matches || navigator.standalone;
+if (!canFull || standalone) $('btnFull').hidden = true;
+$('btnFull').addEventListener('click', goFull);
+// スマホは最初のタップで自動的に全画面へ
+if (canFull && !standalone && matchMedia('(pointer: coarse)').matches) {
+  document.addEventListener('pointerup', function once() { document.removeEventListener('pointerup', once, true); goFull(); }, true);
 }
 $('btnReset').addEventListener('click', () => { app.confirmFor = 'reset'; $('ovConfirm').hidden = false; });
 $('btnResetNo').addEventListener('click', () => { $('ovConfirm').hidden = true; });
@@ -360,12 +380,12 @@ function showResult() {
     $('resText').textContent = SKIN.speakers.aide + '「' + (b.furnaceLv === 1 ? LOSE_TIPS.furnace : b.stats.summoned < 12 ? LOSE_TIPS.few : priest ? LOSE_TIPS.healer : LOSE_TIPS.default) + '」';
   }
   tutor.stop();
+  renderRewards(app.stageId, res, win, app.profile);
   $('resStats').innerHTML = [
     ['時間', `${Math.floor(t / 60)}分${String(t % 60).padStart(2, '0')}秒`],
     ['召喚した魔物', b.stats.summoned + ' 体'],
     ['倒した人間', b.stats.kills + ' 人'],
     ['魔王の呪文', b.stats.spells + ' 回'],
-    ['獲得した魔界石', res.stones],
   ].map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('');
   const btns = $('resButtons'); btns.innerHTML = '';
   const mk = (label, cls, fn, id) => { const x = document.createElement('button'); x.type = 'button'; x.className = cls; x.textContent = label; if (id) x.id = id; x.addEventListener('click', fn); btns.appendChild(x); };
@@ -382,7 +402,7 @@ function afterWin() {
   show(null);
   talk.play(lines, 'shrine', () => {
     if (lines) { app.profile.story[key] = true; save(); }
-    const toLoot = () => { renderLoot(app.stageId, res, res.firstClear); show('scLoot'); };
+    const toLoot = () => { app.unlockQueue = (res.unlockedAll || []).slice(); nextUnlock(); }; // 会話・イベントのあと：新しい仲間の紹介 → ステージ選択（報酬は結果画面で表示ずみ）
     // 6-3 の初回クリア：特殊イベント「大魔王の魔力回復」→ 新機能の解放画面 → 続きの会話（1回だけ・再クリアでは起きない）
     if (app.stageId === '6-3' && crystalPending(app.profile)) { playCrystalEvent(toLoot); return; }
     // 8-4 の初回クリア：特殊イベント「魔王軍の究極進化」→ 新機能の解放画面 → 第9章への進軍（1回だけ）
@@ -458,10 +478,6 @@ function nextUnlock() {
   if (u) { renderUnlock(u); app.profile.seen[u] = true; save(); show('scUnlock'); }
   else toSelect();
 }
-$('btnLootNext').addEventListener('click', () => {
-  app.unlockQueue = ((app.lastResult && app.lastResult.unlockedAll) || []).slice();
-  nextUnlock();
-});
 $('btnUnlockNext').addEventListener('click', () => { const j = app.joinThen; if (j) { app.joinThen = null; j(); } else nextUnlock(); });
 
 // ---------- 画面の大きさ ----------

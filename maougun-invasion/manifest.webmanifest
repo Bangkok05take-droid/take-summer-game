@@ -1,0 +1,11 @@
+{
+  "name": "魔王軍の世界侵略",
+  "short_name": "魔王軍",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#140a1f",
+  "theme_color": "#140a1f",
+  "icons": [{ "src": "assets/approved/units/mass.png", "sizes": "any", "type": "image/png", "purpose": "any" }]
+}

@@ -244,7 +244,7 @@ button:focus-visible { outline: calc(var(--u) * 3) solid var(--gold2); outline-o
 @keyframes bob { to { transform: translateY(calc(var(--u) * 4)); } }
 
 /* 結果・戦利品・解放・一時停止 */
-#scResult, #scLoot, #scUnlock, .overlay { background: rgba(10, 4, 22, .62); }
+#scResult, #scUnlock, .overlay { background: rgba(10, 4, 22, .62); }
 .overlay { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
 .panel {
   min-width: calc(var(--u) * 440); max-width: calc(var(--u) * 660); padding: calc(var(--u) * 20) calc(var(--u) * 30);
@@ -484,3 +484,15 @@ body.portrait #rotate { display: flex; }
 #scSlides .slideNext { position: absolute; right: calc(var(--u) * 18); bottom: calc(var(--u) * 6); color: rgba(255, 255, 255, .7); font-size: calc(var(--u) * 12); }
 #btnSlideSkip { position: absolute; top: calc(var(--u) * 12); right: calc(var(--u) * 14); z-index: 2; }
 @media (prefers-reduced-motion: reduce) { #slideText.on { animation: none; opacity: 1; } #slideImg { transition: none; } }
+
+/* 結果画面の報酬（2026-11-27） */
+.resStones { display: flex; align-items: baseline; justify-content: center; gap: calc(var(--u) * 12); margin: calc(var(--u) * 4) 0; }
+.resStones span { color: var(--dim); font-size: calc(var(--u) * 15); font-weight: 700; }
+.resStones b { color: #ffd76a; font-size: calc(var(--u) * 40); text-shadow: 0 0 calc(var(--u) * 12) rgba(255, 200, 80, .6); }
+.resGains { list-style: none; padding: 0; margin: 0 0 calc(var(--u) * 6); display: grid; gap: calc(var(--u) * 4); }
+.resGains li { display: flex; gap: calc(var(--u) * 10); align-items: center; justify-content: center; padding: calc(var(--u) * 4) calc(var(--u) * 12); border-radius: calc(var(--u) * 10); background: rgba(255, 255, 255, .07); font-size: calc(var(--u) * 14); animation: joinIn .5s ease-out both; }
+.resGains li b { color: #fff; }
+.resGains li span { color: #ffe9a8; }
+.resGains .gain-ally, .resGains .gain-evo { background: rgba(255, 150, 60, .22); border: calc(var(--u) * 2) solid #ff9a3a; }
+.resGains .gain-slot { background: rgba(120, 200, 255, .16); }
+#resStats { font-size: calc(var(--u) * 12.5); opacity: .85; }
