@@ -99,7 +99,20 @@
 | se_glow.mp3 | 魔力があふれる・光る |
 | se_join.mp3 | 幹部の加入演出 |
 
-■ 優先順位（全部そろわなくても、届いた分から入れられます）
-1. bgm_battle_1・bgm_boss・bgm_shrine・bgm_title・jingle_win・jingle_lose
-2. se_summon・se_hit_slash・se_hit_light・se_down_human・se_down_demon・se_spell・se_tap
-3. 残りの BGM・効果音
+■ 制作順（5回に分けて納品・計59点）
+第1弾（14点）遊び始めから毎回聞く音
+  bgm_title・bgm_shrine・bgm_menu・bgm_battle_1・jingle_win・jingle_lose
+  se_tap・se_cancel・se_summon・se_hit_light・se_hit_slash・se_down_demon・se_down_human・se_base_hit
+第2弾（15点）戦闘の手ごたえと山場
+  bgm_boss・bgm_opening
+  se_hit_heavy・se_arrow・se_fire・se_magic・se_heal・se_spell_charge・se_spell・se_base_break・se_boss_appear・se_denied・se_talk・se_levelup・se_coin
+第3弾（14点）中盤（第4〜7章）と幹部
+  bgm_battle_2・bgm_event・jingle_unlock・jingle_chapter
+  se_summon_boss・se_furnace・se_join・se_page・se_charge・se_freeze・se_thunder・se_stun・se_wave・se_cannon
+第4弾（10点）後半（第8〜10章）と進化
+  bgm_battle_3・bgm_human・jingle_evolve
+  se_reap・se_slow・se_poison・se_explode・se_miss・se_glow・se_quake
+第5弾（6点）最終決戦とエンディング
+  bgm_final・bgm_ending・bgm_epilogue・bgm_staff
+  se_fog・se_veil
+※届いていない曲は近い曲で代わりに鳴らす（例：bgm_battle_2/3 → bgm_battle_1、bgm_final → bgm_boss）。
