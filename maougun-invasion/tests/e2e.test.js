@@ -48,10 +48,10 @@ try {
   await page.waitForTimeout(300);
   const slides = [];
   for (let i = 0; i < 5 && await vis('#scSlides'); i++) { await page.waitForTimeout(500); slides.push({ src: (await page.locator('#slideImg').getAttribute('src')).split('/').pop(), text: await page.locator('#slideText').textContent() }); if (i === 0) await shot(page, '00_opening_slide'); await page.tap('#scSlides', { position: { x: 300, y: 200 } }); await page.waitForTimeout(150); }
-  check('オープニングのスライド3枚が順に出て、タップで進む', slides.length === 3 && slides.map((x) => x.src).join(',') === 'opening_01_battle.png,opening_02_seal.png,opening_03_seven_days.png' && slides[0].text.startsWith('かつて、世界を恐怖に陥れた大魔王は') && slides[1].text.includes('肉体と魔力に分けられ') && slides[2].text === 'それから、わずか七日後――。', JSON.stringify(slides));
+  check('オープニングのスライド3枚が順に出て、タップで進む', slides.length === 3 && slides.map((x) => x.src).join(',') === 'opening_01_battle.png,opening_02_seal.png,opening_03_seven_days.png' && slides[0].text.startsWith('かつて、世界を恐怖に陥れた大魔王は') && slides[1].text.includes('肉体と魔力に分けられ') && slides[2].text === 'それから、しばらくの時が流れた――。', JSON.stringify(slides));
   const fit = await page.evaluate(() => { const r = document.getElementById('slideImg').getBoundingClientRect(); const g = document.getElementById('game').getBoundingClientRect(); return r.width <= g.width + 1 && r.height <= g.height + 1; });
   check('スライドの画像は画面に収まる（切り抜かない）', fit);
-  check('スライドのあとにオープニングの会話が始まる', await vis('#scTalk') && !(await vis('#scSlides')));
+  check('スライドのあとにオープニングの会話が始まる（説明のナレーションは重ねない）', await vis('#scTalk') && !(await vis('#scSlides')) && (await page.locator('#talkText').textContent()).startsWith('おのれぇぇ、ヤナイめ！'));
   const t1 = await page.locator('#talkText').textContent();
   await page.tap('#talkBox');
   const t2 = await page.locator('#talkText').textContent();
@@ -538,7 +538,7 @@ try {
     const on = await q.locator('#scSlides').isVisible();
     await q.tap('#btnSlideSkip'); await q.waitForTimeout(200);
     const talkFirst = await q.locator('#talkText').textContent();
-    check('スライドのスキップで、既存のオープニング会話の最初へ', on && !(await q.locator('#scSlides').isVisible()) && talkFirst.startsWith('ここは封印の祠。'), talkFirst);
+    check('スライドのスキップで、オープニング会話の掛け合いの最初へ（説明のナレーションは重ねない）', on && !(await q.locator('#scSlides').isVisible()) && talkFirst.startsWith('おのれぇぇ、ヤナイめ！'), talkFirst);
     await q.tap('#btnSkip'); await q.waitForTimeout(200);
     await q.reload(); await q.waitForFunction(() => window.__game); await q.waitForTimeout(150);
     await q.tap('#btnContinue'); await q.waitForTimeout(200);

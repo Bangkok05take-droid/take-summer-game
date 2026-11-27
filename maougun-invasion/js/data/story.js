@@ -15,8 +15,8 @@ export const STORY = {
     lines: [
       { who: 'narr', text: 'ここは封印の祠。かつて世界をおびやかした大魔王は、マスター・ヤナイたちに肉体と魔力を分断され、この祠に封じこめられた。' },
       { who: 'lord', text: 'おのれぇぇ、ヤナイめ！ このわしを、こんな狭い祠に閉じこめおって……！', face: 'angry' },
-      { who: 'aide', text: '大魔王様。お体にさわります。封印から、まだ七日しかたっておりません。' },
-      { who: 'lord', text: '七日もじゃ！ 腰も痛いし、魔力もすっからかんじゃ。', face: 'sad' },
+      { who: 'aide', text: '大魔王様。お体にさわります。まだ封印が解けたばかりなのですから。' } /* 2026-11-27 承認：封印期間の設定変更 */,
+      { who: 'lord', text: '何を言うか！ 腰も痛いし、魔力もすっからかんじゃ。', face: 'sad' } /* 2026-11-27：「七日もじゃ！」→ 封印期間を言わない形に（後半はそのまま） */,
       { who: 'lord', text: '……だが、あきらめはせん。ヤナイを見つけ出して倒し、肉体と魔力を取り戻す。そして、もう一度この世界をわしのものにするのじゃ！', face: 'angry' },
       { who: 'aide', text: 'ヤナイは昔、多くの村や町を救ったと聞きます。そこを順に調べれば、居場所の手がかりがつかめるはずです。' },
       { who: 'lord', text: 'うむ！ では、まずはいちばん近い村じゃ。偵察してまいれ！' },
@@ -712,5 +712,5 @@ export const ENDING = {
 export const OPENING_SLIDES = [
   { src: 'assets/approved/opening/opening_01_battle.png', text: 'かつて、世界を恐怖に陥れた大魔王は、\nマスター・ヤナイたちとの壮絶な戦いに敗れた。' },
   { src: 'assets/approved/opening/opening_02_seal.png', text: 'その強大な力は、\n肉体と魔力に分けられ、封印された。' },
-  { src: 'assets/approved/opening/opening_03_seven_days.png', text: 'それから、わずか七日後――。' },
+  { src: 'assets/approved/opening/opening_03_seven_days.png', text: 'それから、しばらくの時が流れた――。' },
 ];

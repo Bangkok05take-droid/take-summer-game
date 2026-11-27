@@ -100,9 +100,12 @@ function playSlides(done) {
 $('scSlides').addEventListener('click', (e) => { if (e.target.id === 'btnSlideSkip') return; if (app.slideNext) app.slideNext(); });
 $('btnSlideSkip').addEventListener('click', () => { if (app.slideSkip) { const f = app.slideSkip; app.slideSkip = null; f(); } });
 function playOpening(done) {
-  if (!slidesSeen() && !app.profile.story.opening) { playSlides(() => playOpening(done)); return; }
+  if (!slidesSeen() && !app.profile.story.opening) { playSlides(() => { app.slidesJustShown = true; playOpening(done); }); return; }
   show(null);
-  talk.play(STORY.opening.lines, 'shrine', () => { app.profile.story.opening = true; save(); done(); });
+  // スライドを見た（スキップした）直後は、冒頭ナレーション（過去の決戦と封印の説明）を出さない（スライドと重なるため・2026-11-27）
+  const lines = app.slidesJustShown ? STORY.opening.lines.filter((l, i) => !(i === 0 && l.who === 'narr')) : STORY.opening.lines;
+  app.slidesJustShown = false;
+  talk.play(lines, 'shrine', () => { app.profile.story.opening = true; save(); done(); });
 }
 $('btnReset').addEventListener('click', () => { app.confirmFor = 'reset'; $('ovConfirm').hidden = false; });
 $('btnResetNo').addEventListener('click', () => { $('ovConfirm').hidden = true; });
