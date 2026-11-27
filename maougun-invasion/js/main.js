@@ -107,6 +107,19 @@ function playOpening(done) {
   app.slidesJustShown = false;
   talk.play(lines, 'shrine', () => { app.profile.story.opening = true; save(); done(); });
 }
+// ===== テロップの文字の大きさ（小・中・大）。セーブとは別に端末へ保存 =====
+const TEXT_KEY = 'maougunInvasion.textSize';
+function setTextSize(v) {
+  if (!['s', 'm', 'l'].includes(v)) v = 'm';
+  $('game').dataset.text = v;
+  for (const b of document.querySelectorAll('.textSize button')) b.classList.toggle('on', b.dataset.ts === v);
+  try { localStorage.setItem(TEXT_KEY, v); } catch { /* 保存できない環境 */ }
+}
+let savedText = 'm';
+try { savedText = localStorage.getItem(TEXT_KEY) || 'm'; } catch { /* 保存できない環境 */ }
+setTextSize(savedText);
+for (const b of document.querySelectorAll('.textSize button')) b.addEventListener('click', () => setTextSize(b.dataset.ts));
+
 // ===== 全画面（スマホ横向き） =====
 function isFull() { return !!(document.fullscreenElement || document.webkitFullscreenElement); }
 function goFull() {
