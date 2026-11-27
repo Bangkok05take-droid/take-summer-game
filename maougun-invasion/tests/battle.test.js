@@ -967,7 +967,7 @@ test('共通背景対応の修正（第1〜7章）：ステージ名・台詞の
   assert.deepEqual(T('1-2', 'before'), ['大魔王様、村の自警団が集まってきました。', 'ほう！ 少しは戦う気があるようじゃな！', 'みんなで力を合わせるんだ！ 村を守れ！', 'ふっふっふ！ 蹴散らすのじゃ！']);
   assert.deepEqual(T('1-2', 'after'), ['自警団を撃破しました。', 'うむ！ 順調じゃな！']);
   assert.equal(STORY.before['1-3'][2].who, '自警団長');
-  assert.equal(STORY.after['1-3'].length, 5, '1-3 のあとのヤナイの情報・幹部解放・第2章への接続はそのまま');
+  assert.equal(STORY.after['1-3'].length, 3, '2026-11-27：橋と幹部解放の台詞を削除（第2章への接続はそのまま）');
   for (const id of ['1-2', '1-3', '2-2', '2-3']) assert.ok(!STAGES[id].talk, id + '：台本に入った村・町の声を二重に出さない');
   assert.ok(STAGES['1-1'].talk && STAGES['2-1'].talk, '変更なしのステージはそのまま');
   assert.deepEqual(STORY.before['2-2'].map((l) => l.who), ['aide', 'lord', '守備兵', 'lord']);
